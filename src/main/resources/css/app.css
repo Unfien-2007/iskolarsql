@@ -1,0 +1,441 @@
+/* =====================================================================
+   Iskolar — application stylesheet
+   Built on AtlantaFX PrimerLight / PrimerDark lookup colors, so everything
+   here adapts automatically to the light/dark toggle.
+   ===================================================================== */
+
+.app-root {
+    -fx-background-color: -color-bg-default;
+}
+
+/* ---------------- Sidebar rail ---------------- */
+
+.sidebar {
+    -fx-background-color: -color-bg-subtle;
+    -fx-border-color: -color-border-muted;
+    -fx-border-width: 0 1 0 0;
+    -fx-padding: 12 8 12 8;
+}
+
+.brand {
+    -fx-padding: 2 4 10 4;
+}
+
+.brand-title {
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-accent-fg;
+}
+
+.nav-button {
+    -fx-background-color: transparent;
+    -fx-background-radius: 6;
+    -fx-alignment: CENTER_LEFT;
+    -fx-padding: 10 12;
+    -fx-gap: 12;
+    -fx-font-size: 13px;
+    -fx-text-fill: -color-fg-muted;
+    -fx-cursor: hand;
+}
+
+.nav-button:hover {
+    -fx-background-color: -color-neutral-subtle;
+    -fx-text-fill: -color-fg-default;
+}
+
+.nav-button:selected {
+    -fx-background-color: -color-accent-subtle;
+    -fx-text-fill: -color-accent-fg;
+    -fx-font-weight: bold;
+}
+
+.nav-button:selected .ikonli-font-icon {
+    -fx-fill: -color-accent-fg;
+}
+
+/* Collapsed rail: icon-only, centered buttons */
+.sidebar.collapsed .nav-button {
+    -fx-alignment: CENTER;
+    -fx-padding: 10 0;
+}
+
+.icon-button {
+    -fx-background-color: transparent;
+    -fx-background-radius: 6;
+    -fx-padding: 6;
+    -fx-cursor: hand;
+}
+
+.icon-button:hover {
+    -fx-background-color: -color-neutral-subtle;
+}
+
+/* ---------------- Session chip ---------------- */
+
+.user-chip {
+    -fx-background-color: -color-neutral-subtle;
+    -fx-background-radius: 8;
+    -fx-padding: 8 12;
+}
+
+.user-name {
+    -fx-font-size: 12px;
+    -fx-text-fill: -color-fg-default;
+}
+
+.user-role {
+    -fx-font-size: 11px;
+    -fx-text-fill: -color-fg-muted;
+}
+
+/* ---------------- Generic view typography ---------------- */
+
+.view-title {
+    -fx-font-size: 26px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-fg-default;
+}
+
+.view-subtitle {
+    -fx-font-size: 14px;
+    -fx-text-fill: -color-fg-muted;
+}
+
+/* ---------------- Discovery grid ---------------- */
+
+.discovery-header {
+    -fx-padding: 20 24 12 24;
+}
+
+.result-label {
+    -fx-font-size: 12px;
+    -fx-text-fill: -color-fg-muted;
+}
+
+.card-scroll {
+    -fx-background-color: transparent;
+}
+
+.card-scroll > .viewport {
+    -fx-background-color: transparent;
+}
+
+.card-flow {
+    -fx-padding: 8 24 24 24;
+}
+
+.guest-banner {
+    -fx-background-color: -color-accent-subtle;
+    -fx-background-radius: 8;
+    -fx-padding: 10 14;
+}
+
+.guest-banner .label {
+    -fx-text-fill: -color-accent-fg;
+}
+
+/* ---------------- Scholarship cards ---------------- */
+
+.scholarship-card {
+    -fx-background-color: -color-bg-subtle;
+    -fx-border-color: -color-border-muted;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+    -fx-padding: 14;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.06), 10, 0, 0, 2);
+}
+
+.scholarship-card:hover {
+    -fx-border-color: -color-accent-muted;
+    -fx-cursor: hand;
+}
+
+.card-title {
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-fg-default;
+}
+
+.card-provider {
+    -fx-font-size: 12px;
+    -fx-text-fill: -color-fg-muted;
+}
+
+.card-highlight {
+    -fx-font-size: 12px;
+    -fx-text-fill: -color-fg-muted;
+}
+
+.match-caption {
+    -fx-font-size: 11px;
+    -fx-text-fill: -color-fg-muted;
+}
+
+/* Pill-shaped badges */
+.badge, .pill, .match-badge {
+    -fx-background-radius: 999;
+    -fx-padding: 3 10;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+}
+
+.match-badge {
+    -fx-padding: 4 12;
+    -fx-font-size: 14px;
+}
+
+/* Provider type badge colors */
+.badge-gov  { -fx-background-color: -color-warning-subtle;   -fx-text-fill: -color-warning-fg; }
+.badge-corp { -fx-background-color: -color-accent-subtle;    -fx-text-fill: -color-accent-fg; }
+.badge-ngo  { -fx-background-color: -color-success-subtle;   -fx-text-fill: -color-success-fg; }
+.badge-uni  { -fx-background-color: -color-neutral-muted;    -fx-text-fill: -color-fg-default; }
+.badge-lgu  { -fx-background-color: -color-neutral-subtle;   -fx-text-fill: -color-fg-default; }
+.badge-intl { -fx-background-color: -color-danger-subtle;    -fx-text-fill: -color-danger-fg; }
+
+/* Deadline urgency pills */
+.pill-green   { -fx-background-color: -color-success-subtle;  -fx-text-fill: -color-success-fg; }
+.pill-amber   { -fx-background-color: -color-warning-subtle; -fx-text-fill: -color-warning-fg; }
+.pill-red     { -fx-background-color: -color-danger-subtle;   -fx-text-fill: -color-danger-fg; }
+.pill-expired { -fx-background-color: -color-neutral-subtle;  -fx-text-fill: -color-fg-muted; }
+
+/* Match tier badges */
+.match-prime      { -fx-background-color: -color-success-subtle;  -fx-text-fill: -color-success-fg; }
+.match-strong     { -fx-background-color: -color-accent-subtle;   -fx-text-fill: -color-accent-fg; }
+.match-stretch    { -fx-background-color: -color-warning-subtle; -fx-text-fill: -color-warning-fg; }
+.match-ineligible { -fx-background-color: -color-neutral-subtle;  -fx-text-fill: -color-fg-muted; }
+
+/* ---------------- Auth screens ---------------- */
+
+.auth-card {
+    -fx-background-color: -color-bg-overlay;
+    -fx-border-color: -color-border-muted;
+    -fx-border-radius: 12;
+    -fx-background-radius: 12;
+    -fx-padding: 28;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.08), 16, 0, 0, 3);
+}
+
+.field-label {
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-fg-muted;
+}
+
+.error-label {
+    -fx-text-fill: -color-danger-fg;
+    -fx-font-size: 12px;
+}
+
+.demo-hint {
+    -fx-font-size: 11px;
+    -fx-text-fill: -color-fg-subtle;
+}
+
+.primary-button {
+    -fx-background-color: -color-accent-emphasis;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-background-radius: 6;
+    -fx-padding: 10 16;
+    -fx-cursor: hand;
+}
+
+.primary-button:hover {
+    -fx-background-color: -color-accent-fg;
+}
+
+/* ---------------- Wizard ---------------- */
+
+.wizard-scroll, .wizard-scroll > .viewport {
+    -fx-background-color: transparent;
+}
+
+.wizard-body {
+    -fx-padding: 24;
+    -fx-spacing: 14;
+}
+
+.step-chip {
+    -fx-background-color: -color-neutral-subtle;
+    -fx-background-radius: 999;
+    -fx-padding: 6 14;
+    -fx-font-size: 12px;
+    -fx-text-fill: -color-fg-muted;
+    -fx-font-weight: bold;
+}
+
+.step-chip.active {
+    -fx-background-color: -color-accent-subtle;
+    -fx-text-fill: -color-accent-fg;
+}
+
+.step-chip.done {
+    -fx-text-fill: -color-success-fg;
+}
+
+.step-pane {
+    -fx-spacing: 12;
+    -fx-background-color: -color-bg-subtle;
+    -fx-background-radius: 12;
+    -fx-padding: 20;
+}
+
+.step-heading {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-fg-default;
+}
+
+.tag-check, .doc-check {
+    -fx-font-size: 13px;
+    -fx-text-fill: -color-fg-default;
+}
+
+.ghost-button {
+    -fx-background-color: transparent;
+    -fx-border-color: -color-border-default;
+    -fx-background-radius: 6;
+    -fx-border-radius: 6;
+    -fx-padding: 6 12;
+    -fx-font-size: 12px;
+    -fx-cursor: hand;
+}
+
+.ghost-button:hover {
+    -fx-background-color: -color-neutral-subtle;
+}
+
+.ghost-button:disabled {
+    -fx-opacity: 0.7;
+}
+
+.compare-check {
+    -fx-font-size: 12px;
+    -fx-text-fill: -color-fg-muted;
+}
+
+/* ---------------- Kanban tracker ---------------- */
+
+.kanban-scroll, .kanban-scroll > .viewport {
+    -fx-background-color: transparent;
+}
+
+.kanban-row {
+    -fx-padding: 12 24 20 24;
+    -fx-spacing: 12;
+}
+
+.kanban-column {
+    -fx-background-color: -color-bg-subtle;
+    -fx-background-radius: 10;
+    -fx-padding: 10;
+    -fx-pref-width: 256;
+    -fx-min-width: 256;
+    -fx-max-width: 256;
+    -fx-spacing: 8;
+}
+
+.kanban-title {
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-fg-muted;
+}
+
+.kanban-count {
+    -fx-background-color: -color-neutral-muted;
+    -fx-background-radius: 999;
+    -fx-padding: 2 8;
+    -fx-font-size: 11px;
+    -fx-text-fill: -color-fg-default;
+    -fx-font-weight: bold;
+}
+
+.kanban-empty {
+    -fx-font-size: 11px;
+    -fx-text-fill: -color-fg-subtle;
+    -fx-padding: 8 4;
+}
+
+.tracker-card {
+    -fx-background-color: -color-bg-overlay;
+    -fx-border-color: -color-border-muted;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-padding: 10;
+}
+
+.tracker-card:hover {
+    -fx-border-color: -color-accent-muted;
+}
+
+.advance-button {
+    -fx-font-size: 11px;
+    -fx-padding: 4 10;
+}
+
+/* ---------------- Admin ---------------- */
+
+.admin-root {
+    -fx-padding: 20 24;
+    -fx-spacing: 10;
+}
+
+.form-section {
+    -fx-background-color: -color-bg-subtle;
+    -fx-background-radius: 12;
+    -fx-padding: 16;
+    -fx-spacing: 10;
+}
+
+.status-active {
+    -fx-background-color: -color-success-subtle;
+    -fx-text-fill: -color-success-fg;
+    -fx-background-radius: 999;
+    -fx-padding: 3 10;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+}
+
+.status-inactive {
+    -fx-background-color: -color-neutral-subtle;
+    -fx-text-fill: -color-fg-muted;
+    -fx-background-radius: 999;
+    -fx-padding: 3 10;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+}
+
+.danger-button {
+    -fx-background-color: -color-danger-emphasis;
+    -fx-text-fill: white;
+    -fx-background-radius: 6;
+    -fx-padding: 8 16;
+    -fx-cursor: hand;
+}
+
+.danger-button:hover {
+    -fx-background-color: -color-danger-fg;
+}
+
+/* ---------------- Comparison modal ---------------- */
+
+.compare-grid {
+    -fx-padding: 8 4;
+}
+
+.compare-attr {
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-fg-muted;
+    -fx-font-size: 12px;
+}
+
+.compare-title {
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-accent-fg;
+    -fx-font-size: 13px;
+}
+
+.compare-value {
+    -fx-font-size: 12px;
+    -fx-text-fill: -color-fg-default;
+}

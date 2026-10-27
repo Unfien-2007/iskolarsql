@@ -1,0 +1,12 @@
+target/
+cp.txt
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+.idea/
+*.iml
+.vscode/
+.settings/
+.classpath
+.project

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.iskolar.controller.DiscoveryController">
+    <top>
+        <VBox spacing="10" styleClass="discovery-header">
+            <Label text="Discover Scholarships" styleClass="view-title"/>
+            <Label text="Browse active scholarships and filter by program, year level, provider, or location."
+                   styleClass="view-subtitle" wrapText="true"/>
+            <HBox spacing="10" alignment="CENTER_LEFT" styleClass="filter-bar">
+                <ComboBox fx:id="programCombo" promptText="Any degree program" prefWidth="240"/>
+                <ComboBox fx:id="yearCombo" promptText="Any year" prefWidth="110"/>
+                <ComboBox fx:id="providerCombo" promptText="Any provider type" prefWidth="200"/>
+                <TextField fx:id="provinceField" promptText="Location (province)" prefWidth="170"/>
+                <Button fx:id="resetButton" text="Reset"/>
+            </HBox>
+            <HBox fx:id="guestBanner" spacing="12" alignment="CENTER_LEFT" styleClass="guest-banner">
+                <Label fx:id="bannerLabel" wrapText="true"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Button fx:id="bannerButton" text="Log in"/>
+            </HBox>
+            <Label fx:id="resultLabel" styleClass="result-label"/>
+            <HBox spacing="10" alignment="CENTER_LEFT">
+                <Label fx:id="selectionLabel" styleClass="result-label" visible="false" managed="false"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Button fx:id="compareButton" text="Compare (0)" disable="true"/>
+            </HBox>
+        </VBox>
+    </top>
+    <center>
+        <ScrollPane fx:id="scrollPane" fitToWidth="true" hbarPolicy="NEVER" styleClass="card-scroll">
+            <FlowPane fx:id="cardPane" hgap="16" vgap="16" styleClass="card-flow"/>
+        </ScrollPane>
+    </center>
+</BorderPane>

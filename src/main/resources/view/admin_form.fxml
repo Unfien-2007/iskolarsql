@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<ScrollPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fitToWidth="true" styleClass="wizard-scroll"
+            fx:controller="com.iskolar.controller.AdminScholarshipFormController">
+    <VBox alignment="TOP_CENTER" maxWidth="880" spacing="14" styleClass="wizard-body">
+        <Label fx:id="formTitle" text="Scholarship" styleClass="view-title"/>
+
+        <!-- Basic information -->
+        <VBox spacing="10" styleClass="form-section">
+            <Label text="Basic information" styleClass="step-heading"/>
+            <GridPane hgap="12" vgap="10">
+                <columnConstraints>
+                    <ColumnConstraints minWidth="130"/>
+                    <ColumnConstraints hgrow="ALWAYS"/>
+                    <ColumnConstraints minWidth="130"/>
+                    <ColumnConstraints hgrow="ALWAYS"/>
+                </columnConstraints>
+                <Label text="Title" styleClass="field-label" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                <TextField fx:id="titleField" promptText="DOST-SEI S&T Undergraduate Scholarship"
+                           GridPane.rowIndex="0" GridPane.columnIndex="1" GridPane.columnSpan="3"/>
+                <Label text="Provider name" styleClass="field-label" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                <TextField fx:id="providerField" promptText="Department of Science and Technology — SEI"
+                           GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+                <Label text="Provider type" styleClass="field-label" GridPane.rowIndex="1" GridPane.columnIndex="2"/>
+                <ComboBox fx:id="providerTypeCombo" promptText="Select type"
+                          GridPane.rowIndex="1" GridPane.columnIndex="3"/>
+                <Label text="Description" styleClass="field-label" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                <TextArea fx:id="descriptionArea" prefRowCount="3" wrapText="true" promptText="What does this scholarship cover?"
+                          GridPane.rowIndex="2" GridPane.columnIndex="1" GridPane.columnSpan="3"/>
+                <Label text="Tuition benefit" styleClass="field-label" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+                <TextField fx:id="tuitionField" promptText="FULL TUITION + book allowance"
+                           GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+                <Label text="Monthly stipend (PHP)" styleClass="field-label"
+                       GridPane.rowIndex="3" GridPane.columnIndex="2"/>
+                <TextField fx:id="stipendField" promptText="8000" GridPane.rowIndex="3" GridPane.columnIndex="3"/>
+                <Label text="Return service (years)" styleClass="field-label"
+                       GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+                <TextField fx:id="returnServiceField" promptText="0" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+                <Label text="Application URL" styleClass="field-label" GridPane.rowIndex="4" GridPane.columnIndex="2"/>
+                <TextField fx:id="urlField" promptText="https://…" GridPane.rowIndex="4" GridPane.columnIndex="3"/>
+                <Label text="Opens" styleClass="field-label" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
+                <DatePicker fx:id="openDatePicker" GridPane.rowIndex="5" GridPane.columnIndex="1"/>
+                <Label text="Deadline" styleClass="field-label" GridPane.rowIndex="5" GridPane.columnIndex="2"/>
+                <DatePicker fx:id="deadlinePicker" GridPane.rowIndex="5" GridPane.columnIndex="3"/>
+                <CheckBox fx:id="activeCheck" text="Active (visible to students)"
+                          GridPane.rowIndex="6" GridPane.columnIndex="1" GridPane.columnSpan="2"/>
+            </GridPane>
+        </VBox>
+
+        <!-- Eligibility criteria -->
+        <VBox spacing="10" styleClass="form-section">
+            <Label text="Eligibility criteria" styleClass="step-heading"/>
+            <Label text="Leave GWA or income empty to make them unrestricted. Empty income = merit-only."
+                   styleClass="view-subtitle" wrapText="true"/>
+            <GridPane hgap="12" vgap="10">
+                <columnConstraints>
+                    <ColumnConstraints minWidth="130"/>
+                    <ColumnConstraints hgrow="ALWAYS"/>
+                    <ColumnConstraints minWidth="130"/>
+                    <ColumnConstraints hgrow="ALWAYS"/>
+                </columnConstraints>
+                <Label text="Minimum GWA (%)" styleClass="field-label" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                <TextField fx:id="minGwaField" promptText="83" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+                <Label text="Max annual income (PHP)" styleClass="field-label"
+                       GridPane.rowIndex="0" GridPane.columnIndex="2"/>
+                <TextField fx:id="maxIncomeField" promptText="500000 (empty = merit-only)"
+                           GridPane.rowIndex="0" GridPane.columnIndex="3"/>
+                <Label text="Allowed school type" styleClass="field-label"
+                       GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                <ComboBox fx:id="schoolTypeCombo" promptText="Public + Private"
+                          GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+                <CheckBox fx:id="allowFailingCheck" text="Allow students with failing grades"
+                          GridPane.rowIndex="1" GridPane.columnIndex="2" GridPane.columnSpan="2"/>
+                <Label text="Required province" styleClass="field-label" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                <TextField fx:id="requiredProvinceField" promptText="CEBU (empty = nationwide)"
+                           GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+                <Label text="Required city" styleClass="field-label" GridPane.rowIndex="2" GridPane.columnIndex="2"/>
+                <TextField fx:id="requiredCityField" promptText="CEBU CITY" GridPane.rowIndex="2" GridPane.columnIndex="3"/>
+            </GridPane>
+        </VBox>
+
+        <!-- Programs & years -->
+        <VBox spacing="10" styleClass="form-section">
+            <Label text="Allowed degree programs &amp; year levels" styleClass="step-heading"/>
+            <Label text="No selected programs = open to ALL programs; no selected years = open to ALL year levels."
+                   styleClass="view-subtitle" wrapText="true"/>
+            <ListView fx:id="programsList" prefHeight="170"/>
+            <HBox spacing="14">
+                <CheckBox fx:id="year1" text="Year 1"/>
+                <CheckBox fx:id="year2" text="Year 2"/>
+                <CheckBox fx:id="year3" text="Year 3"/>
+                <CheckBox fx:id="year4" text="Year 4"/>
+                <CheckBox fx:id="year5" text="Year 5"/>
+            </HBox>
+        </VBox>
+
+        <!-- Tags -->
+        <VBox spacing="10" styleClass="form-section">
+            <Label text="Demographic tags" styleClass="step-heading"/>
+            <Label text="Mandatory tags are hard gates; preferred tags boost the match score."
+                   styleClass="view-subtitle" wrapText="true"/>
+            <HBox spacing="14">
+                <VBox spacing="6" HBox.hgrow="ALWAYS">
+                    <Label text="Mandatory (hard gate)" styleClass="field-label"/>
+                    <ListView fx:id="mandatoryTagsList" prefHeight="140"/>
+                </VBox>
+                <VBox spacing="6" HBox.hgrow="ALWAYS">
+                    <Label text="Preferred (bonus)" styleClass="field-label"/>
+                    <ListView fx:id="preferredTagsList" prefHeight="140"/>
+                </VBox>
+            </HBox>
+        </VBox>
+
+        <!-- Documents -->
+        <VBox spacing="10" styleClass="form-section">
+            <Label text="Required documents" styleClass="step-heading"/>
+            <ListView fx:id="documentsList" prefHeight="140"/>
+        </VBox>
+
+        <Label fx:id="errorLabel" styleClass="error-label" visible="false" managed="false" wrapText="true"
+               maxWidth="880"/>
+
+        <HBox maxWidth="880" spacing="10" alignment="CENTER_LEFT">
+            <Button fx:id="cancelButton" text="Cancel"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button fx:id="saveButton" text="Save Scholarship" styleClass="primary-button" defaultButton="true"/>
+        </HBox>
+    </VBox>
+</ScrollPane>

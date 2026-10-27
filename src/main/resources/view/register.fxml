@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Hyperlink?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<StackPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="com.iskolar.controller.RegisterController">
+    <VBox maxWidth="380" spacing="8" styleClass="auth-card">
+        <Label text="Create your account" styleClass="view-title"/>
+        <Label text="Register as a student — you will be logged in right away."
+               styleClass="view-subtitle" wrapText="true"/>
+        <Label text="Email" styleClass="field-label"/>
+        <TextField fx:id="emailField" promptText="you@school.edu.ph"/>
+        <Label text="Password" styleClass="field-label"/>
+        <PasswordField fx:id="passwordField" promptText="At least 8 characters"/>
+        <Label text="Confirm password" styleClass="field-label"/>
+        <PasswordField fx:id="confirmField" promptText="Repeat your password"/>
+        <Label fx:id="errorLabel" styleClass="error-label" visible="false" managed="false" wrapText="true"/>
+        <Button fx:id="registerButton" text="Create account" defaultButton="true" maxWidth="Infinity"
+                styleClass="primary-button"/>
+        <Hyperlink fx:id="loginLink" text="Already have an account? Log in"/>
+    </VBox>
+</StackPane>

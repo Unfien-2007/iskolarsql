@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.iskolar.controller.WizardController">
+    <center>
+        <StackPane>
+            <!-- Login gate -->
+            <VBox fx:id="gatePane" alignment="CENTER" spacing="12" maxWidth="420" styleClass="auth-card">
+                <Label text="Profile Wizard" styleClass="view-title"/>
+                <Label fx:id="gateLabel" text="Log in to build your profile and unlock personalized match scores."
+                       styleClass="view-subtitle" wrapText="true" textAlignment="CENTER"/>
+                <Button fx:id="gateButton" text="Log in" styleClass="primary-button"/>
+            </VBox>
+
+            <!-- Wizard -->
+            <ScrollPane fitToWidth="true" styleClass="wizard-scroll">
+                <VBox alignment="TOP_CENTER" maxWidth="840" spacing="14" styleClass="wizard-body">
+                    <Label text="Profile Wizard" styleClass="view-title"/>
+                    <Label text="Four quick steps — your answers power the matching engine."
+                           styleClass="view-subtitle" wrapText="true" textAlignment="CENTER"/>
+
+                    <HBox alignment="CENTER" spacing="10">
+                        <Label fx:id="chip1" text="1 · Academic" styleClass="step-chip"/>
+                        <Label fx:id="chip2" text="2 · Financial" styleClass="step-chip"/>
+                        <Label fx:id="chip3" text="3 · Location &amp; Tags" styleClass="step-chip"/>
+                        <Label fx:id="chip4" text="4 · Documents" styleClass="step-chip"/>
+                    </HBox>
+
+                    <StackPane fx:id="stepStack" maxWidth="800">
+                        <!-- Step 1: about you + academic -->
+                        <VBox fx:id="step1Pane" spacing="12" styleClass="step-pane">
+                            <Label text="About you &amp; your academics" styleClass="step-heading"/>
+                            <GridPane hgap="12" vgap="10">
+                                <columnConstraints>
+                                    <ColumnConstraints minWidth="120"/>
+                                    <ColumnConstraints hgrow="ALWAYS"/>
+                                    <ColumnConstraints minWidth="120"/>
+                                    <ColumnConstraints hgrow="ALWAYS"/>
+                                </columnConstraints>
+                                <Label text="First name" styleClass="field-label" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                                <TextField fx:id="firstNameField" promptText="Maria" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+                                <Label text="Last name" styleClass="field-label" GridPane.rowIndex="0" GridPane.columnIndex="2"/>
+                                <TextField fx:id="lastNameField" promptText="Santos" GridPane.rowIndex="0" GridPane.columnIndex="3"/>
+
+                                <Label text="Sex" styleClass="field-label" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                                <ComboBox fx:id="sexCombo" promptText="Select" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+                                <Label text="Birthdate" styleClass="field-label" GridPane.rowIndex="1" GridPane.columnIndex="2"/>
+                                <DatePicker fx:id="birthdatePicker" GridPane.rowIndex="1" GridPane.columnIndex="3"/>
+
+                                <Label text="School name" styleClass="field-label" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                                <TextField fx:id="schoolNameField" promptText="Santa Rosa Science and Technology High School"
+                                           GridPane.rowIndex="2" GridPane.columnIndex="1" GridPane.columnSpan="3"/>
+
+                                <Label text="School type" styleClass="field-label" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+                                <ComboBox fx:id="schoolTypeCombo" promptText="Public / Private" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+                                <Label text="Year level" styleClass="field-label" GridPane.rowIndex="3" GridPane.columnIndex="2"/>
+                                <ComboBox fx:id="yearCombo" promptText="1 - 5" GridPane.rowIndex="3" GridPane.columnIndex="3"/>
+
+                                <Label text="Degree program" styleClass="field-label" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+                                <ComboBox fx:id="programCombo" promptText="Select your program"
+                                          GridPane.rowIndex="4" GridPane.columnIndex="1" GridPane.columnSpan="3"/>
+
+                                <Label text="GWA" styleClass="field-label" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
+                                <TextField fx:id="gwaField" promptText="1.25 or 93.75" GridPane.rowIndex="5" GridPane.columnIndex="1"/>
+                                <ComboBox fx:id="gwaModeCombo" GridPane.rowIndex="5" GridPane.columnIndex="2" GridPane.columnSpan="2"/>
+
+                                <CheckBox fx:id="failingCheck" text="I have a failing grade in my record"
+                                          GridPane.rowIndex="6" GridPane.columnIndex="1" GridPane.columnSpan="3"/>
+                            </GridPane>
+                        </VBox>
+
+                        <!-- Step 2: financial -->
+                        <VBox fx:id="step2Pane" spacing="12" styleClass="step-pane">
+                            <Label text="Your household finances" styleClass="step-heading"/>
+                            <Label text="Income-based scholarships rank applicants by how far below the income cap they are."
+                                   styleClass="view-subtitle" wrapText="true"/>
+                            <GridPane hgap="12" vgap="10">
+                                <columnConstraints>
+                                    <ColumnConstraints minWidth="120"/>
+                                    <ColumnConstraints hgrow="ALWAYS"/>
+                                    <ColumnConstraints minWidth="120"/>
+                                    <ColumnConstraints hgrow="ALWAYS"/>
+                                </columnConstraints>
+                                <Label text="Annual gross family income (PHP)" styleClass="field-label"
+                                       GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                                <TextField fx:id="incomeField" promptText="240000" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+                                <Label text="Household size" styleClass="field-label"
+                                       GridPane.rowIndex="0" GridPane.columnIndex="2"/>
+                                <TextField fx:id="householdField" promptText="5" GridPane.rowIndex="0" GridPane.columnIndex="3"/>
+                            </GridPane>
+                        </VBox>
+
+                        <!-- Step 3: location + tags -->
+                        <VBox fx:id="step3Pane" spacing="12" styleClass="step-pane">
+                            <Label text="Where you live &amp; special demographics" styleClass="step-heading"/>
+                            <GridPane hgap="12" vgap="10">
+                                <columnConstraints>
+                                    <ColumnConstraints minWidth="120"/>
+                                    <ColumnConstraints hgrow="ALWAYS"/>
+                                    <ColumnConstraints minWidth="120"/>
+                                    <ColumnConstraints hgrow="ALWAYS"/>
+                                </columnConstraints>
+                                <Label text="Province" styleClass="field-label" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                                <TextField fx:id="provinceField" promptText="LAGUNA" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+                                <Label text="City / Municipality" styleClass="field-label"
+                                       GridPane.rowIndex="0" GridPane.columnIndex="2"/>
+                                <TextField fx:id="cityField" promptText="SANTA ROSA" GridPane.rowIndex="0" GridPane.columnIndex="3"/>
+                            </GridPane>
+                            <Label text="Demographic tags (check all that apply)" styleClass="field-label"/>
+                            <VBox fx:id="tagsBox" spacing="4"/>
+                        </VBox>
+
+                        <!-- Step 4: documents -->
+                        <VBox fx:id="step4Pane" spacing="12" styleClass="step-pane">
+                            <Label text="Document Readiness Vault" styleClass="step-heading"/>
+                            <Label text="Check every document you already have. Missing documents lower your match score."
+                                   styleClass="view-subtitle" wrapText="true"/>
+                            <VBox fx:id="docsBox" spacing="4"/>
+                        </VBox>
+                    </StackPane>
+
+                    <Label fx:id="errorLabel" styleClass="error-label" visible="false" managed="false" wrapText="true"
+                           maxWidth="800"/>
+
+                    <HBox maxWidth="800" spacing="10" alignment="CENTER_LEFT">
+                        <Button fx:id="backButton" text="Back" disable="true"/>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Button fx:id="nextButton" text="Next" styleClass="primary-button" defaultButton="true"/>
+                    </HBox>
+                </VBox>
+            </ScrollPane>
+        </StackPane>
+    </center>
+</BorderPane>

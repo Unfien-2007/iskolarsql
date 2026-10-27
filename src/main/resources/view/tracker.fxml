@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.iskolar.controller.TrackerController">
+    <center>
+        <StackPane>
+            <!-- Board -->
+            <VBox spacing="10">
+                <VBox spacing="6" styleClass="discovery-header">
+                    <Label text="My Application Tracker" styleClass="view-title"/>
+                    <Label text="Move your applications through the pipeline — every card remembers where you left off."
+                           styleClass="view-subtitle" wrapText="true"/>
+                </VBox>
+                <ScrollPane fitToHeight="true" hbarPolicy="AS_NEEDED" styleClass="kanban-scroll">
+                    <HBox fx:id="boardRow" styleClass="kanban-row"/>
+                </ScrollPane>
+            </VBox>
+
+            <!-- Gate: no session or no profile -->
+            <VBox fx:id="gatePane" alignment="CENTER" spacing="12" maxWidth="420" styleClass="auth-card">
+                <Label text="Application Tracker" styleClass="view-title"/>
+                <Label fx:id="gateLabel" text="Log in to track your scholarship applications."
+                       styleClass="view-subtitle" wrapText="true" textAlignment="CENTER"/>
+                <Button fx:id="gateButton" text="Log in" styleClass="primary-button"/>
+            </VBox>
+        </StackPane>
+    </center>
+</BorderPane>
