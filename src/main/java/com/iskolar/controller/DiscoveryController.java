@@ -15,13 +15,14 @@ import com.iskolar.view.ComparisonDialog;
 import com.iskolar.view.ScholarshipDetailsDialog;
 import javafx.animation.PauseTransition;
 import javafx.fxml.FXML;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
-import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Region;
 import javafx.util.Duration;
 import javafx.util.StringConverter;
 
@@ -41,6 +42,14 @@ import java.util.stream.Collectors;
 public class DiscoveryController {
 
     private static final int MAX_COMPARE = 3;
+    /** Matches hgap in discovery.fxml. */
+    private static final double CARD_HGAP = 16;
+    /** Matches prefWidth in scholarship_card.fxml; cards never shrink below this. */
+    private static final double CARD_MIN_WIDTH = 340;
+    /** card-flow CSS padding: 24px left + 24px right. */
+    private static final double CARD_FLOW_H_PADDING = 48;
+    /** Small slack so pixel-snapped card widths never overflow a row and wrap early. */
+    private static final double CARD_WIDTH_SLACK = 4;
 
     @FXML
     private ComboBox<DegreeProgram> programCombo;
@@ -66,8 +75,6 @@ public class DiscoveryController {
     private Button bannerButton;
     @FXML
     private FlowPane cardPane;
-    @FXML
-    private ScrollPane scrollPane;
 
     private final PauseTransition provinceDebounce = new PauseTransition(Duration.millis(350));
     private final Set<Long> compareSelection = new LinkedHashSet<>();
@@ -101,8 +108,8 @@ public class DiscoveryController {
 
         compareButton.setOnAction(e -> openComparison());
 
-        // responsive wrapping: cards reflow with the viewport width
-        cardPane.prefWrapLengthProperty().bind(scrollPane.widthProperty().subtract(28));
+        // responsive grid: cards stretch to fill every row edge-to-edge
+        cardPane.widthProperty().addListener((obs, oldVal, newVal) -> applyCardWidths());
 
         refresh();
     }
@@ -145,10 +152,30 @@ public class DiscoveryController {
             cardPane.getChildren().add(controller.getRoot());
             cardControllers.put(scholarship.scholarshipId(), controller);
         }
+        applyCardWidths();
         resultLabel.setText(scholarships.size()
                 + (scholarships.size() == 1 ? " scholarship found" : " scholarships found"));
         updateCompareState();
         updateBanner();
+    }
+
+    /**
+     * Stretches every card so each row of the flow pane spans the full
+     * available width — no blank strip along the right edge of the grid.
+     */
+    private void applyCardWidths() {
+        double available = cardPane.getWidth() - CARD_FLOW_H_PADDING;
+        if (available <= CARD_MIN_WIDTH) {
+            return; // viewport still settling; keep natural card width
+        }
+        int columns = (int) Math.max(1,
+                Math.floor((available + CARD_HGAP) / (CARD_MIN_WIDTH + CARD_HGAP)));
+        double cardWidth = (available - (columns - 1) * CARD_HGAP - CARD_WIDTH_SLACK) / columns;
+        for (Node node : cardPane.getChildren()) {
+            if (node instanceof Region region) {
+                region.setPrefWidth(cardWidth);
+            }
+        }
     }
 
     /** Match scores for the logged-in student, keyed by scholarship id (empty for guests). */
