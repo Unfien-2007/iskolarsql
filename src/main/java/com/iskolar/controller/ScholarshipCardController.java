@@ -53,16 +53,19 @@ public class ScholarshipCardController {
     private Scholarship scholarship;
     private Consumer<Scholarship> onBookmark;
     private BiConsumer<Scholarship, Boolean> onCompareToggle;
+    private Consumer<Scholarship> onDetails;
 
     /**
      * Loads one card.
      *
      * @param onBookmark      called when the Save button is pressed
      * @param onCompareToggle called with (scholarship, checked) when the checkbox toggles
+     * @param onDetails       called when the card itself is clicked (buttons/checkbox consume their own clicks)
      */
     public static ScholarshipCardController load(Scholarship scholarship, MatchResult match,
                                                  Consumer<Scholarship> onBookmark,
-                                                 BiConsumer<Scholarship, Boolean> onCompareToggle) {
+                                                 BiConsumer<Scholarship, Boolean> onCompareToggle,
+                                                 Consumer<Scholarship> onDetails) {
         FXMLLoader loader = new FXMLLoader(
                 ScholarshipCardController.class.getResource("/view/scholarship_card.fxml"));
         try {
@@ -74,8 +77,14 @@ public class ScholarshipCardController {
         controller.root = loader.getRoot();
         controller.onBookmark = onBookmark;
         controller.onCompareToggle = onCompareToggle;
+        controller.onDetails = onDetails;
         controller.setScholarship(scholarship);
         controller.setMatch(match);
+        controller.root.setOnMouseClicked(e -> {
+            if (controller.onDetails != null) {
+                controller.onDetails.accept(scholarship);
+            }
+        });
         return controller;
     }
 

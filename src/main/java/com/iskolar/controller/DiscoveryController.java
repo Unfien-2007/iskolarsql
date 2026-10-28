@@ -12,6 +12,7 @@ import com.iskolar.service.ServiceFactory;
 import com.iskolar.util.SessionManager;
 import com.iskolar.util.ViewNavigator;
 import com.iskolar.view.ComparisonDialog;
+import com.iskolar.view.ScholarshipDetailsDialog;
 import javafx.animation.PauseTransition;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -71,6 +72,7 @@ public class DiscoveryController {
     private final PauseTransition provinceDebounce = new PauseTransition(Duration.millis(350));
     private final Set<Long> compareSelection = new LinkedHashSet<>();
     private final Map<Long, ScholarshipCardController> cardControllers = new java.util.HashMap<>();
+    private Map<Long, MatchResult> currentMatches = Map.of();
 
     @FXML
     private void initialize() {
@@ -127,7 +129,7 @@ public class DiscoveryController {
                 provinceField.getText(),
                 providerCombo.getValue());
         List<Scholarship> scholarships = DaoFactory.scholarshipDao().findActiveForDiscovery(filter);
-        Map<Long, MatchResult> matches = loadMatches();
+        currentMatches = loadMatches();
 
         compareSelection.removeIf(id -> scholarships.stream().noneMatch(s -> s.scholarshipId() == id));
 
@@ -136,9 +138,10 @@ public class DiscoveryController {
         for (Scholarship scholarship : scholarships) {
             ScholarshipCardController controller = ScholarshipCardController.load(
                     scholarship,
-                    matches.get(scholarship.scholarshipId()),
+                    currentMatches.get(scholarship.scholarshipId()),
                     this::bookmark,
-                    this::onCompareToggle);
+                    this::onCompareToggle,
+                    this::openDetails);
             cardPane.getChildren().add(controller.getRoot());
             cardControllers.put(scholarship.scholarshipId(), controller);
         }
@@ -163,8 +166,20 @@ public class DiscoveryController {
     }
 
     // ------------------------------------------------------------------
-    // Bookmark + compare
+    // Bookmark + compare + details
     // ------------------------------------------------------------------
+
+    /** Opens the full scholarship details modal (fired by clicking a card). */
+    private void openDetails(Scholarship scholarship) {
+        var bundle = DaoFactory.scholarshipDao()
+                .findEligibilityBundle(scholarship.scholarshipId())
+                .orElse(null);
+        if (bundle == null) {
+            return;
+        }
+        ScholarshipDetailsDialog.show(cardPane.getScene().getWindow(), bundle,
+                currentMatches.get(scholarship.scholarshipId()));
+    }
 
     private void bookmark(Scholarship scholarship) {
         var session = SessionManager.current();

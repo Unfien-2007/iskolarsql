@@ -43,6 +43,8 @@ public final class ShellView {
     public static final double SIDEBAR_COLLAPSED = 68;
 
     private static VBox sidebar;
+    private static HBox topBar;
+    private static Label topBarUser;
     private static Label brandLabel;
     private static Label nameLabel;
     private static Label roleLabel;
@@ -61,9 +63,27 @@ public final class ShellView {
         root.getStyleClass().add("app-root");
         ViewNavigator.init(root);
         root.setLeft(buildSidebar());
+        root.setTop(buildTopBar());
         refreshSessionUi();
         NAV_BUTTONS.get(0).fire(); // land on Discover
         return root;
+    }
+
+    /** Always-visible header bar: who is signed in + a prominent Log out button. */
+    private static HBox buildTopBar() {
+        topBarUser = new Label();
+        topBarUser.getStyleClass().add("topbar-user");
+
+        Button logoutButton = new Button("Log out", FontIcon.of(Feather.LOG_OUT, 16));
+        logoutButton.getStyleClass().addAll("ghost-button", "topbar-logout");
+        logoutButton.setOnAction(e -> handleAuth());
+
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+        topBar = new HBox(12, spacer, topBarUser, logoutButton);
+        topBar.getStyleClass().add("topbar");
+        topBar.setAlignment(Pos.CENTER_RIGHT);
+        return topBar;
     }
 
     // ------------------------------------------------------------------
@@ -197,6 +217,12 @@ public final class ShellView {
     public static void refreshSessionUi() {
         var session = SessionManager.current();
         boolean loggedIn = session.isPresent();
+
+        topBar.setVisible(loggedIn);
+        topBar.setManaged(loggedIn);
+        if (loggedIn) {
+            topBarUser.setText(session.get().email() + "  ·  " + session.get().role().name());
+        }
 
         authButton.setText(collapsed ? "" : (loggedIn ? "Log out" : "Log in"));
         authButton.setGraphic(FontIcon.of(loggedIn ? Feather.LOG_OUT : Feather.LOG_IN, 18));

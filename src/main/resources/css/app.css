@@ -439,3 +439,98 @@
     -fx-font-size: 12px;
     -fx-text-fill: -color-fg-default;
 }
+
+/* ---------------- Top bar ---------------- */
+
+.topbar {
+    -fx-background-color: -color-bg-default;
+    -fx-border-color: transparent transparent -color-border-muted transparent;
+    -fx-border-width: 0 0 1 0;
+    -fx-padding: 8 24;
+}
+
+.topbar-user {
+    -fx-font-size: 13px;
+    -fx-text-fill: -color-fg-muted;
+}
+
+.topbar-logout {
+    -fx-padding: 5 14;
+}
+
+/* ---------------- Scholarship details modal ---------------- */
+
+.details-scroll, .details-scroll > .viewport {
+    -fx-background-color: transparent;
+}
+
+.details-root {
+    -fx-padding: 6 4;
+}
+
+.details-title {
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-fg-default;
+}
+
+.details-provider {
+    -fx-font-size: 13px;
+    -fx-text-fill: -color-fg-muted;
+}
+
+.details-section {
+    -fx-padding: 4 0 2 0;
+}
+
+.details-section-title {
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-accent-fg;
+}
+
+.details-attr {
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-fg-muted;
+    -fx-min-width: 170;
+}
+
+.details-value {
+    -fx-font-size: 12px;
+    -fx-text-fill: -color-fg-default;
+}
+
+.details-desc {
+    -fx-font-size: 12px;
+    -fx-text-fill: -color-fg-default;
+}
+
+.details-note {
+    -fx-font-size: 12px;
+    -fx-font-style: italic;
+    -fx-text-fill: -color-fg-subtle;
+}
+
+.details-warning {
+    -fx-font-size: 12px;
+    -fx-text-fill: -color-danger-fg;
+}
+
+.details-link {
+    -fx-font-size: 12px;
+}
+
+/* Clickable-card affordances: whole card opens the details modal */
+
+.scholarship-card:hover .card-title {
+    -fx-underline: true;
+}
+
+.tracker-card:hover {
+    -fx-cursor: hand;
+}
+
+.tracker-card:hover .card-title {
+    -fx-underline: true;
+}

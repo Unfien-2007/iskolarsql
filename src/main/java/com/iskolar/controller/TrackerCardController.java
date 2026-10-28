@@ -47,9 +47,11 @@ public class TrackerCardController {
      *
      * @param onAdvance called with the target status when a forward button is pressed
      * @param onRemove  called when the card is removed
+     * @param onDetails called when the card itself is clicked (buttons consume their own clicks)
      */
     public static Node load(ApplicationCard card, MatchResult match,
-                            Consumer<ApplicationStatus> onAdvance, Runnable onRemove) {
+                            Consumer<ApplicationStatus> onAdvance, Runnable onRemove,
+                            Runnable onDetails) {
         FXMLLoader loader = new FXMLLoader(TrackerCardController.class.getResource("/view/tracker_card.fxml"));
         try {
             loader.load();
@@ -58,7 +60,13 @@ public class TrackerCardController {
         }
         TrackerCardController controller = loader.getController();
         controller.init(card, match, onAdvance, onRemove);
-        return loader.getRoot();
+        Node root = loader.getRoot();
+        root.setOnMouseClicked(e -> {
+            if (onDetails != null) {
+                onDetails.run();
+            }
+        });
+        return root;
     }
 
     private void init(ApplicationCard card, MatchResult match,
