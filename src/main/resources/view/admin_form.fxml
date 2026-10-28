@@ -32,7 +32,7 @@
                     <ColumnConstraints hgrow="ALWAYS"/>
                 </columnConstraints>
                 <Label text="Title" styleClass="field-label" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
-                <TextField fx:id="titleField" promptText="DOST-SEI S&T Undergraduate Scholarship"
+                <TextField fx:id="titleField" promptText="DOST-SEI S&amp;T Undergraduate Scholarship"
                            GridPane.rowIndex="0" GridPane.columnIndex="1" GridPane.columnSpan="3"/>
                 <Label text="Provider name" styleClass="field-label" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
                 <TextField fx:id="providerField" promptText="Department of Science and Technology — SEI"
