@@ -12,6 +12,7 @@ import com.iskolar.model.ProviderType;
 import com.iskolar.model.Scholarship;
 import com.iskolar.model.ScholarshipCriteria;
 import com.iskolar.util.GwaConverter;
+import com.iskolar.util.ThemeManager;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Alert;
@@ -64,6 +65,10 @@ public final class ScholarshipDetailsDialog {
         dialog.getDialogPane().getStylesheets().add(Objects.requireNonNull(
                 ScholarshipDetailsDialog.class.getResource("/css/app.css"),
                 "css/app.css missing").toExternalForm());
+        dialog.getDialogPane().getStyleClass().add("app-root");
+        if (ThemeManager.isDark()) {
+            dialog.getDialogPane().getStyleClass().add("dark");
+        }
 
         VBox content = new VBox(10);
         content.getStyleClass().add("details-root");

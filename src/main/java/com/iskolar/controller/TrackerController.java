@@ -7,6 +7,7 @@ import com.iskolar.model.ApplicationStatus;
 import com.iskolar.service.ServiceFactory;
 import com.iskolar.util.SessionManager;
 import com.iskolar.util.ViewNavigator;
+import com.iskolar.view.JourneyRail;
 import com.iskolar.view.ScholarshipDetailsDialog;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -74,6 +75,8 @@ public class TrackerController {
         for (ApplicationStatus status : ApplicationStatus.values()) {
             boardRow.getChildren().add(buildColumn(status, cards, matches));
         }
+        JourneyRail.setAwarded(cards.stream()
+                .anyMatch(c -> c.application().status() == ApplicationStatus.AWARDED));
     }
 
     private VBox buildColumn(ApplicationStatus status, List<ApplicationCard> cards,

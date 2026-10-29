@@ -2,6 +2,7 @@ package com.iskolar.view;
 
 import com.iskolar.dto.ComparisonRow;
 import com.iskolar.util.GwaConverter;
+import com.iskolar.util.ThemeManager;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
@@ -33,6 +34,10 @@ public final class ComparisonDialog {
         dialog.getDialogPane().getStylesheets().add(Objects.requireNonNull(
                 ComparisonDialog.class.getResource("/css/app.css"),
                 "css/app.css missing").toExternalForm());
+        dialog.getDialogPane().getStyleClass().add("app-root");
+        if (ThemeManager.isDark()) {
+            dialog.getDialogPane().getStyleClass().add("dark");
+        }
 
         GridPane grid = new GridPane();
         grid.getStyleClass().add("compare-grid");

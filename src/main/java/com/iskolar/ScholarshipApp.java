@@ -1,6 +1,7 @@
 package com.iskolar;
 
 import com.iskolar.config.DatabaseConfig;
+import com.iskolar.util.Fonts;
 import com.iskolar.util.ThemeManager;
 import com.iskolar.view.ShellView;
 import javafx.application.Application;
@@ -20,6 +21,7 @@ public class ScholarshipApp extends Application {
 
     @Override
     public void start(Stage stage) {
+        Fonts.load();
         ThemeManager.applySavedTheme();
 
         Parent shell = ShellView.build();

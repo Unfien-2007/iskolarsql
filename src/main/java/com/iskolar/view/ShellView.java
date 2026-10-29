@@ -69,9 +69,10 @@ public final class ShellView {
     public static Parent build() {
         BorderPane root = new BorderPane();
         root.getStyleClass().add("app-root");
+        ThemeManager.registerRoot(root);
         ViewNavigator.init(root);
         root.setLeft(buildSidebar());
-        root.setTop(buildTopBar());
+        root.setTop(buildTopArea());
         refreshSessionUi();
         NAV_BUTTONS.get(0).fire(); // land on Discover (loads while the stage is still hidden)
 
@@ -111,6 +112,18 @@ public final class ShellView {
         IntroSplash splash = IntroSplash.attach(stack, sidebar, content, () -> { });
         splash.play();
         return stack;
+    }
+
+    /** Top area: the Path journey rail above the session bar. */
+    private static VBox buildTopArea() {
+        return new VBox(JourneyRail.build(), buildTopBar());
+    }
+
+    /** Fires a sidebar nav button by index (used by the journey rail). */
+    public static void fireNav(int index) {
+        if (index >= 0 && index < NAV_BUTTONS.size()) {
+            NAV_BUTTONS.get(index).fire();
+        }
     }
 
     /** Always-visible header bar: who is signed in + a prominent Log out button. */
@@ -246,6 +259,7 @@ public final class ShellView {
     private static void handleAuth() {
         if (SessionManager.current().isPresent()) {
             SessionManager.logout();
+            JourneyRail.setAwarded(false);
             refreshSessionUi();
             NAV_BUTTONS.get(0).fire();
         } else {

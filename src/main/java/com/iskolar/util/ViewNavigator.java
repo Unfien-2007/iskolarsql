@@ -1,8 +1,12 @@
 package com.iskolar.util;
 
+import com.iskolar.view.JourneyRail;
+import javafx.animation.FadeTransition;
+import javafx.animation.Interpolator;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.layout.BorderPane;
+import javafx.util.Duration;
 
 import java.io.IOException;
 import java.util.function.Consumer;
@@ -54,6 +58,8 @@ public final class ViewNavigator {
                 controllerInit.accept(loader.getController());
             }
             target.setCenter(view);
+            JourneyRail.select(fxmlPath);
+            fadeIn(view);
         } catch (IOException e) {
             throw new IllegalStateException("Failed to load view: " + fxmlPath, e);
         }
@@ -65,5 +71,16 @@ public final class ViewNavigator {
             throw new IllegalStateException("ViewNavigator has not been initialised");
         }
         root.setCenter(view);
+        JourneyRail.select(null);
+        fadeIn(view);
+    }
+
+    /** Soft cross-fade so view switches never hard-cut. */
+    private static void fadeIn(Parent view) {
+        view.setOpacity(0);
+        FadeTransition fade = new FadeTransition(Duration.millis(160), view);
+        fade.setToValue(1);
+        fade.setInterpolator(Interpolator.SPLINE(0.16, 1.0, 0.3, 1.0));
+        fade.play();
     }
 }
