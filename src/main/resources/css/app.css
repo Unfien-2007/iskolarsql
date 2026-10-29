@@ -709,3 +709,26 @@
     -fx-pref-height: 2;
     -fx-max-height: 2;
 }
+
+/* In-app details drawer ------------------------------------------------ */
+.details-drawer-layer {
+    -fx-background-color: transparent;
+}
+.details-drawer {
+    -fx-background-color: -color-bg-overlay;
+    -fx-border-color: -color-border-default;
+    -fx-border-width: 0 0 0 1;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.18), 24, 0, -6, 0);
+}
+.details-drawer-header {
+    -fx-background-color: -color-bg-subtle;
+    -fx-padding: 10 12 10 20;
+    -fx-border-color: transparent transparent -color-border-muted transparent;
+    -fx-border-width: 0 0 1 0;
+    -fx-alignment: center-left;
+}
+.details-drawer-eyebrow {
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-fg-muted;
+}

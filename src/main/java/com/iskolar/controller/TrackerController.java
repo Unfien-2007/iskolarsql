@@ -8,7 +8,7 @@ import com.iskolar.service.ServiceFactory;
 import com.iskolar.util.SessionManager;
 import com.iskolar.util.ViewNavigator;
 import com.iskolar.view.JourneyRail;
-import com.iskolar.view.ScholarshipDetailsDialog;
+import com.iskolar.view.ScholarshipDetailsPanel;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -127,12 +127,12 @@ public class TrackerController {
         return column;
     }
 
-    /** Opens the full scholarship details modal (fired by clicking a card). */
+    /** Opens the full scholarship details in the in-app side panel. */
     private void openDetails(long scholarshipId, Map<Long, MatchResult> matches) {
         var bundle = DaoFactory.scholarshipDao().findEligibilityBundle(scholarshipId).orElse(null);
         if (bundle == null) {
             return;
         }
-        ScholarshipDetailsDialog.show(boardRow.getScene().getWindow(), bundle, matches.get(scholarshipId));
+        ScholarshipDetailsPanel.show(ViewNavigator.centerHost(), bundle, matches.get(scholarshipId));
     }
 }

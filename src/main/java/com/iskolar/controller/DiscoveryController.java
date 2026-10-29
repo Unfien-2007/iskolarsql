@@ -12,7 +12,7 @@ import com.iskolar.service.ServiceFactory;
 import com.iskolar.util.SessionManager;
 import com.iskolar.util.ViewNavigator;
 import com.iskolar.view.ComparisonDialog;
-import com.iskolar.view.ScholarshipDetailsDialog;
+import com.iskolar.view.ScholarshipDetailsPanel;
 import javafx.animation.PauseTransition;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
@@ -196,7 +196,7 @@ public class DiscoveryController {
     // Bookmark + compare + details
     // ------------------------------------------------------------------
 
-    /** Opens the full scholarship details modal (fired by clicking a card). */
+    /** Opens the full scholarship details in the in-app side panel. */
     private void openDetails(Scholarship scholarship) {
         var bundle = DaoFactory.scholarshipDao()
                 .findEligibilityBundle(scholarship.scholarshipId())
@@ -204,7 +204,7 @@ public class DiscoveryController {
         if (bundle == null) {
             return;
         }
-        ScholarshipDetailsDialog.show(cardPane.getScene().getWindow(), bundle,
+        ScholarshipDetailsPanel.show(ViewNavigator.centerHost(), bundle,
                 currentMatches.get(scholarship.scholarshipId()));
     }
 
