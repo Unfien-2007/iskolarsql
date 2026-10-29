@@ -495,24 +495,6 @@
     -fx-text-fill: -color-fg-default;
 }
 
-/* ---------------- Top bar ---------------- */
-
-.topbar {
-    -fx-background-color: -color-bg-default;
-    -fx-border-color: transparent transparent -color-border-muted transparent;
-    -fx-border-width: 0 0 1 0;
-    -fx-padding: 8 24;
-}
-
-.topbar-user {
-    -fx-font-size: 13px;
-    -fx-text-fill: -color-fg-muted;
-}
-
-.topbar-logout {
-    -fx-padding: 5 14;
-}
-
 /* ---------------- Scholarship details modal ---------------- */
 
 .details-scroll, .details-scroll > .viewport {

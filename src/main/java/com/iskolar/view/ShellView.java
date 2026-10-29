@@ -46,13 +46,12 @@ public final class ShellView {
     public static final double SIDEBAR_COLLAPSED = 68;
 
     private static VBox sidebar;
-    private static HBox topBar;
-    private static Label topBarUser;
     private static Label brandLabel;
     private static Label nameLabel;
     private static Label roleLabel;
     private static Button authButton;
     private static Button themeButton;
+    private static Button logoutButton;
     private static ToggleButton adminButton;
     private static final List<ToggleButton> NAV_BUTTONS = new ArrayList<>();
     private static final Map<Labeled, String> NAV_TITLES = new HashMap<>();
@@ -114,9 +113,9 @@ public final class ShellView {
         return stack;
     }
 
-    /** Top area: the Path journey rail above the session bar. */
-    private static VBox buildTopArea() {
-        return new VBox(JourneyRail.build(), buildTopBar());
+    /** Top area: the Path journey rail. */
+    private static HBox buildTopArea() {
+        return JourneyRail.build();
     }
 
     /** Fires a sidebar nav button by index (used by the journey rail). */
@@ -124,23 +123,6 @@ public final class ShellView {
         if (index >= 0 && index < NAV_BUTTONS.size()) {
             NAV_BUTTONS.get(index).fire();
         }
-    }
-
-    /** Always-visible header bar: who is signed in + a prominent Log out button. */
-    private static HBox buildTopBar() {
-        topBarUser = new Label();
-        topBarUser.getStyleClass().add("topbar-user");
-
-        Button logoutButton = new Button("Log out", FontIcon.of(Feather.LOG_OUT, 16));
-        logoutButton.getStyleClass().addAll("ghost-button", "topbar-logout");
-        logoutButton.setOnAction(e -> handleAuth());
-
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-        topBar = new HBox(12, spacer, topBarUser, logoutButton);
-        topBar.getStyleClass().add("topbar");
-        topBar.setAlignment(Pos.CENTER_RIGHT);
-        return topBar;
     }
 
     // ------------------------------------------------------------------
@@ -179,11 +161,14 @@ public final class ShellView {
         navBox.getChildren().addAll(NAV_BUTTONS);
         VBox.setVgrow(navBox, Priority.ALWAYS);
 
-        // footer: session chip + theme toggle + login/logout
+        // footer: session chip + log out + theme toggle + login
         HBox chip = new HBox(10, FontIcon.of(Feather.USER, 18),
                 new VBox(1, nameLabel = styledLabel("user-name"), roleLabel = styledLabel("user-role")));
         chip.setAlignment(Pos.CENTER_LEFT);
         chip.getStyleClass().add("user-chip");
+
+        logoutButton = footerButton("Log out", Feather.LOG_OUT);
+        logoutButton.setOnAction(e -> handleAuth());
 
         themeButton = footerButton("Light", Feather.MOON);
         themeButton.setOnAction(e -> toggleTheme());
@@ -191,7 +176,7 @@ public final class ShellView {
         authButton = footerButton("Log in", Feather.LOG_IN);
         authButton.setOnAction(e -> handleAuth());
 
-        VBox footer = new VBox(8, chip, themeButton, authButton);
+        VBox footer = new VBox(8, chip, logoutButton, themeButton, authButton);
         sidebar.getChildren().addAll(brandRow, new Separator(), navBox, footer);
         return sidebar;
     }
@@ -268,22 +253,22 @@ public final class ShellView {
     }
 
     /**
-     * Re-syncs the session chip, auth button and admin-nav visibility with
-     * the current session + theme. Called after login/logout/theme changes
-     * and whenever the sidebar expands.
+     * Re-syncs the session chip, log out button, login button and admin-nav
+     * visibility with the current session + theme. Called after
+     * login/logout/theme changes and whenever the sidebar expands.
      */
     public static void refreshSessionUi() {
         var session = SessionManager.current();
         boolean loggedIn = session.isPresent();
 
-        topBar.setVisible(loggedIn);
-        topBar.setManaged(loggedIn);
-        if (loggedIn) {
-            topBarUser.setText(session.get().email() + "  ·  " + session.get().role().name());
-        }
+        logoutButton.setVisible(loggedIn);
+        logoutButton.setManaged(loggedIn);
+        logoutButton.setText(collapsed ? "" : "Log out");
 
-        authButton.setText(collapsed ? "" : (loggedIn ? "Log out" : "Log in"));
-        authButton.setGraphic(FontIcon.of(loggedIn ? Feather.LOG_OUT : Feather.LOG_IN, 18));
+        authButton.setVisible(!loggedIn);
+        authButton.setManaged(!loggedIn);
+        authButton.setText(collapsed ? "" : "Log in");
+        authButton.setGraphic(FontIcon.of(Feather.LOG_IN, 18));
 
         boolean admin = loggedIn && session.get().role() == Role.ADMIN;
         adminButton.setVisible(admin);
