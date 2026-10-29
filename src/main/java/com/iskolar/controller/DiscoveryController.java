@@ -11,7 +11,7 @@ import com.iskolar.model.ScholarshipCriteria;
 import com.iskolar.service.ServiceFactory;
 import com.iskolar.util.SessionManager;
 import com.iskolar.util.ViewNavigator;
-import com.iskolar.view.ComparisonDialog;
+import com.iskolar.view.ComparisonPanel;
 import com.iskolar.view.ScholarshipDetailsPanel;
 import javafx.animation.PauseTransition;
 import javafx.fxml.FXML;
@@ -259,7 +259,7 @@ public class DiscoveryController {
                     .orElse(new ScholarshipCriteria(0, id, null, true, null, null, null, null));
             rows.add(new ComparisonRow(scholarship, criteria));
         }
-        ComparisonDialog.show(cardPane.getScene().getWindow(), rows);
+        ComparisonPanel.show(ViewNavigator.centerHost(), rows);
     }
 
     private void updateBanner() {

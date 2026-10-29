@@ -1,5 +1,6 @@
 package com.iskolar.util;
 
+import com.iskolar.view.ComparisonPanel;
 import com.iskolar.view.JourneyRail;
 import com.iskolar.view.ScholarshipDetailsPanel;
 import javafx.animation.FadeTransition;
@@ -69,6 +70,7 @@ public final class ViewNavigator {
                 controllerInit.accept(loader.getController());
             }
             ScholarshipDetailsPanel.dismiss();
+            ComparisonPanel.dismiss();
             StackPane host = new StackPane(view);
             centerHost = host;
             target.setCenter(host);
@@ -85,6 +87,7 @@ public final class ViewNavigator {
             throw new IllegalStateException("ViewNavigator has not been initialised");
         }
         ScholarshipDetailsPanel.dismiss();
+        ComparisonPanel.dismiss();
         StackPane host = new StackPane(view);
         centerHost = host;
         root.setCenter(host);

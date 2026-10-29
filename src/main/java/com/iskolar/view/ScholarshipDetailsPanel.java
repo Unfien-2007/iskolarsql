@@ -27,6 +27,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
@@ -51,10 +52,9 @@ import java.util.stream.Collectors;
  * tags, required documents and the application link.
  *
  * <p>The panel slides in over the center content area (next to the sidebar,
- * under the journey rail) instead of opening a separate window. It is
- * non-blocking: the grid behind stays clickable, so clicking another card
- * swaps the panel's content in place. Close with the header ✕ or {@code Esc};
- * navigation closes it automatically.</p>
+ * under the journey rail) instead of opening a separate window. Close with the
+ * header ✕, {@code Esc}, or by clicking anywhere outside the panel; navigation
+ * closes it automatically.</p>
  */
 public final class ScholarshipDetailsPanel {
 
@@ -64,6 +64,7 @@ public final class ScholarshipDetailsPanel {
     private static StackPane layer;
     private static VBox panel;
     private static EventHandler<KeyEvent> escHandler;
+    private static EventHandler<MouseEvent> outsideHandler;
     private static Scene escScene;
     private static boolean closing;
 
@@ -102,9 +103,9 @@ public final class ScholarshipDetailsPanel {
 
         layer = new StackPane(panel);
         layer.getStyleClass().add("details-drawer-layer");
-        layer.setPickOnBounds(false);
+        layer.setPickOnBounds(true); // catches clicks outside the panel so they close it
         layer.setMinSize(0, 0);
-        layer.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE); // let clicks through to the grid
+        layer.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
         StackPane.setAlignment(panel, Pos.CENTER_RIGHT);
         host.getChildren().add(layer);
 
@@ -118,6 +119,13 @@ public final class ScholarshipDetailsPanel {
                 }
             };
             scene.addEventFilter(KeyEvent.KEY_PRESSED, escHandler);
+            outsideHandler = e -> {
+                boolean inside = e.getTarget() instanceof Node target && isInside(panel, target);
+                if (!inside) {
+                    close();
+                }
+            };
+            scene.addEventFilter(MouseEvent.MOUSE_PRESSED, outsideHandler);
         }
 
         TranslateTransition slide = new TranslateTransition(Duration.millis(280), panel);
@@ -134,7 +142,11 @@ public final class ScholarshipDetailsPanel {
         if (escHandler != null && escScene != null) {
             escScene.removeEventFilter(KeyEvent.KEY_PRESSED, escHandler);
         }
+        if (outsideHandler != null && escScene != null) {
+            escScene.removeEventFilter(MouseEvent.MOUSE_PRESSED, outsideHandler);
+        }
         escHandler = null;
+        outsideHandler = null;
         escScene = null;
         if (layer != null && layer.getParent() instanceof Pane parent) {
             parent.getChildren().remove(layer);
@@ -396,6 +408,15 @@ public final class ScholarshipDetailsPanel {
         label.setWrapText(true);
         label.setMaxWidth(Double.MAX_VALUE);
         return label;
+    }
+
+    private static boolean isInside(Node ancestor, Node node) {
+        for (Node n = node; n != null; n = n.getParent()) {
+            if (n == ancestor) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static void openInBrowser(String url) {
