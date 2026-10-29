@@ -2,7 +2,6 @@ package com.iskolar.view;
 
 import com.iskolar.dto.ComparisonRow;
 import com.iskolar.util.GwaConverter;
-import com.iskolar.util.ThemeManager;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
@@ -28,16 +27,11 @@ public final class ComparisonDialog {
             return;
         }
         Dialog<Void> dialog = new Dialog<>();
-        dialog.initOwner(owner);
         dialog.setTitle("Compare Scholarships");
         dialog.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
         dialog.getDialogPane().getStylesheets().add(Objects.requireNonNull(
                 ComparisonDialog.class.getResource("/css/app.css"),
                 "css/app.css missing").toExternalForm());
-        dialog.getDialogPane().getStyleClass().add("app-root");
-        if (ThemeManager.isDark()) {
-            dialog.getDialogPane().getStyleClass().add("dark");
-        }
 
         GridPane grid = new GridPane();
         grid.getStyleClass().add("compare-grid");
@@ -69,6 +63,7 @@ public final class ComparisonDialog {
 
         dialog.getDialogPane().setContent(grid);
         dialog.getDialogPane().setMinWidth(Math.min(260 + rows.size() * 260, 900));
+        DialogChrome.install(dialog, owner, "Compare scholarships");
         dialog.showAndWait();
     }
 

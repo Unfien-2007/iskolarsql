@@ -12,7 +12,6 @@ import com.iskolar.model.ProviderType;
 import com.iskolar.model.Scholarship;
 import com.iskolar.model.ScholarshipCriteria;
 import com.iskolar.util.GwaConverter;
-import com.iskolar.util.ThemeManager;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Alert;
@@ -59,16 +58,11 @@ public final class ScholarshipDetailsDialog {
         Scholarship scholarship = bundle.scholarship();
 
         Dialog<Void> dialog = new Dialog<>();
-        dialog.initOwner(owner);
         dialog.setTitle(scholarship.title());
         dialog.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
         dialog.getDialogPane().getStylesheets().add(Objects.requireNonNull(
                 ScholarshipDetailsDialog.class.getResource("/css/app.css"),
                 "css/app.css missing").toExternalForm());
-        dialog.getDialogPane().getStyleClass().add("app-root");
-        if (ThemeManager.isDark()) {
-            dialog.getDialogPane().getStyleClass().add("dark");
-        }
 
         VBox content = new VBox(10);
         content.getStyleClass().add("details-root");
@@ -92,10 +86,14 @@ public final class ScholarshipDetailsDialog {
         ScrollPane scroll = new ScrollPane(content);
         scroll.setFitToWidth(true);
         scroll.getStyleClass().add("details-scroll");
-        scroll.setPrefViewportHeight(540);
+        scroll.setPrefViewportHeight(owner == null
+                ? 540
+                : Math.min(540, Math.max(320, owner.getHeight() - 300)));
 
         dialog.getDialogPane().setContent(scroll);
-        dialog.getDialogPane().setMinWidth(560);
+        dialog.getDialogPane().setMinWidth(640);
+        dialog.getDialogPane().setPrefWidth(720);
+        DialogChrome.install(dialog, owner, "Scholarship details");
         dialog.showAndWait();
     }
 
@@ -233,7 +231,7 @@ public final class ScholarshipDetailsDialog {
         link.getStyleClass().add("details-link");
         link.setWrapText(true);
         link.setOnAction(e -> openInBrowser(url));
-        return section("Apply", link);
+        return section("Apply", row("Application link", link));
     }
 
     // ------------------------------------------------------------------
@@ -251,13 +249,21 @@ public final class ScholarshipDetailsDialog {
     }
 
     private static HBox row(String attribute, String value) {
-        Label attr = new Label(attribute);
-        attr.getStyleClass().add("details-attr");
         Label val = new Label(value);
         val.getStyleClass().add("details-value");
         val.setWrapText(true);
-        val.setMaxWidth(Double.MAX_VALUE);
-        HBox box = new HBox(10, attr, val);
+        return row(attribute, (Node) val);
+    }
+
+    private static HBox row(String attribute, Node value) {
+        Label attr = new Label(attribute);
+        attr.getStyleClass().add("details-attr");
+        HBox box = new HBox(10, attr, value);
+        if (value instanceof Region region) {
+            region.setMinWidth(0);
+            region.maxWidthProperty().bind(
+                    box.widthProperty().subtract(attr.widthProperty()).subtract(10));
+        }
         box.getStyleClass().add("details-row");
         box.setAlignment(Pos.CENTER_LEFT);
         return box;
