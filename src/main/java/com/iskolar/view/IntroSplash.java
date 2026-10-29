@@ -25,15 +25,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * In-window opening splash — "Three-Node Path &amp; Handoff" (~2.0s).
+ * In-window opening splash — "Three-Node Path &amp; Handoff" (~3.1s).
  *
  * <p>Layered on top of the {@link ShellView} inside a {@code StackPane}:
  * a Discover → Match → Track node path draws itself, the brand + tagline
  * rise in, then the overlay fades out (scaling up slightly) while the
  * sidebar slides in and the content rises — all on one sharp ease-out
- * spline. Plays once per installation (see
- * {@link com.iskolar.util.Prefs#introSeen()}) and can be skipped at any
- * time by clicking anywhere on the overlay.
+ * spline. Plays on every launch and can be skipped at any time by
+ * clicking anywhere on the overlay.
  */
 final class IntroSplash {
 
@@ -152,31 +151,42 @@ final class IntroSplash {
     // Timeline
     // ------------------------------------------------------------------
 
-    /** Kicks off the full ~2.0s sequence. */
+    /** Timing (ms) — tune these to lengthen or shorten the intro. */
+    private static final int LINE_DRAW_MS = 1000;
+    private static final int NODE_POP_MS = 350;
+    private static final int NODE_FADE_MS = 300;
+    private static final int TITLE_DELAY_MS = 500;
+    private static final int TITLE_RISE_MS = 700;
+    private static final int TAGLINE_DELAY_MS = 950;
+    private static final int TAGLINE_RISE_MS = 700;
+    private static final int HANDOFF_DELAY_MS = 2300;
+    private static final int HANDOFF_MS = 800;
+
+    /** Kicks off the full ~3.1s sequence. */
     void play() {
-        Timeline draw = new Timeline(new KeyFrame(Duration.millis(700),
+        Timeline draw = new Timeline(new KeyFrame(Duration.millis(LINE_DRAW_MS),
                 new KeyValue(line.strokeDashOffsetProperty(), 0, SPLINE)));
         playAndTrack(draw);
 
         // Each node pops as the line reaches it (progress ≈ x / length).
         for (int i = 0; i < nodes.size(); i++) {
-            double delay = 700 * (NODE_X[i] / LINE_LENGTH);
+            double delay = LINE_DRAW_MS * (NODE_X[i] / LINE_LENGTH);
             Node node = nodes.get(i);
-            ScaleTransition scale = new ScaleTransition(Duration.millis(250), node);
+            ScaleTransition scale = new ScaleTransition(Duration.millis(NODE_POP_MS), node);
             scale.setToX(1);
             scale.setToY(1);
             scale.setInterpolator(SPLINE);
-            FadeTransition fade = new FadeTransition(Duration.millis(200), node);
+            FadeTransition fade = new FadeTransition(Duration.millis(NODE_FADE_MS), node);
             fade.setToValue(1);
             playAndTrack(new SequentialTransition(
                     new PauseTransition(Duration.millis(delay)),
                     new ParallelTransition(scale, fade)));
         }
 
-        stagger(title, 400, 600);
-        stagger(tagline, 650, 600);
+        stagger(title, TITLE_DELAY_MS, TITLE_RISE_MS);
+        stagger(tagline, TAGLINE_DELAY_MS, TAGLINE_RISE_MS);
 
-        PauseTransition hold = new PauseTransition(Duration.millis(1400));
+        PauseTransition hold = new PauseTransition(Duration.millis(HANDOFF_DELAY_MS));
         hold.setOnFinished(e -> beginHandoff());
         playAndTrack(hold);
     }
@@ -205,16 +215,16 @@ final class IntroSplash {
         overlay.setMouseTransparent(true);
         overlay.setPickOnBounds(false);
 
-        FadeTransition fadeOut = new FadeTransition(Duration.millis(600), overlay);
+        FadeTransition fadeOut = new FadeTransition(Duration.millis(HANDOFF_MS), overlay);
         fadeOut.setFromValue(1);
         fadeOut.setToValue(0);
         fadeOut.setInterpolator(SPLINE);
 
-        Timeline zoom = new Timeline(new KeyFrame(Duration.millis(600),
+        Timeline zoom = new Timeline(new KeyFrame(Duration.millis(HANDOFF_MS),
                 new KeyValue(overlay.scaleXProperty(), 1.03, SPLINE),
                 new KeyValue(overlay.scaleYProperty(), 1.03, SPLINE)));
 
-        Timeline reveal = new Timeline(new KeyFrame(Duration.millis(600),
+        Timeline reveal = new Timeline(new KeyFrame(Duration.millis(HANDOFF_MS),
                 new KeyValue(sidebar.translateXProperty(), 0, SPLINE),
                 new KeyValue(content.opacityProperty(), 1.0, SPLINE),
                 new KeyValue(content.translateYProperty(), 0, SPLINE)));

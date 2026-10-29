@@ -19,7 +19,6 @@ public final class Prefs {
     private static final String KEY_SESSION_USER = "session.userId";
     private static final String KEY_SESSION_EMAIL = "session.email";
     private static final String KEY_SESSION_ROLE = "session.role";
-    private static final String KEY_INTRO_SEEN = "intro.seen";
 
     private Prefs() {
     }
@@ -69,16 +68,5 @@ public final class Prefs {
         NODE.remove(KEY_SESSION_USER);
         NODE.remove(KEY_SESSION_EMAIL);
         NODE.remove(KEY_SESSION_ROLE);
-    }
-
-    // ---- app flags ----------------------------------------------------
-
-    /** Whether the one-time opening intro animation has already played. */
-    public static boolean introSeen() {
-        return NODE.getBoolean(KEY_INTRO_SEEN, false);
-    }
-
-    public static void introSeen(boolean seen) {
-        NODE.putBoolean(KEY_INTRO_SEEN, seen);
     }
 }

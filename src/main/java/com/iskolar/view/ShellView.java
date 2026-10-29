@@ -3,7 +3,6 @@ package com.iskolar.view;
 import com.iskolar.dao.DaoFactory;
 import com.iskolar.model.Role;
 import com.iskolar.model.ThemePref;
-import com.iskolar.util.Prefs;
 import com.iskolar.util.SessionManager;
 import com.iskolar.util.ThemeManager;
 import com.iskolar.util.ViewNavigator;
@@ -63,9 +62,9 @@ public final class ShellView {
     }
 
     /**
-     * Builds the shell. On the very first launch an in-window intro splash
-     * plays over the shell and hands off into it (see {@link IntroSplash});
-     * on later launches the shell is returned as-is.
+     * Builds the shell. On every launch an in-window intro splash plays over
+     * the shell and hands off into it (see {@link IntroSplash}); pass
+     * {@code -Diskolar.skipIntro=true} to bypass it during development.
      */
     public static Parent build() {
         BorderPane root = new BorderPane();
@@ -89,7 +88,7 @@ public final class ShellView {
     private static final boolean SKIP_INTRO_ANIMATION = Boolean.getBoolean("iskolar.skipIntro");
 
     private static boolean shouldPlayIntro() {
-        return !SKIP_INTRO_ANIMATION && !Prefs.introSeen();
+        return !SKIP_INTRO_ANIMATION;
     }
 
     /**
@@ -109,7 +108,7 @@ public final class ShellView {
         content.setOpacity(0);
         content.setTranslateY(12);
 
-        IntroSplash splash = IntroSplash.attach(stack, sidebar, content, () -> Prefs.introSeen(true));
+        IntroSplash splash = IntroSplash.attach(stack, sidebar, content, () -> { });
         splash.play();
         return stack;
     }
