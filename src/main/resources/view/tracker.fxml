@@ -13,7 +13,7 @@
     <center>
         <StackPane>
             <!-- Board -->
-            <VBox spacing="10">
+            <VBox fx:id="boardPane" spacing="10">
                 <VBox spacing="6" styleClass="discovery-header">
                     <Label text="My Application Tracker" styleClass="view-title"/>
                     <Label text="Move your applications through the pipeline — every card remembers where you left off."
@@ -25,7 +25,8 @@
             </VBox>
 
             <!-- Gate: no session or no profile -->
-            <VBox fx:id="gatePane" alignment="CENTER" spacing="12" maxWidth="420" styleClass="auth-card">
+            <VBox fx:id="gatePane" alignment="CENTER" spacing="12" maxWidth="420" maxHeight="-Infinity"
+                  styleClass="auth-card">
                 <Label text="Application Tracker" styleClass="view-title"/>
                 <Label fx:id="gateLabel" text="Log in to track your scholarship applications."
                        styleClass="view-subtitle" wrapText="true" textAlignment="CENTER"/>

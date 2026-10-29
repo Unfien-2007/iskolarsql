@@ -18,6 +18,7 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -44,6 +45,7 @@ public class WizardController {
     @FXML private VBox gatePane;
     @FXML private Label gateLabel;
     @FXML private Button gateButton;
+    @FXML private ScrollPane wizardScroll;
     @FXML private StackPane stepStack;
     @FXML private Label chip1;
     @FXML private Label chip2;
@@ -133,8 +135,8 @@ public class WizardController {
     }
 
     private void hideWizard() {
-        stepStack.setVisible(false);
-        stepStack.setManaged(false);
+        wizardScroll.setVisible(false);
+        wizardScroll.setManaged(false);
         gateButton.setVisible(true);
     }
 

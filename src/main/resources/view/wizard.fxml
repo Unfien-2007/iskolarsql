@@ -20,7 +20,8 @@
     <center>
         <StackPane>
             <!-- Login gate -->
-            <VBox fx:id="gatePane" alignment="CENTER" spacing="12" maxWidth="420" styleClass="auth-card">
+            <VBox fx:id="gatePane" alignment="CENTER" spacing="12" maxWidth="420" maxHeight="-Infinity"
+                  styleClass="auth-card">
                 <Label text="Profile Wizard" styleClass="view-title"/>
                 <Label fx:id="gateLabel" text="Log in to build your profile and unlock personalized match scores."
                        styleClass="view-subtitle" wrapText="true" textAlignment="CENTER"/>
@@ -28,7 +29,7 @@
             </VBox>
 
             <!-- Wizard -->
-            <ScrollPane fitToWidth="true" styleClass="wizard-scroll">
+            <ScrollPane fx:id="wizardScroll" fitToWidth="true" styleClass="wizard-scroll">
                 <VBox alignment="TOP_CENTER" maxWidth="840" spacing="14" styleClass="wizard-body">
                     <Label text="Profile Wizard" styleClass="view-title"/>
                     <Label text="Four quick steps — your answers power the matching engine."

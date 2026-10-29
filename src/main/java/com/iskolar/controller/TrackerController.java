@@ -28,6 +28,8 @@ import java.util.stream.Collectors;
 public class TrackerController {
 
     @FXML
+    private VBox boardPane;
+    @FXML
     private HBox boardRow;
     @FXML
     private VBox gatePane;
@@ -59,8 +61,8 @@ public class TrackerController {
     }
 
     private void showGate(String message, String buttonText, Runnable action) {
-        boardRow.setVisible(false);
-        boardRow.setManaged(false);
+        boardPane.setVisible(false);
+        boardPane.setManaged(false);
         gateLabel.setText(message);
         gateButton.setText(buttonText);
         gateButton.setOnAction(e -> action.run());
