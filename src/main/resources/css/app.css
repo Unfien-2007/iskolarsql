@@ -1,11 +1,59 @@
 /* =====================================================================
    iskolarPath — application stylesheet
-   Built on AtlantaFX PrimerLight / PrimerDark lookup colors, so everything
-   here adapts automatically to the light/dark toggle.
+   Built on AtlantaFX PrimerLight / PrimerDark lookup colors; the "Warm
+   Horizon" palette below re-tints those lookups per theme (cream/terracotta
+   in light, warm charcoal/embers in dark) and the rest of the sheet adapts
+   automatically to the light/dark toggle.
    ===================================================================== */
 
 .app-root {
     -fx-background-color: -color-bg-default;
+    -fx-font-family: "Inter", "Segoe UI", sans-serif;
+
+    /* Warm Horizon — light ("cream") */
+    -color-accent-fg: #C2410C;
+    -color-accent-emphasis: #B93A08;
+    -color-accent-muted: #D96C3F;
+    -color-accent-subtle: #FBE3D6;
+    -color-bg-default: #FBF7F1;
+    -color-bg-overlay: #FFFFFF;
+    -color-bg-subtle: #F5EEE4;
+    -color-bg-inset: #EFE6D9;
+    -color-fg-default: #2D2A26;
+    -color-fg-muted: #6B6459;
+    -color-fg-subtle: #9C9386;
+    -color-border-default: #E7DED1;
+    -color-border-muted: #EFE7DB;
+    -color-border-subtle: #F6EFE4;
+}
+
+.app-root.dark {
+    /* Warm Horizon — dark ("embers") */
+    -color-accent-fg: #F2A24B;
+    -color-accent-emphasis: #FFB45C;
+    -color-accent-muted: #C77B32;
+    -color-accent-subtle: #4A2E14;
+    -color-bg-default: #1B1815;
+    -color-bg-overlay: #26221E;
+    -color-bg-subtle: #2E2925;
+    -color-bg-inset: #16130F;
+    -color-fg-default: #F1EDE6;
+    -color-fg-muted: #B3A99B;
+    -color-fg-subtle: #857B6E;
+    -color-border-default: #3A342D;
+    -color-border-muted: #332E28;
+    -color-border-subtle: #2B2621;
+}
+
+/* Display/heading faces ride on Poppins; everything else inherits Inter. */
+.brand-title,
+.view-title,
+.card-title,
+.step-heading,
+.details-title,
+.splash-title,
+.compare-title {
+    -fx-font-family: "Poppins", "Segoe UI", sans-serif;
 }
 
 /* ---------------- Sidebar rail ---------------- */
@@ -57,6 +105,11 @@
 .sidebar.collapsed .nav-button {
     -fx-alignment: CENTER;
     -fx-padding: 10 0;
+}
+
+/* Collapsed header holds only the centered toggle — no horizontal padding. */
+.sidebar.collapsed .brand {
+    -fx-padding: 2 0 10 0;
 }
 
 .icon-button {
@@ -207,12 +260,18 @@
 /* ---------------- Auth screens ---------------- */
 
 .auth-card {
-    -fx-background-color: -color-bg-overlay;
+    -fx-background-color: radial-gradient(center 50% 0%, radius 80%, rgba(194, 65, 12, 0.08), transparent),
+        -color-bg-overlay;
     -fx-border-color: -color-border-muted;
     -fx-border-radius: 12;
     -fx-background-radius: 12;
     -fx-padding: 28;
     -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.08), 16, 0, 0, 3);
+}
+
+.app-root.dark .auth-card {
+    -fx-background-color: radial-gradient(center 50% 0%, radius 80%, rgba(242, 162, 75, 0.10), transparent),
+        -color-bg-overlay;
 }
 
 .field-label {
@@ -359,9 +418,10 @@
 .tracker-card {
     -fx-background-color: -color-bg-overlay;
     -fx-border-color: -color-border-muted;
-    -fx-border-radius: 8;
-    -fx-background-radius: 8;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
     -fx-padding: 10;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.05), 8, 0, 0, 1);
 }
 
 .tracker-card:hover {
@@ -420,7 +480,7 @@
 /* ---------------- Comparison modal ---------------- */
 
 .compare-grid {
-    -fx-padding: 8 4;
+    -fx-padding: 18 20 8 20;
 }
 
 .compare-attr {
@@ -440,24 +500,6 @@
     -fx-text-fill: -color-fg-default;
 }
 
-/* ---------------- Top bar ---------------- */
-
-.topbar {
-    -fx-background-color: -color-bg-default;
-    -fx-border-color: transparent transparent -color-border-muted transparent;
-    -fx-border-width: 0 0 1 0;
-    -fx-padding: 8 24;
-}
-
-.topbar-user {
-    -fx-font-size: 13px;
-    -fx-text-fill: -color-fg-muted;
-}
-
-.topbar-logout {
-    -fx-padding: 5 14;
-}
-
 /* ---------------- Scholarship details modal ---------------- */
 
 .details-scroll, .details-scroll > .viewport {
@@ -465,7 +507,7 @@
 }
 
 .details-root {
-    -fx-padding: 6 4;
+    -fx-padding: 16 20 10 20;
 }
 
 .details-title {
@@ -501,6 +543,18 @@
     -fx-text-fill: -color-fg-default;
 }
 
+.details-bullet-label {
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-fg-muted;
+}
+
+.details-bullet {
+    -fx-font-size: 12px;
+    -fx-text-fill: -color-fg-default;
+    -fx-padding: 0 0 0 8;
+}
+
 .details-desc {
     -fx-font-size: 12px;
     -fx-text-fill: -color-fg-default;
@@ -519,6 +573,46 @@
 
 .details-link {
     -fx-font-size: 12px;
+}
+
+/* ---------------- Themed modal chrome ---------------- */
+
+.themed-dialog {
+    -fx-padding: 0;
+    -fx-border-color: -color-border-default;
+    -fx-border-width: 1;
+}
+
+.themed-dialog > .button-bar > .container {
+    -fx-padding: 6 18 14 18;
+}
+
+.dialog-header {
+    -fx-background-color: -color-bg-subtle;
+    -fx-padding: 8 12 8 18;
+    -fx-border-color: transparent transparent -color-border-muted transparent;
+    -fx-border-width: 0 0 1 0;
+}
+
+.dialog-eyebrow {
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-fg-muted;
+}
+
+.dialog-close {
+    -fx-background-color: transparent;
+    -fx-padding: 5;
+    -fx-background-radius: 6;
+    -fx-cursor: hand;
+}
+
+.dialog-close:hover {
+    -fx-background-color: -color-neutral-subtle;
+}
+
+.dialog-close .ikonli-font-icon {
+    -fx-icon-color: -color-fg-muted;
 }
 
 /* Clickable-card affordances: whole card opens the details modal */
@@ -566,4 +660,117 @@
 
 .splash-node {
     -fx-fill: -color-accent-fg;
+}
+
+/* =====================================================================
+   Path journey rail (Discover → Match → Track → Award)
+   ===================================================================== */
+
+.journey-rail {
+    -fx-padding: 5 24;
+    -fx-background-color: linear-gradient(to right, rgba(194, 65, 12, 0.07), rgba(242, 162, 75, 0.07));
+    -fx-border-color: transparent transparent -color-border-muted transparent;
+    -fx-border-width: 0 0 1 0;
+}
+
+.app-root.dark .journey-rail {
+    -fx-background-color: linear-gradient(to right, rgba(194, 65, 12, 0.12), rgba(242, 162, 75, 0.09));
+}
+
+.rail-step {
+    -fx-padding: 3 8;
+    -fx-background-radius: 999;
+    -fx-cursor: hand;
+}
+
+.rail-step:hover {
+    -fx-background-color: -color-neutral-subtle;
+}
+
+.rail-label {
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-fg-muted;
+}
+
+.rail-icon {
+    -fx-icon-size: 13px;
+    -fx-icon-color: -color-fg-muted;
+    -fx-fill: -color-fg-muted;
+}
+
+.rail-step.active .rail-label {
+    -fx-text-fill: -color-accent-fg;
+}
+
+.rail-step.active .rail-icon {
+    -fx-icon-color: -color-accent-fg;
+    -fx-fill: -color-accent-fg;
+}
+
+.rail-step.awarded .rail-label {
+    -fx-text-fill: -color-warning-fg;
+}
+
+.rail-step.awarded .rail-icon {
+    -fx-icon-color: -color-warning-fg;
+    -fx-fill: -color-warning-fg;
+}
+
+.rail-line {
+    -fx-background-color: -color-border-default;
+    -fx-min-width: 22;
+    -fx-pref-width: 22;
+    -fx-max-width: 22;
+    -fx-min-height: 2;
+    -fx-pref-height: 2;
+    -fx-max-height: 2;
+}
+
+/* In-app details drawer ------------------------------------------------ */
+.details-drawer-layer {
+    -fx-background-color: transparent;
+}
+.details-drawer {
+    -fx-background-color: -color-bg-overlay;
+    -fx-border-color: -color-border-default;
+    -fx-border-width: 0 0 0 1;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.18), 24, 0, -6, 0);
+}
+.details-drawer-header {
+    -fx-background-color: -color-bg-subtle;
+    -fx-padding: 10 12 10 20;
+    -fx-border-color: transparent transparent -color-border-muted transparent;
+    -fx-border-width: 0 0 1 0;
+    -fx-alignment: center-left;
+}
+.details-drawer-eyebrow {
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-fg-muted;
+}
+
+/* In-app compare overlay ----------------------------------------------- */
+.compare-overlay {
+    -fx-background-color: transparent;
+}
+.compare-scrim {
+    -fx-background-color: rgba(45, 42, 38, 0.28);
+}
+.app-root.dark .compare-scrim {
+    -fx-background-color: rgba(0, 0, 0, 0.55);
+}
+.compare-panel {
+    -fx-background-color: -color-bg-overlay;
+    -fx-background-radius: 12;
+    -fx-border-color: -color-border-default;
+    -fx-border-width: 1;
+    -fx-border-radius: 12;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.18), 24, 0, 0, 8);
+}
+.compare-panel .details-drawer-header {
+    -fx-background-radius: 12 12 0 0;
+}
+.compare-panel .compare-grid {
+    -fx-padding: 18 20 18 20;
 }

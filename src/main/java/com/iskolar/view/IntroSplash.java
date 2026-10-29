@@ -215,6 +215,10 @@ final class IntroSplash {
         overlay.setMouseTransparent(true);
         overlay.setPickOnBounds(false);
 
+        // Reset the reveal so the handoff owns the fade-in even though the
+        // initial view may already have finished its own entrance fade.
+        content.setOpacity(0);
+
         FadeTransition fadeOut = new FadeTransition(Duration.millis(HANDOFF_MS), overlay);
         fadeOut.setFromValue(1);
         fadeOut.setToValue(0);

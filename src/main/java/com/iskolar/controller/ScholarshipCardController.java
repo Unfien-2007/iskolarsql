@@ -5,6 +5,7 @@ import com.iskolar.model.DeadlineUrgency;
 import com.iskolar.model.MatchTier;
 import com.iskolar.model.ProviderType;
 import com.iskolar.model.Scholarship;
+import com.iskolar.view.Motion;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
@@ -85,6 +86,8 @@ public class ScholarshipCardController {
                 controller.onDetails.accept(scholarship);
             }
         });
+        controller.root.setOnMouseEntered(e -> Motion.hoverLift(controller.root, true));
+        controller.root.setOnMouseExited(e -> Motion.hoverLift(controller.root, false));
         return controller;
     }
 
@@ -108,6 +111,9 @@ public class ScholarshipCardController {
         stipendLabel.setText("Stipend: " + s.stipendLabel());
         urgencyPill.setText(urgencyText(s.deadlineDate()));
         urgencyPill.getStyleClass().add(urgencyStyle(s.deadlineDate()));
+        if ("pill-red".equals(urgencyStyle(s.deadlineDate()))) {
+            Motion.pulse(urgencyPill);
+        }
 
         compareCheck.selectedProperty().addListener((obs, old, checked) ->
                 onCompareToggle.accept(s, checked));
@@ -126,8 +132,8 @@ public class ScholarshipCardController {
             matchCaption.setText("Sign in for your match score");
             return;
         }
-        matchBadge.setText(match.scoreLabel());
         matchBadge.getStyleClass().add(tierStyle(match.tier()));
+        Motion.countUp(matchBadge, match.score(), match.scoreLabel());
         String tooltip;
         if (!match.eligible()) {
             tooltip = match.gateReason();

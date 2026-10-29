@@ -12,19 +12,30 @@ import com.iskolar.model.ProviderType;
 import com.iskolar.model.Scholarship;
 import com.iskolar.model.ScholarshipCriteria;
 import com.iskolar.util.GwaConverter;
+import javafx.animation.FadeTransition;
+import javafx.animation.ParallelTransition;
+import javafx.animation.TranslateTransition;
+import javafx.event.EventHandler;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
+import javafx.scene.Scene;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
-import javafx.scene.control.Dialog;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
-import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import javafx.stage.Window;
+import javafx.util.Duration;
+import org.kordamp.ikonli.feather.Feather;
+import org.kordamp.ikonli.javafx.FontIcon;
 
 import java.awt.Desktop;
 import java.net.URI;
@@ -33,38 +44,155 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
- * Read-only details modal for one scholarship: match verdict, description,
- * financials, key dates, eligibility gates, allowed programs/year levels,
- * tags, required documents and an externally-opening application link.
- * Opened by clicking a discovery card or a tracker card.
+ * In-app side panel showing one scholarship's full details: match verdict,
+ * description, financials, key dates, eligibility gates, allowed programs,
+ * tags, required documents and the application link.
+ *
+ * <p>The panel slides in over the center content area (next to the sidebar,
+ * under the journey rail) instead of opening a separate window. Close with the
+ * header ✕, {@code Esc}, or by clicking anywhere outside the panel; navigation
+ * closes it automatically.</p>
  */
-public final class ScholarshipDetailsDialog {
+public final class ScholarshipDetailsPanel {
 
-    private ScholarshipDetailsDialog() {
+    private static final double WIDTH = 460;
+
+    private static StackPane host;
+    private static StackPane layer;
+    private static VBox panel;
+    private static EventHandler<KeyEvent> escHandler;
+    private static EventHandler<MouseEvent> outsideHandler;
+    private static Scene escScene;
+    private static boolean closing;
+
+    private ScholarshipDetailsPanel() {
     }
 
     /**
+     * Opens (or refreshes) the details panel inside the given host.
+     *
+     * @param host   the center content area from {@code ViewNavigator.centerHost()}
      * @param bundle the full eligibility read-model for the scholarship
      * @param match  the signed-in student's match result, or {@code null} for guests
      */
-    public static void show(Window owner, ScholarshipEligibilityBundle bundle, MatchResult match) {
-        if (bundle == null || bundle.scholarship() == null) {
+    public static void show(StackPane host, ScholarshipEligibilityBundle bundle, MatchResult match) {
+        if (host == null || bundle == null || bundle.scholarship() == null) {
             return;
         }
+        // Already open here: just swap the scrollable body, no second slide-in.
+        if (layer != null && layer.getParent() == host && panel != null && panel.getChildren().size() > 1) {
+            panel.getChildren().set(1, buildScroll(bundle, match));
+            return;
+        }
+        dismiss();
+
+        ScholarshipDetailsPanel.host = host;
+        closing = false;
+
+        panel = new VBox(buildHeader(), buildScroll(bundle, match));
+        panel.getStyleClass().add("details-drawer");
+        panel.setPrefWidth(WIDTH);
+        panel.setMaxWidth(WIDTH);
+        panel.setMaxHeight(Double.MAX_VALUE);
+        panel.setMinHeight(0);
+        panel.setTranslateX(WIDTH);
+        panel.setOpacity(0);
+
+        layer = new StackPane(panel);
+        layer.getStyleClass().add("details-drawer-layer");
+        layer.setPickOnBounds(true); // catches clicks outside the panel so they close it
+        layer.setMinSize(0, 0);
+        layer.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+        StackPane.setAlignment(panel, Pos.CENTER_RIGHT);
+        host.getChildren().add(layer);
+
+        Scene scene = host.getScene();
+        if (scene != null) {
+            escScene = scene;
+            escHandler = e -> {
+                if (e.getCode() == KeyCode.ESCAPE) {
+                    close();
+                    e.consume();
+                }
+            };
+            scene.addEventFilter(KeyEvent.KEY_PRESSED, escHandler);
+            outsideHandler = e -> {
+                boolean inside = e.getTarget() instanceof Node target && isInside(panel, target);
+                if (!inside) {
+                    close();
+                }
+            };
+            scene.addEventFilter(MouseEvent.MOUSE_PRESSED, outsideHandler);
+        }
+
+        TranslateTransition slide = new TranslateTransition(Duration.millis(280), panel);
+        slide.setToX(0);
+        slide.setInterpolator(Motion.SPLINE);
+        FadeTransition fade = new FadeTransition(Duration.millis(220), panel);
+        fade.setToValue(1);
+        new ParallelTransition(slide, fade).play();
+    }
+
+    /** Removes the panel immediately (used on navigation). */
+    public static void dismiss() {
+        closing = false;
+        if (escHandler != null && escScene != null) {
+            escScene.removeEventFilter(KeyEvent.KEY_PRESSED, escHandler);
+        }
+        if (outsideHandler != null && escScene != null) {
+            escScene.removeEventFilter(MouseEvent.MOUSE_PRESSED, outsideHandler);
+        }
+        escHandler = null;
+        outsideHandler = null;
+        escScene = null;
+        if (layer != null && layer.getParent() instanceof Pane parent) {
+            parent.getChildren().remove(layer);
+        }
+        layer = null;
+        panel = null;
+        host = null;
+    }
+
+    private static void close() {
+        if (layer == null || panel == null || closing) {
+            return;
+        }
+        closing = true;
+        TranslateTransition slide = new TranslateTransition(Duration.millis(200), panel);
+        slide.setToX(WIDTH);
+        slide.setInterpolator(Motion.SPLINE);
+        FadeTransition fade = new FadeTransition(Duration.millis(160), panel);
+        fade.setToValue(0);
+        ParallelTransition out = new ParallelTransition(slide, fade);
+        out.setOnFinished(e -> dismiss());
+        out.play();
+    }
+
+    // ------------------------------------------------------------------
+    // Chrome
+    // ------------------------------------------------------------------
+
+    private static HBox buildHeader() {
+        Label eyebrow = new Label("SCHOLARSHIP DETAILS");
+        eyebrow.getStyleClass().add("details-drawer-eyebrow");
+        javafx.scene.layout.Region spacer = new javafx.scene.layout.Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+        Button closeButton = new Button();
+        closeButton.setGraphic(FontIcon.of(Feather.X, 16));
+        closeButton.getStyleClass().add("dialog-close");
+        closeButton.setFocusTraversable(false);
+        closeButton.setOnAction(e -> close());
+        HBox header = new HBox(10, eyebrow, spacer, closeButton);
+        header.getStyleClass().add("details-drawer-header");
+        header.setAlignment(Pos.CENTER_LEFT);
+        return header;
+    }
+
+    private static ScrollPane buildScroll(ScholarshipEligibilityBundle bundle, MatchResult match) {
         Scholarship scholarship = bundle.scholarship();
-
-        Dialog<Void> dialog = new Dialog<>();
-        dialog.initOwner(owner);
-        dialog.setTitle(scholarship.title());
-        dialog.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
-        dialog.getDialogPane().getStylesheets().add(Objects.requireNonNull(
-                ScholarshipDetailsDialog.class.getResource("/css/app.css"),
-                "css/app.css missing").toExternalForm());
-
         VBox content = new VBox(10);
         content.getStyleClass().add("details-root");
         content.getChildren().addAll(
@@ -87,11 +215,9 @@ public final class ScholarshipDetailsDialog {
         ScrollPane scroll = new ScrollPane(content);
         scroll.setFitToWidth(true);
         scroll.getStyleClass().add("details-scroll");
-        scroll.setPrefViewportHeight(540);
-
-        dialog.getDialogPane().setContent(scroll);
-        dialog.getDialogPane().setMinWidth(560);
-        dialog.showAndWait();
+        scroll.setMinHeight(0);
+        VBox.setVgrow(scroll, Priority.ALWAYS);
+        return scroll;
     }
 
     // ------------------------------------------------------------------
@@ -103,7 +229,7 @@ public final class ScholarshipDetailsDialog {
         badge.getStyleClass().addAll("badge", providerStyle(s.providerType()));
         Label pill = new Label(urgencyText(s.deadlineDate()));
         pill.getStyleClass().addAll("pill", urgencyStyle(s.deadlineDate()));
-        Region spacer = new Region();
+        javafx.scene.layout.Region spacer = new javafx.scene.layout.Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
         HBox top = new HBox(8, badge, spacer, pill);
         top.setAlignment(Pos.CENTER_LEFT);
@@ -172,16 +298,14 @@ public final class ScholarshipDetailsDialog {
     }
 
     private static VBox programsSection(ScholarshipEligibilityBundle bundle) {
-        String value;
         if (bundle.allowedProgramIds().isEmpty()) {
-            value = "All degree programs";
-        } else {
-            value = DaoFactory.degreeProgramDao().findAll().stream()
-                    .filter(p -> bundle.allowedProgramIds().contains(p.programId()))
-                    .map(DegreeProgram::displayLabel)
-                    .collect(Collectors.joining(", "));
+            return section("Degree programs", note("All degree programs"));
         }
-        return section("Degree programs", row("Allowed programs", value));
+        List<String> programs = DaoFactory.degreeProgramDao().findAll().stream()
+                .filter(p -> bundle.allowedProgramIds().contains(p.programId()))
+                .map(DegreeProgram::displayLabel)
+                .toList();
+        return section("Degree programs", bulleted("Allowed programs", programs));
     }
 
     private static VBox tagsSection(ScholarshipEligibilityBundle bundle) {
@@ -198,25 +322,23 @@ public final class ScholarshipDetailsDialog {
         }
         List<Node> rows = new ArrayList<>();
         if (!mandatory.isEmpty()) {
-            rows.add(row("Required", String.join(", ", mandatory)));
+            rows.add(bulleted("Required", mandatory));
         }
         if (!preferred.isEmpty()) {
-            rows.add(row("Preferred", String.join(", ", preferred)));
+            rows.add(bulleted("Preferred", preferred));
         }
         return section("Tags", rows.toArray(Node[]::new));
     }
 
     private static VBox documentsSection(ScholarshipEligibilityBundle bundle) {
-        String value;
         if (bundle.requiredDocumentIds().isEmpty()) {
-            value = "No document requirements.";
-        } else {
-            value = DaoFactory.documentDao().findAll().stream()
-                    .filter(d -> bundle.requiredDocumentIds().contains(d.documentTypeId()))
-                    .map(DocumentType::docName)
-                    .collect(Collectors.joining(", "));
+            return section("Required documents", note("No document requirements."));
         }
-        return section("Required documents", row("Documents", value));
+        List<String> documents = DaoFactory.documentDao().findAll().stream()
+                .filter(d -> bundle.requiredDocumentIds().contains(d.documentTypeId()))
+                .map(DocumentType::docName)
+                .toList();
+        return section("Required documents", bulleted("Documents", documents));
     }
 
     private static VBox applySection(Scholarship s) {
@@ -228,7 +350,7 @@ public final class ScholarshipDetailsDialog {
         link.getStyleClass().add("details-link");
         link.setWrapText(true);
         link.setOnAction(e -> openInBrowser(url));
-        return section("Apply", link);
+        return section("Apply", row("Application link", link));
     }
 
     // ------------------------------------------------------------------
@@ -246,13 +368,37 @@ public final class ScholarshipDetailsDialog {
     }
 
     private static HBox row(String attribute, String value) {
-        Label attr = new Label(attribute);
-        attr.getStyleClass().add("details-attr");
         Label val = new Label(value);
         val.getStyleClass().add("details-value");
         val.setWrapText(true);
-        val.setMaxWidth(Double.MAX_VALUE);
-        HBox box = new HBox(10, attr, val);
+        return row(attribute, (Node) val);
+    }
+
+    /** A label on its own line followed by one bullet per item. */
+    private static VBox bulleted(String label, List<String> items) {
+        Label caption = new Label(label);
+        caption.getStyleClass().add("details-bullet-label");
+        VBox box = new VBox(3, caption);
+        box.getStyleClass().add("details-bullet-list");
+        for (String item : items) {
+            Label bullet = new Label("• " + item);
+            bullet.getStyleClass().add("details-bullet");
+            bullet.setWrapText(true);
+            bullet.setMaxWidth(Double.MAX_VALUE);
+            box.getChildren().add(bullet);
+        }
+        return box;
+    }
+
+    private static HBox row(String attribute, Node value) {
+        Label attr = new Label(attribute);
+        attr.getStyleClass().add("details-attr");
+        HBox box = new HBox(10, attr, value);
+        if (value instanceof javafx.scene.layout.Region region) {
+            region.setMinWidth(0);
+            region.maxWidthProperty().bind(
+                    box.widthProperty().subtract(attr.widthProperty()).subtract(10));
+        }
         box.getStyleClass().add("details-row");
         box.setAlignment(Pos.CENTER_LEFT);
         return box;
@@ -274,6 +420,15 @@ public final class ScholarshipDetailsDialog {
         label.setWrapText(true);
         label.setMaxWidth(Double.MAX_VALUE);
         return label;
+    }
+
+    private static boolean isInside(Node ancestor, Node node) {
+        for (Node n = node; n != null; n = n.getParent()) {
+            if (n == ancestor) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static void openInBrowser(String url) {

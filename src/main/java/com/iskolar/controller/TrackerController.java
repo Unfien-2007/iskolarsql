@@ -7,7 +7,8 @@ import com.iskolar.model.ApplicationStatus;
 import com.iskolar.service.ServiceFactory;
 import com.iskolar.util.SessionManager;
 import com.iskolar.util.ViewNavigator;
-import com.iskolar.view.ScholarshipDetailsDialog;
+import com.iskolar.view.JourneyRail;
+import com.iskolar.view.ScholarshipDetailsPanel;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -26,6 +27,8 @@ import java.util.stream.Collectors;
  */
 public class TrackerController {
 
+    @FXML
+    private VBox boardPane;
     @FXML
     private HBox boardRow;
     @FXML
@@ -58,8 +61,8 @@ public class TrackerController {
     }
 
     private void showGate(String message, String buttonText, Runnable action) {
-        boardRow.setVisible(false);
-        boardRow.setManaged(false);
+        boardPane.setVisible(false);
+        boardPane.setManaged(false);
         gateLabel.setText(message);
         gateButton.setText(buttonText);
         gateButton.setOnAction(e -> action.run());
@@ -74,6 +77,8 @@ public class TrackerController {
         for (ApplicationStatus status : ApplicationStatus.values()) {
             boardRow.getChildren().add(buildColumn(status, cards, matches));
         }
+        JourneyRail.setAwarded(cards.stream()
+                .anyMatch(c -> c.application().status() == ApplicationStatus.AWARDED));
     }
 
     private VBox buildColumn(ApplicationStatus status, List<ApplicationCard> cards,
@@ -122,12 +127,12 @@ public class TrackerController {
         return column;
     }
 
-    /** Opens the full scholarship details modal (fired by clicking a card). */
+    /** Opens the full scholarship details in the in-app side panel. */
     private void openDetails(long scholarshipId, Map<Long, MatchResult> matches) {
         var bundle = DaoFactory.scholarshipDao().findEligibilityBundle(scholarshipId).orElse(null);
         if (bundle == null) {
             return;
         }
-        ScholarshipDetailsDialog.show(boardRow.getScene().getWindow(), bundle, matches.get(scholarshipId));
+        ScholarshipDetailsPanel.show(ViewNavigator.centerHost(), bundle, matches.get(scholarshipId));
     }
 }

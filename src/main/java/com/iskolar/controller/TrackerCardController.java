@@ -5,6 +5,7 @@ import com.iskolar.dto.MatchResult;
 import com.iskolar.model.ApplicationStatus;
 import com.iskolar.model.DeadlineUrgency;
 import com.iskolar.model.MatchTier;
+import com.iskolar.view.Motion;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
@@ -66,6 +67,8 @@ public class TrackerCardController {
                 onDetails.run();
             }
         });
+        root.setOnMouseEntered(e -> Motion.hoverLift(root, true));
+        root.setOnMouseExited(e -> Motion.hoverLift(root, false));
         return root;
     }
 
@@ -77,13 +80,16 @@ public class TrackerCardController {
         LocalDate deadline = card.scholarship().deadlineDate();
         deadlinePill.setText(urgencyText(deadline));
         deadlinePill.getStyleClass().add(urgencyStyle(deadline));
+        if ("pill-red".equals(urgencyStyle(deadline))) {
+            Motion.pulse(deadlinePill);
+        }
 
         if (match == null) {
             matchBadge.setText("—");
             matchBadge.getStyleClass().add("match-ineligible");
         } else {
-            matchBadge.setText(match.scoreLabel());
             matchBadge.getStyleClass().add(tierStyle(match.tier()));
+            Motion.countUp(matchBadge, match.score(), match.scoreLabel());
             String tip = match.eligible()
                     ? (match.warnings().isEmpty() ? match.tier().label()
                     : match.tier().label() + " — " + String.join(" ", match.warnings()))

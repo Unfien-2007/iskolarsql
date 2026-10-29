@@ -19,6 +19,7 @@ import javafx.scene.control.Labeled;
 import javafx.scene.control.Separator;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
+import javafx.scene.control.Tooltip;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -46,13 +47,16 @@ public final class ShellView {
     public static final double SIDEBAR_COLLAPSED = 68;
 
     private static VBox sidebar;
-    private static HBox topBar;
-    private static Label topBarUser;
     private static Label brandLabel;
     private static Label nameLabel;
     private static Label roleLabel;
     private static Button authButton;
     private static Button themeButton;
+    private static Button logoutButton;
+    private static Button collapseButton;
+    private static HBox brandRow;
+    private static HBox brandMark;
+    private static Region brandSpacer;
     private static ToggleButton adminButton;
     private static final List<ToggleButton> NAV_BUTTONS = new ArrayList<>();
     private static final Map<Labeled, String> NAV_TITLES = new HashMap<>();
@@ -68,14 +72,15 @@ public final class ShellView {
      */
     public static Parent build() {
         BorderPane root = new BorderPane();
-        root.getStyleClass().add("app-root");
         ViewNavigator.init(root);
         root.setLeft(buildSidebar());
-        root.setTop(buildTopBar());
+        root.setTop(buildTopArea());
         refreshSessionUi();
         NAV_BUTTONS.get(0).fire(); // land on Discover (loads while the stage is still hidden)
 
         if (!shouldPlayIntro()) {
+            root.getStyleClass().add("app-root");
+            ThemeManager.registerRoot(root);
             return root;
         }
         return attachIntro(root);
@@ -97,6 +102,8 @@ public final class ShellView {
      */
     private static Parent attachIntro(BorderPane shell) {
         StackPane stack = new StackPane(shell);
+        stack.getStyleClass().add("app-root");
+        ThemeManager.registerRoot(stack);
 
         Node content = shell.getCenter();
         if (content == null) {
@@ -113,21 +120,16 @@ public final class ShellView {
         return stack;
     }
 
-    /** Always-visible header bar: who is signed in + a prominent Log out button. */
-    private static HBox buildTopBar() {
-        topBarUser = new Label();
-        topBarUser.getStyleClass().add("topbar-user");
+    /** Top area: the Path journey rail. */
+    private static HBox buildTopArea() {
+        return JourneyRail.build();
+    }
 
-        Button logoutButton = new Button("Log out", FontIcon.of(Feather.LOG_OUT, 16));
-        logoutButton.getStyleClass().addAll("ghost-button", "topbar-logout");
-        logoutButton.setOnAction(e -> handleAuth());
-
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-        topBar = new HBox(12, spacer, topBarUser, logoutButton);
-        topBar.getStyleClass().add("topbar");
-        topBar.setAlignment(Pos.CENTER_RIGHT);
-        return topBar;
+    /** Fires a sidebar nav button by index (used by the journey rail). */
+    public static void fireNav(int index) {
+        if (index >= 0 && index < NAV_BUTTONS.size()) {
+            NAV_BUTTONS.get(index).fire();
+        }
     }
 
     // ------------------------------------------------------------------
@@ -142,15 +144,16 @@ public final class ShellView {
         sidebar.setMaxWidth(SIDEBAR_EXPANDED);
 
         // brand + collapse toggle
-        HBox brand = new HBox(10, FontIcon.of(Feather.BOOK_OPEN, 20), brandLabel = new Label("iskolarPath"));
-        brand.setAlignment(Pos.CENTER_LEFT);
+        brandMark = new HBox(10, FontIcon.of(Feather.BOOK_OPEN, 20), brandLabel = new Label("iskolarPath"));
+        brandMark.setAlignment(Pos.CENTER_LEFT);
         brandLabel.getStyleClass().add("brand-title");
-        Region brandSpacer = new Region();
+        brandSpacer = new Region();
         HBox.setHgrow(brandSpacer, Priority.ALWAYS);
-        Button collapseButton = new Button("", FontIcon.of(Feather.MENU, 18));
+        collapseButton = new Button("", FontIcon.of(Feather.MENU, 18));
         collapseButton.getStyleClass().add("icon-button");
+        collapseButton.setTooltip(new Tooltip("Collapse sidebar"));
         collapseButton.setOnAction(e -> toggleSidebar());
-        HBox brandRow = new HBox(6, brand, brandSpacer, collapseButton);
+        brandRow = new HBox(6, brandMark, brandSpacer, collapseButton);
         brandRow.setAlignment(Pos.CENTER_LEFT);
         brandRow.getStyleClass().add("brand");
 
@@ -166,11 +169,14 @@ public final class ShellView {
         navBox.getChildren().addAll(NAV_BUTTONS);
         VBox.setVgrow(navBox, Priority.ALWAYS);
 
-        // footer: session chip + theme toggle + login/logout
+        // footer: session chip + log out + theme toggle + login
         HBox chip = new HBox(10, FontIcon.of(Feather.USER, 18),
                 new VBox(1, nameLabel = styledLabel("user-name"), roleLabel = styledLabel("user-role")));
         chip.setAlignment(Pos.CENTER_LEFT);
         chip.getStyleClass().add("user-chip");
+
+        logoutButton = footerButton("Log out", Feather.LOG_OUT);
+        logoutButton.setOnAction(e -> handleAuth());
 
         themeButton = footerButton("Light", Feather.MOON);
         themeButton.setOnAction(e -> toggleTheme());
@@ -178,7 +184,7 @@ public final class ShellView {
         authButton = footerButton("Log in", Feather.LOG_IN);
         authButton.setOnAction(e -> handleAuth());
 
-        VBox footer = new VBox(8, chip, themeButton, authButton);
+        VBox footer = new VBox(8, chip, logoutButton, themeButton, authButton);
         sidebar.getChildren().addAll(brandRow, new Separator(), navBox, footer);
         return sidebar;
     }
@@ -220,6 +226,7 @@ public final class ShellView {
         } else {
             sidebar.getStyleClass().remove("collapsed");
         }
+        applyCollapsedChrome();
         Timeline timeline = new Timeline(new KeyFrame(Duration.millis(160),
                 new KeyValue(sidebar.prefWidthProperty(), target, Interpolator.EASE_BOTH)));
         timeline.setOnFinished(e -> applyCollapsedText());
@@ -236,6 +243,20 @@ public final class ShellView {
         refreshSessionUi();
     }
 
+    /**
+     * Expanded: brand mark + toggle. Collapsed: the 68px rail cannot fit both,
+     * so the brand mark is removed from layout and the toggle is centered.
+     */
+    private static void applyCollapsedChrome() {
+        brandMark.setVisible(!collapsed);
+        brandMark.setManaged(!collapsed);
+        brandSpacer.setVisible(!collapsed);
+        brandSpacer.setManaged(!collapsed);
+        brandRow.setAlignment(collapsed ? Pos.CENTER : Pos.CENTER_LEFT);
+        brandLabel.setText(collapsed ? "" : "iskolarPath");
+        collapseButton.setTooltip(new Tooltip(collapsed ? "Expand sidebar" : "Collapse sidebar"));
+    }
+
     private static void toggleTheme() {
         ThemeManager.toggle();
         SessionManager.current().ifPresent(session ->
@@ -246,6 +267,7 @@ public final class ShellView {
     private static void handleAuth() {
         if (SessionManager.current().isPresent()) {
             SessionManager.logout();
+            JourneyRail.setAwarded(false);
             refreshSessionUi();
             NAV_BUTTONS.get(0).fire();
         } else {
@@ -254,22 +276,22 @@ public final class ShellView {
     }
 
     /**
-     * Re-syncs the session chip, auth button and admin-nav visibility with
-     * the current session + theme. Called after login/logout/theme changes
-     * and whenever the sidebar expands.
+     * Re-syncs the session chip, log out button, login button and admin-nav
+     * visibility with the current session + theme. Called after
+     * login/logout/theme changes and whenever the sidebar expands.
      */
     public static void refreshSessionUi() {
         var session = SessionManager.current();
         boolean loggedIn = session.isPresent();
 
-        topBar.setVisible(loggedIn);
-        topBar.setManaged(loggedIn);
-        if (loggedIn) {
-            topBarUser.setText(session.get().email() + "  ·  " + session.get().role().name());
-        }
+        logoutButton.setVisible(loggedIn);
+        logoutButton.setManaged(loggedIn);
+        logoutButton.setText(collapsed ? "" : "Log out");
 
-        authButton.setText(collapsed ? "" : (loggedIn ? "Log out" : "Log in"));
-        authButton.setGraphic(FontIcon.of(loggedIn ? Feather.LOG_OUT : Feather.LOG_IN, 18));
+        authButton.setVisible(!loggedIn);
+        authButton.setManaged(!loggedIn);
+        authButton.setText(collapsed ? "" : "Log in");
+        authButton.setGraphic(FontIcon.of(Feather.LOG_IN, 18));
 
         boolean admin = loggedIn && session.get().role() == Role.ADMIN;
         adminButton.setVisible(admin);
