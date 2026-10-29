@@ -19,6 +19,7 @@ import javafx.scene.control.Labeled;
 import javafx.scene.control.Separator;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
+import javafx.scene.control.Tooltip;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -52,6 +53,10 @@ public final class ShellView {
     private static Button authButton;
     private static Button themeButton;
     private static Button logoutButton;
+    private static Button collapseButton;
+    private static HBox brandRow;
+    private static HBox brandMark;
+    private static Region brandSpacer;
     private static ToggleButton adminButton;
     private static final List<ToggleButton> NAV_BUTTONS = new ArrayList<>();
     private static final Map<Labeled, String> NAV_TITLES = new HashMap<>();
@@ -67,8 +72,6 @@ public final class ShellView {
      */
     public static Parent build() {
         BorderPane root = new BorderPane();
-        root.getStyleClass().add("app-root");
-        ThemeManager.registerRoot(root);
         ViewNavigator.init(root);
         root.setLeft(buildSidebar());
         root.setTop(buildTopArea());
@@ -76,6 +79,8 @@ public final class ShellView {
         NAV_BUTTONS.get(0).fire(); // land on Discover (loads while the stage is still hidden)
 
         if (!shouldPlayIntro()) {
+            root.getStyleClass().add("app-root");
+            ThemeManager.registerRoot(root);
             return root;
         }
         return attachIntro(root);
@@ -97,6 +102,8 @@ public final class ShellView {
      */
     private static Parent attachIntro(BorderPane shell) {
         StackPane stack = new StackPane(shell);
+        stack.getStyleClass().add("app-root");
+        ThemeManager.registerRoot(stack);
 
         Node content = shell.getCenter();
         if (content == null) {
@@ -137,15 +144,16 @@ public final class ShellView {
         sidebar.setMaxWidth(SIDEBAR_EXPANDED);
 
         // brand + collapse toggle
-        HBox brand = new HBox(10, FontIcon.of(Feather.BOOK_OPEN, 20), brandLabel = new Label("iskolarPath"));
-        brand.setAlignment(Pos.CENTER_LEFT);
+        brandMark = new HBox(10, FontIcon.of(Feather.BOOK_OPEN, 20), brandLabel = new Label("iskolarPath"));
+        brandMark.setAlignment(Pos.CENTER_LEFT);
         brandLabel.getStyleClass().add("brand-title");
-        Region brandSpacer = new Region();
+        brandSpacer = new Region();
         HBox.setHgrow(brandSpacer, Priority.ALWAYS);
-        Button collapseButton = new Button("", FontIcon.of(Feather.MENU, 18));
+        collapseButton = new Button("", FontIcon.of(Feather.MENU, 18));
         collapseButton.getStyleClass().add("icon-button");
+        collapseButton.setTooltip(new Tooltip("Collapse sidebar"));
         collapseButton.setOnAction(e -> toggleSidebar());
-        HBox brandRow = new HBox(6, brand, brandSpacer, collapseButton);
+        brandRow = new HBox(6, brandMark, brandSpacer, collapseButton);
         brandRow.setAlignment(Pos.CENTER_LEFT);
         brandRow.getStyleClass().add("brand");
 
@@ -218,6 +226,7 @@ public final class ShellView {
         } else {
             sidebar.getStyleClass().remove("collapsed");
         }
+        applyCollapsedChrome();
         Timeline timeline = new Timeline(new KeyFrame(Duration.millis(160),
                 new KeyValue(sidebar.prefWidthProperty(), target, Interpolator.EASE_BOTH)));
         timeline.setOnFinished(e -> applyCollapsedText());
@@ -232,6 +241,20 @@ public final class ShellView {
         roleLabel.setVisible(!collapsed);
         roleLabel.setManaged(!collapsed);
         refreshSessionUi();
+    }
+
+    /**
+     * Expanded: brand mark + toggle. Collapsed: the 68px rail cannot fit both,
+     * so the brand mark is removed from layout and the toggle is centered.
+     */
+    private static void applyCollapsedChrome() {
+        brandMark.setVisible(!collapsed);
+        brandMark.setManaged(!collapsed);
+        brandSpacer.setVisible(!collapsed);
+        brandSpacer.setManaged(!collapsed);
+        brandRow.setAlignment(collapsed ? Pos.CENTER : Pos.CENTER_LEFT);
+        brandLabel.setText(collapsed ? "" : "iskolarPath");
+        collapseButton.setTooltip(new Tooltip(collapsed ? "Expand sidebar" : "Collapse sidebar"));
     }
 
     private static void toggleTheme() {

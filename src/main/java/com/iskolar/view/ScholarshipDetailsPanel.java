@@ -298,16 +298,14 @@ public final class ScholarshipDetailsPanel {
     }
 
     private static VBox programsSection(ScholarshipEligibilityBundle bundle) {
-        String value;
         if (bundle.allowedProgramIds().isEmpty()) {
-            value = "All degree programs";
-        } else {
-            value = DaoFactory.degreeProgramDao().findAll().stream()
-                    .filter(p -> bundle.allowedProgramIds().contains(p.programId()))
-                    .map(DegreeProgram::displayLabel)
-                    .collect(Collectors.joining(", "));
+            return section("Degree programs", note("All degree programs"));
         }
-        return section("Degree programs", row("Allowed programs", value));
+        List<String> programs = DaoFactory.degreeProgramDao().findAll().stream()
+                .filter(p -> bundle.allowedProgramIds().contains(p.programId()))
+                .map(DegreeProgram::displayLabel)
+                .toList();
+        return section("Degree programs", bulleted("Allowed programs", programs));
     }
 
     private static VBox tagsSection(ScholarshipEligibilityBundle bundle) {
@@ -324,25 +322,23 @@ public final class ScholarshipDetailsPanel {
         }
         List<Node> rows = new ArrayList<>();
         if (!mandatory.isEmpty()) {
-            rows.add(row("Required", String.join(", ", mandatory)));
+            rows.add(bulleted("Required", mandatory));
         }
         if (!preferred.isEmpty()) {
-            rows.add(row("Preferred", String.join(", ", preferred)));
+            rows.add(bulleted("Preferred", preferred));
         }
         return section("Tags", rows.toArray(Node[]::new));
     }
 
     private static VBox documentsSection(ScholarshipEligibilityBundle bundle) {
-        String value;
         if (bundle.requiredDocumentIds().isEmpty()) {
-            value = "No document requirements.";
-        } else {
-            value = DaoFactory.documentDao().findAll().stream()
-                    .filter(d -> bundle.requiredDocumentIds().contains(d.documentTypeId()))
-                    .map(DocumentType::docName)
-                    .collect(Collectors.joining(", "));
+            return section("Required documents", note("No document requirements."));
         }
-        return section("Required documents", row("Documents", value));
+        List<String> documents = DaoFactory.documentDao().findAll().stream()
+                .filter(d -> bundle.requiredDocumentIds().contains(d.documentTypeId()))
+                .map(DocumentType::docName)
+                .toList();
+        return section("Required documents", bulleted("Documents", documents));
     }
 
     private static VBox applySection(Scholarship s) {
@@ -376,6 +372,22 @@ public final class ScholarshipDetailsPanel {
         val.getStyleClass().add("details-value");
         val.setWrapText(true);
         return row(attribute, (Node) val);
+    }
+
+    /** A label on its own line followed by one bullet per item. */
+    private static VBox bulleted(String label, List<String> items) {
+        Label caption = new Label(label);
+        caption.getStyleClass().add("details-bullet-label");
+        VBox box = new VBox(3, caption);
+        box.getStyleClass().add("details-bullet-list");
+        for (String item : items) {
+            Label bullet = new Label("• " + item);
+            bullet.getStyleClass().add("details-bullet");
+            bullet.setWrapText(true);
+            bullet.setMaxWidth(Double.MAX_VALUE);
+            box.getChildren().add(bullet);
+        }
+        return box;
     }
 
     private static HBox row(String attribute, Node value) {

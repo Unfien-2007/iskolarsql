@@ -107,6 +107,11 @@
     -fx-padding: 10 0;
 }
 
+/* Collapsed header holds only the centered toggle — no horizontal padding. */
+.sidebar.collapsed .brand {
+    -fx-padding: 2 0 10 0;
+}
+
 .icon-button {
     -fx-background-color: transparent;
     -fx-background-radius: 6;
@@ -536,6 +541,18 @@
 .details-value {
     -fx-font-size: 12px;
     -fx-text-fill: -color-fg-default;
+}
+
+.details-bullet-label {
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-fg-muted;
+}
+
+.details-bullet {
+    -fx-font-size: 12px;
+    -fx-text-fill: -color-fg-default;
+    -fx-padding: 0 0 0 8;
 }
 
 .details-desc {
