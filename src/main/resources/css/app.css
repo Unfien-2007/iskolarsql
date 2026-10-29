@@ -1,5 +1,5 @@
 /* =====================================================================
-   Iskolar — application stylesheet
+   iskolarPath — application stylesheet
    Built on AtlantaFX PrimerLight / PrimerDark lookup colors, so everything
    here adapts automatically to the light/dark toggle.
    ===================================================================== */
@@ -533,4 +533,37 @@
 
 .tracker-card:hover .card-title {
     -fx-underline: true;
+}
+
+/* =====================================================================
+   Opening splash (in-window intro overlay)
+   ===================================================================== */
+
+.splash-overlay {
+    -fx-background-color: -color-bg-default;
+}
+
+.splash-title {
+    -fx-font-size: 40px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-fg-default;
+}
+
+.splash-tagline {
+    -fx-font-size: 14px;
+    -fx-text-fill: -color-fg-muted;
+}
+
+.splash-node-label {
+    -fx-font-size: 12px;
+    -fx-text-fill: -color-fg-muted;
+}
+
+.splash-line {
+    -fx-stroke: -color-accent-fg;
+    -fx-stroke-width: 2;
+}
+
+.splash-node {
+    -fx-fill: -color-accent-fg;
 }

@@ -7,10 +7,11 @@ import java.util.Optional;
 import java.util.prefs.Preferences;
 
 /**
- * The single {@code java.util.prefs} node backing theme + session persistence
- * (package-private — clients use {@link ThemeManager} / {@link SessionManager}).
+ * The single {@code java.util.prefs} node backing theme, session and app-level
+ * flag persistence (clients typically use {@link ThemeManager} /
+ * {@link SessionManager}, but app-wide UI flags live here).
  */
-final class Prefs {
+public final class Prefs {
 
     private static final Preferences NODE = Preferences.userRoot().node("com.iskolar");
 
@@ -18,6 +19,7 @@ final class Prefs {
     private static final String KEY_SESSION_USER = "session.userId";
     private static final String KEY_SESSION_EMAIL = "session.email";
     private static final String KEY_SESSION_ROLE = "session.role";
+    private static final String KEY_INTRO_SEEN = "intro.seen";
 
     private Prefs() {
     }
@@ -67,5 +69,16 @@ final class Prefs {
         NODE.remove(KEY_SESSION_USER);
         NODE.remove(KEY_SESSION_EMAIL);
         NODE.remove(KEY_SESSION_ROLE);
+    }
+
+    // ---- app flags ----------------------------------------------------
+
+    /** Whether the one-time opening intro animation has already played. */
+    public static boolean introSeen() {
+        return NODE.getBoolean(KEY_INTRO_SEEN, false);
+    }
+
+    public static void introSeen(boolean seen) {
+        NODE.putBoolean(KEY_INTRO_SEEN, seen);
     }
 }

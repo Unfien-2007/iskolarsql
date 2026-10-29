@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- =====================================================================
-     ISKOLAR — Scholarship Finder & Application Tracker
+     iskolarPath: Discover, match, and track your scholarship journey.
      Java 21 LTS · JavaFX 21 · AtlantaFX (Primer Light/Dark) · SQLite
      MVC + DAO architecture · single-module Maven build
      ===================================================================== -->
@@ -15,7 +15,7 @@
     <version>1.0.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
-    <name>Iskolar — Scholarship Finder &amp; Application Tracker</name>
+    <name>iskolarPath: Discover, match, and track your scholarship journey.</name>
     <description>Desktop scholarship discovery, matching, and application tracking for Filipino students.</description>
 
     <properties>

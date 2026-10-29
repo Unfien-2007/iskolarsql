@@ -1,5 +1,5 @@
 -- =====================================================================
--- ISKOLAR — Scholarship Finder & Application Tracker
+-- iskolarPath: Discover, match, and track your scholarship journey.
 -- seed.sql  |  realistic Philippine demo data
 -- =====================================================================
 -- Deadlines are computed RELATIVE to today so the demo always shows a

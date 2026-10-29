@@ -1,4 +1,4 @@
-# Iskolar — Scholarship Finder & Application Tracker
+# iskolarPath: Discover, match, and track your scholarship journey.
 
 Desktop scholarship discovery, two-stage weighted matching, and Kanban
 application tracking for Filipino students.

@@ -3,6 +3,7 @@ package com.iskolar.view;
 import com.iskolar.dao.DaoFactory;
 import com.iskolar.model.Role;
 import com.iskolar.model.ThemePref;
+import com.iskolar.util.Prefs;
 import com.iskolar.util.SessionManager;
 import com.iskolar.util.ThemeManager;
 import com.iskolar.util.ViewNavigator;
@@ -11,6 +12,8 @@ import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
+import javafx.scene.Parent;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Labeled;
@@ -21,6 +24,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.util.Duration;
 import org.kordamp.ikonli.feather.Feather;
@@ -58,15 +62,56 @@ public final class ShellView {
     private ShellView() {
     }
 
-    public static BorderPane build() {
+    /**
+     * Builds the shell. On the very first launch an in-window intro splash
+     * plays over the shell and hands off into it (see {@link IntroSplash});
+     * on later launches the shell is returned as-is.
+     */
+    public static Parent build() {
         BorderPane root = new BorderPane();
         root.getStyleClass().add("app-root");
         ViewNavigator.init(root);
         root.setLeft(buildSidebar());
         root.setTop(buildTopBar());
         refreshSessionUi();
-        NAV_BUTTONS.get(0).fire(); // land on Discover
-        return root;
+        NAV_BUTTONS.get(0).fire(); // land on Discover (loads while the stage is still hidden)
+
+        if (!shouldPlayIntro()) {
+            return root;
+        }
+        return attachIntro(root);
+    }
+
+    /**
+     * Flip to {@code true} (or pass {@code -Diskolar.skipIntro=true}) to
+     * bypass the splash during development.
+     */
+    private static final boolean SKIP_INTRO_ANIMATION = Boolean.getBoolean("iskolar.skipIntro");
+
+    private static boolean shouldPlayIntro() {
+        return !SKIP_INTRO_ANIMATION && !Prefs.introSeen();
+    }
+
+    /**
+     * Layers the intro splash over the shell inside a {@code StackPane} and
+     * prepares the sidebar + center content for the reveal handoff.
+     */
+    private static Parent attachIntro(BorderPane shell) {
+        StackPane stack = new StackPane(shell);
+
+        Node content = shell.getCenter();
+        if (content == null) {
+            content = new Region();
+            shell.setCenter(content);
+        }
+
+        sidebar.setTranslateX(-SIDEBAR_EXPANDED);
+        content.setOpacity(0);
+        content.setTranslateY(12);
+
+        IntroSplash splash = IntroSplash.attach(stack, sidebar, content, () -> Prefs.introSeen(true));
+        splash.play();
+        return stack;
     }
 
     /** Always-visible header bar: who is signed in + a prominent Log out button. */
@@ -98,7 +143,7 @@ public final class ShellView {
         sidebar.setMaxWidth(SIDEBAR_EXPANDED);
 
         // brand + collapse toggle
-        HBox brand = new HBox(10, FontIcon.of(Feather.BOOK_OPEN, 20), brandLabel = new Label("Iskolar"));
+        HBox brand = new HBox(10, FontIcon.of(Feather.BOOK_OPEN, 20), brandLabel = new Label("iskolarPath"));
         brand.setAlignment(Pos.CENTER_LEFT);
         brandLabel.getStyleClass().add("brand-title");
         Region brandSpacer = new Region();
@@ -184,7 +229,7 @@ public final class ShellView {
 
     private static void applyCollapsedText() {
         NAV_TITLES.forEach((node, title) -> node.setText(collapsed ? "" : title));
-        brandLabel.setText(collapsed ? "" : "Iskolar");
+        brandLabel.setText(collapsed ? "" : "iskolarPath");
         nameLabel.setVisible(!collapsed);
         nameLabel.setManaged(!collapsed);
         roleLabel.setVisible(!collapsed);

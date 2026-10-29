@@ -1,5 +1,5 @@
 -- =====================================================================
--- ISKOLAR — Scholarship Finder & Application Tracker
+-- iskolarPath: Discover, match, and track your scholarship journey.
 -- schema.sql  |  SQLite 3.x dialect  |  Normalized to 3NF
 -- =====================================================================
 -- Usage (CLI inspection only — Phase 2's DatabaseConfig auto-applies

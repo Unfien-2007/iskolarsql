@@ -1,5 +1,5 @@
 /**
- * Iskolar — Scholarship Finder &amp; Application Tracker.
+ * iskolarPath: Discover, match, and track your scholarship journey.
  *
  * <p>Application entry points (delivered in Phase 4):
  * <ul>
