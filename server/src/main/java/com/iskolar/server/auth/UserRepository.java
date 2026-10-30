@@ -48,6 +48,11 @@ public class UserRepository {
         return findById(id).orElseThrow(() -> new IllegalStateException("Inserted user not found: " + id));
     }
 
+    public void updatePassword(long userId, String passwordHash) {
+        jdbc.update("UPDATE users SET password_hash = ?, updated_at = now() WHERE user_id = ?",
+                passwordHash, userId);
+    }
+
     /** User row as stored on the server. */
     public record UserRow(long userId, String email, String passwordHash, String role, boolean isActive) {
     }

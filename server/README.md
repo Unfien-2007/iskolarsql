@@ -12,6 +12,8 @@ the scholarship catalog and uses the cached snapshot for fully offline matching.
 | POST   | `/api/auth/register` | public | Create a STUDENT account (201 + JWT)         |
 | POST   | `/api/auth/login`    | public | Verify credentials (200 + JWT / 401)         |
 | GET    | `/api/auth/me`       | Bearer | Current caller (401 without a valid token)   |
+| POST   | `/api/auth/forgot`   | public | Request a password-reset token (no enumeration) |
+| POST   | `/api/auth/reset`    | public | Reset password with a one-time token         |
 | GET    | `/api/catalog/version` | public | `{ "version": 1 }` — bumped on admin writes |
 | GET    | `/api/catalog`       | public | Full catalog snapshot (JSON)                 |
 
@@ -50,6 +52,7 @@ Defaults point at `jdbc:postgresql://localhost:5432/iskolar`, user `postgres`.
 | `ISC_DB_USERNAME`  | Database user                             | `postgres`                  |
 | `ISC_DB_PASSWORD`  | Database password                         | (empty)                     |
 | `ISC_JWT_SECRET`   | HS256 signing secret (≥ 32 chars)         | dev-only default            |
+| `ISC_SMTP_HOST`    | SMTP host for reset emails (see below)    | (empty = dev mode)          |
 | `PORT`             | HTTP port                                 | `8080`                      |
 
 `ISC_DB_URL` wins over `ISC_DB_JDBC_URL` and accepts the `postgres://` scheme
@@ -82,6 +85,11 @@ First run downloads the embedded PostgreSQL binaries (~30 MB).
 
 - Public registration always creates STUDENT accounts; ADMIN accounts are
   provisioned directly in the database.
-- Catalog writes (admin) arrive in Phase 3; every write must bump
-  `app_state.catalog_version` so clients detect the change.
-- Rate limiting, refresh tokens, and password reset are Phase 5 items.
+- Catalog writes (admin) bump `app_state.catalog_version` so clients detect the
+  change.
+- **Password reset (dev mode)** — with no `ISC_SMTP_HOST` set, `POST
+  /api/auth/forgot` logs the single-use reset token to the server console
+  (`DEV MODE password-reset token for …`); paste it into the desktop app's
+  "Forgot password?" dialog. Set `ISC_SMTP_HOST` to route tokens through a real
+  SMTP relay (`MailService` is the integration point).
+- Rate limiting and refresh-token rotation remain future work.

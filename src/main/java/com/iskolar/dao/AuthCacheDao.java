@@ -70,6 +70,29 @@ public class AuthCacheDao {
         }
     }
 
+    /** Bumps the 'last seen online' timestamp (revalidation on reconnect). */
+    public void touch(String email) {
+        try (Connection c = dataSource.getConnection();
+             PreparedStatement ps = c.prepareStatement(
+                     "UPDATE auth_cache SET last_online_at = datetime('now') WHERE email = ?")) {
+            ps.setString(1, email);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            throw new DataAccessException("Failed to touch cached credentials for " + email, e);
+        }
+    }
+
+    /** Drops the cached credential (account revocation). */
+    public void remove(String email) {
+        try (Connection c = dataSource.getConnection();
+             PreparedStatement ps = c.prepareStatement("DELETE FROM auth_cache WHERE email = ?")) {
+            ps.setString(1, email);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            throw new DataAccessException("Failed to remove cached credentials for " + email, e);
+        }
+    }
+
     static CachedAuth map(ResultSet rs) throws SQLException {
         return new CachedAuth(
                 rs.getLong("user_id"),

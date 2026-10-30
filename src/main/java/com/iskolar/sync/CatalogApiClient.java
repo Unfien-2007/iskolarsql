@@ -110,6 +110,38 @@ public final class CatalogApiClient {
         }
     }
 
+    /** {@code GET /api/auth/me} — revalidates a stored token; 401 when revoked or the account was disabled. */
+    public AuthResponse me(String token) {
+        HttpResponse<String> response = send(request("/api/auth/me")
+                .GET()
+                .header("Authorization", bearer(token)));
+        if (response.statusCode() == 401) {
+            throw new SyncException.UnauthorizedException(errorMessage(response));
+        }
+        expectOk(response);
+        try {
+            return json.readValue(response.body(), AuthResponse.class);
+        } catch (IOException e) {
+            throw new SyncException("Invalid response from the catalog server.", e);
+        }
+    }
+
+    /** {@code POST /api/auth/forgot} — requests a password-reset token. */
+    public String forgot(String email) {
+        HttpResponse<String> response = send(request("/api/auth/forgot")
+                .POST(jsonBody(Map.of("email", email))));
+        expectOk(response);
+        return messageOr(response, "If an account with this email exists, a reset link has been sent.");
+    }
+
+    /** {@code POST /api/auth/reset} — exchanges a reset token for a new password. */
+    public String resetPassword(String token, String newPassword) {
+        HttpResponse<String> response = send(request("/api/auth/reset")
+                .POST(jsonBody(Map.of("token", token, "newPassword", newPassword))));
+        expectOk(response);
+        return messageOr(response, "Password updated.");
+    }
+
     // ------------------------------------------------------------------
     // Admin writes (JWT required)
     // ------------------------------------------------------------------
@@ -204,6 +236,20 @@ public final class CatalogApiClient {
                     "The catalog server returned HTTP " + response.statusCode() + ".");
         } catch (IOException e) {
             return "The catalog server returned HTTP " + response.statusCode() + ".";
+        }
+    }
+
+    /** Success bodies look like {@code {"message": "..."}} — surface the message. */
+    private static String messageOr(HttpResponse<String> response, String fallback) {
+        String body = response.body();
+        if (body == null || body.isBlank()) {
+            return fallback;
+        }
+        try {
+            String message = new ObjectMapper().readTree(body).path("message").asText("");
+            return message.isBlank() ? fallback : message;
+        } catch (IOException e) {
+            return fallback;
         }
     }
 }

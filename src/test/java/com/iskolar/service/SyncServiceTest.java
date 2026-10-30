@@ -167,6 +167,30 @@ class SyncServiceTest {
                 () -> client.login("admin@iskolar.app", "wrong"));
     }
 
+    @Test
+    void syncRetriesAfterTransientFailures() throws IOException {
+        server.removeContext("/api/catalog/version");
+        var attempts = new java.util.concurrent.atomic.AtomicInteger();
+        server.createContext("/api/catalog/version", exchange -> {
+            if (attempts.incrementAndGet() < 3) {
+                respond(exchange, 500, "{\"error\":\"temporary\"}");
+            } else {
+                respond(exchange, 200, "{\"version\":2}");
+            }
+        });
+
+        SyncService service = new SyncService(new SyncCatalogDao(ds),
+                new CatalogApiClient(baseUrl()), new long[] { 20, 20 });
+
+        SyncService.SyncResult result = service.syncWithRetry();
+
+        assertTrue(result.success());
+        assertTrue(result.changed());
+        assertEquals(2, result.version());
+        assertEquals(3, attempts.get()); // two failures, then success
+        assertEquals("Stub Scholarship", scalar("SELECT title FROM scholarships WHERE scholarship_id = 1"));
+    }
+
     // ------------------------------------------------------------------
 
     private static void respond(com.sun.net.httpserver.HttpExchange exchange, int status, String body)

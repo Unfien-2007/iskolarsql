@@ -122,6 +122,84 @@ public class AuthService {
         return e.getCause() != null;
     }
 
+    // ------------------------------------------------------------------
+    // Revalidation (account revocation on reconnect)
+    // ------------------------------------------------------------------
+
+    /** Outcome of a background revalidation against the server. */
+    public enum Revalidation {
+        NONE, REFRESHED, SIGNED_OUT
+    }
+
+    /**
+     * Background maintenance: when the server is reachable, re-validates the
+     * stored token via {@code GET /api/auth/me}. Disabled accounts are signed
+     * out locally and scrubbed from the offline credential cache (account
+     * revocation on reconnect); an expired token only means "sign in again
+     * online next time" and keeps the cached credentials usable offline.
+     */
+    public Revalidation revalidateOnReconnect() {
+        String token = TokenStore.token().orElse("");
+        String email = TokenStore.email();
+        if (token.isBlank() || email == null || email.isBlank()) {
+            return Revalidation.NONE;
+        }
+        try {
+            apiClient.me(token);
+            authCacheDao.touch(email);
+            return Revalidation.REFRESHED;
+        } catch (SyncException.UnauthorizedException e) {
+            String message = e.getMessage();
+            if (message != null && message.toLowerCase().contains("disabled")) {
+                authCacheDao.remove(email);
+                TokenStore.clear();
+                SessionManager.current()
+                        .filter(s -> s.email().equalsIgnoreCase(email))
+                        .ifPresent(s -> SessionManager.logout());
+                return Revalidation.SIGNED_OUT;
+            }
+            return Revalidation.NONE; // expired/revoked token: credentials stay cached
+        } catch (SyncException e) {
+            return Revalidation.NONE;
+        }
+    }
+
+    // ------------------------------------------------------------------
+    // Password reset (online-only)
+    // ------------------------------------------------------------------
+
+    /** Requests a password-reset token for the given email. */
+    public AuthResult forgotPassword(String email) {
+        String normalized = email == null ? "" : email.trim();
+        if (!EMAIL_PATTERN.matcher(normalized).matches()) {
+            return AuthResult.failure("Enter a valid email address.");
+        }
+        try {
+            return AuthResult.successMessage(apiClient.forgot(normalized));
+        } catch (SyncException e) {
+            return AuthResult.failure(isNetworkFailure(e)
+                    ? "Password reset requires an internet connection."
+                    : e.getMessage());
+        }
+    }
+
+    /** Exchanges a reset token for a new password. */
+    public AuthResult resetPassword(String token, String newPassword) {
+        if (token == null || token.isBlank()) {
+            return AuthResult.failure("Enter the reset token from your email.");
+        }
+        if (newPassword == null || newPassword.length() < MIN_PASSWORD_LENGTH) {
+            return AuthResult.failure("Password must be at least " + MIN_PASSWORD_LENGTH + " characters.");
+        }
+        try {
+            return AuthResult.successMessage(apiClient.resetPassword(token, newPassword));
+        } catch (SyncException e) {
+            return AuthResult.failure(isNetworkFailure(e)
+                    ? "Password reset requires an internet connection."
+                    : e.getMessage());
+        }
+    }
+
     private static boolean isBlank(String s) {
         return s == null || s.isBlank();
     }

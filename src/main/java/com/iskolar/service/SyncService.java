@@ -45,11 +45,18 @@ public final class SyncService {
 
     private final SyncCatalogDao store;
     private final CatalogApiClient client;
+    private final long[] retryDelaysMs;
     private final List<Consumer<SyncResult>> listeners = new CopyOnWriteArrayList<>();
 
     public SyncService(SyncCatalogDao store, CatalogApiClient client) {
+        this(store, client, new long[] { 2000, 4000 });
+    }
+
+    /** Test-friendly constructor with an explicit retry backoff schedule. */
+    public SyncService(SyncCatalogDao store, CatalogApiClient client, long[] retryDelaysMs) {
         this.store = store;
         this.client = client;
+        this.retryDelaysMs = retryDelaysMs;
     }
 
     /** Shared singleton bound to the app database and the configured server URL. */
@@ -101,11 +108,33 @@ public final class SyncService {
         }
     }
 
-    /** Kicks off {@link #syncNow()} on a daemon thread; listeners fire on the FX thread. */
+    /**
+     * Blocking sync with retry/backoff: re-attempts a failed sync after each
+     * configured delay. Never throws — failures come back as a failed
+     * {@link SyncResult}.
+     */
+    SyncResult syncWithRetry() {
+        SyncResult result = syncNow();
+        for (long delayMs : retryDelaysMs) {
+            if (result.success()) {
+                break;
+            }
+            try {
+                Thread.sleep(delayMs);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                break;
+            }
+            result = syncNow();
+        }
+        return result;
+    }
+
+    /** Kicks off {@link #syncWithRetry()} on a daemon thread; listeners fire on the FX thread. */
     public void syncInBackground() {
         notify(SyncResult.syncing(localVersion()));
         Thread thread = new Thread(() -> {
-            SyncResult result = syncNow();
+            SyncResult result = syncWithRetry();
             javafx.application.Platform.runLater(() -> notify(result));
         }, "iskolar-catalog-sync");
         thread.setDaemon(true);

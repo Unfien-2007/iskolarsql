@@ -33,4 +33,21 @@ public final class AuthDtos {
 
     public record AuthResponse(long userId, String email, String role, String token) {
     }
+
+    public record ForgotPasswordRequest(
+            @NotBlank(message = "Email is required.")
+            @Email(message = "Enter a valid email address.")
+            String email) {
+    }
+
+    public record ResetPasswordRequest(
+            @NotBlank(message = "Reset token is required.")
+            String token,
+            @NotBlank(message = "Password is required.")
+            @Size(min = 8, max = 72, message = "Password must be 8–72 characters.")
+            String newPassword) {
+    }
+
+    public record MessageResponse(String message) {
+    }
 }

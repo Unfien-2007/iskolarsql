@@ -3,6 +3,7 @@ package com.iskolar.controller;
 import com.iskolar.service.AuthResult;
 import com.iskolar.service.ServiceFactory;
 import com.iskolar.util.ViewNavigator;
+import com.iskolar.view.ForgotPasswordDialog;
 import com.iskolar.view.ShellView;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
@@ -28,6 +29,8 @@ public class LoginController {
     private Button loginButton;
     @FXML
     private Hyperlink registerLink;
+    @FXML
+    private Hyperlink forgotLink;
 
     @FXML
     private void initialize() {
@@ -35,6 +38,8 @@ public class LoginController {
         emailField.setOnAction(e -> login());
         passwordField.setOnAction(e -> login());
         registerLink.setOnAction(e -> ViewNavigator.show(ViewNavigator.REGISTER_VIEW));
+        forgotLink.setOnAction(e -> ForgotPasswordDialog.show(
+                emailField.getScene().getWindow(), emailField.getText()));
     }
 
     private void login() {
