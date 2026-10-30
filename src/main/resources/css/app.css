@@ -774,3 +774,14 @@
 .compare-panel .compare-grid {
     -fx-padding: 18 20 18 20;
 }
+
+/* ---------------------------------------------------------------------
+   Catalog sync indicator (discovery header)
+   --------------------------------------------------------------------- */
+.sync-label {
+    -fx-font-size: 12px;
+    -fx-text-fill: -color-fg-muted;
+}
+.sync-label.offline {
+    -fx-text-fill: -color-warning-fg;
+}

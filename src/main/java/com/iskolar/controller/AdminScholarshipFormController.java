@@ -10,6 +10,7 @@ import com.iskolar.model.Scholarship;
 import com.iskolar.model.ScholarshipCriteria;
 import com.iskolar.model.SchoolType;
 import com.iskolar.model.Tag;
+import com.iskolar.service.ServiceFactory;
 import com.iskolar.util.SessionManager;
 import com.iskolar.util.ViewNavigator;
 import javafx.beans.property.BooleanProperty;
@@ -24,6 +25,7 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.CheckBoxListCell;
+import javafx.stage.Window;
 import javafx.util.StringConverter;
 
 import java.math.BigDecimal;
@@ -333,10 +335,17 @@ public class AdminScholarshipFormController {
                 .toList();
 
         ScholarshipDraft draft = new ScholarshipDraft(scholarship, criteria, programs, years, tags, documents);
-        if (editingId == null) {
-            DaoFactory.scholarshipDao().create(draft);
-        } else {
-            DaoFactory.scholarshipDao().update(editingId, draft);
+        try {
+            String adminEmail = SessionManager.current().map(s -> s.email()).orElse("");
+            Window owner = saveButton.getScene().getWindow();
+            if (editingId == null) {
+                ServiceFactory.adminGateway().create(owner, adminEmail, draft);
+            } else {
+                ServiceFactory.adminGateway().update(owner, adminEmail, editingId, draft);
+            }
+        } catch (com.iskolar.sync.SyncException e) {
+            fail(e.getMessage());
+            return;
         }
         ViewNavigator.show(ViewNavigator.ADMIN_DASHBOARD_VIEW);
     }

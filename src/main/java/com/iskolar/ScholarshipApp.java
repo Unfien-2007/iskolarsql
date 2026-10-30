@@ -35,6 +35,9 @@ public class ScholarshipApp extends Application {
         stage.setMinHeight(640);
         stage.setScene(scene);
         stage.show();
+
+        // Kick off a background catalog sync once the window is visible.
+        com.iskolar.service.ServiceFactory.syncService().syncInBackground();
     }
 
     @Override

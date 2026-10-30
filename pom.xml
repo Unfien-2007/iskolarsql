@@ -35,6 +35,9 @@
         <!-- Security -->
         <jbcrypt.version>0.4</jbcrypt.version>
 
+        <!-- Sync (catalog server) -->
+        <jackson.version>2.18.2</jackson.version>
+
         <!-- Test -->
         <junit.version>5.11.4</junit.version>
     </properties>
@@ -104,6 +107,18 @@
             <groupId>org.mindrot</groupId>
             <artifactId>jbcrypt</artifactId>
             <version>${jbcrypt.version}</version>
+        </dependency>
+
+        <!-- ===================== Sync (catalog server JSON) ===================== -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jsr310</artifactId>
+            <version>${jackson.version}</version>
         </dependency>
 
         <!-- ===================== Test ===================== -->
