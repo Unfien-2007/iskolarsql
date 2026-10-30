@@ -35,6 +35,29 @@ public class ScholarshipApp extends Application {
         stage.setMinHeight(640);
         stage.setScene(scene);
         stage.show();
+
+        // Kick off a background catalog sync once the window is visible. After
+        // every successful sync the cached sign-in is re-validated against the
+        // server — accounts disabled centrally get signed out locally.
+        var syncService = com.iskolar.service.ServiceFactory.syncService();
+        syncService.addListener(result -> {
+            if (result.success()) {
+                Thread worker = new Thread(() -> {
+                    var outcome = com.iskolar.service.ServiceFactory.authService()
+                            .revalidateOnReconnect();
+                    if (outcome == com.iskolar.service.AuthService.Revalidation.SIGNED_OUT) {
+                        javafx.application.Platform.runLater(() -> {
+                            ShellView.refreshSessionUi();
+                            com.iskolar.util.ViewNavigator.show(
+                                    com.iskolar.util.ViewNavigator.DISCOVERY_VIEW);
+                        });
+                    }
+                }, "iskolar-auth-revalidate");
+                worker.setDaemon(true);
+                worker.start();
+            }
+        });
+        syncService.syncInBackground();
     }
 
     @Override

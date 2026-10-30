@@ -2,8 +2,6 @@ package com.iskolar.config;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.sql.DataSource;
 import java.io.IOException;
@@ -25,15 +23,14 @@ import java.sql.Statement;
  * <ol>
  *   <li>Creates the data directory (see {@link AppPaths}).</li>
  *   <li>Enables WAL journal mode on the database file.</li>
- *   <li>Applies {@code db/schema.sql} + {@code db/seed.sql} on first boot
- *       (detected by the absence of the {@code users} table).</li>
+ *   <li>Brings the schema up to date via {@link SchemaMigrator} (applies
+ *       {@code db/schema.sql} + {@code db/seed.sql} on first boot, and any
+ *       pending {@code db/migrations/*.sql} scripts after that).</li>
  *   <li>Builds the Hikari pool with per-connection SQLite pragmas
  *       ({@code foreign_keys}, {@code busy_timeout}).</li>
  * </ol>
  */
 public final class DatabaseConfig {
-
-    private static final Logger log = LoggerFactory.getLogger(DatabaseConfig.class);
 
     private static final int MAX_POOL_SIZE = 5;
     private static final long CONNECTION_TIMEOUT_MS = 5_000;
@@ -113,27 +110,19 @@ public final class DatabaseConfig {
     }
 
     private static void bootstrapDatabase(Path dbPath) {
-        try (Connection conn = DriverManager.getConnection("jdbc:sqlite:" + dbPath.toAbsolutePath());
-             Statement st = conn.createStatement()) {
+        try (Connection conn = DriverManager.getConnection("jdbc:sqlite:" + dbPath.toAbsolutePath())) {
             // journal_mode returns a result row — consume it, otherwise the open
             // cursor blocks the next statement on this connection (SQLITE_BUSY).
-            try (ResultSet ignored = st.executeQuery("PRAGMA journal_mode = WAL")) {
+            try (ResultSet ignored = conn.createStatement().executeQuery("PRAGMA journal_mode = WAL")) {
                 // no-op
             }
-            if (!tableExists(conn, "users")) {
-                log.info("First boot - creating schema and loading seed data at {}", dbPath);
-                // executeUpdate drives xerial's multi-statement loop reliably;
-                // execute() bails early on scripts producing result rows.
-                st.executeUpdate(readResource("/db/schema.sql"));
-                st.executeUpdate(readResource("/db/seed.sql"));
-                log.info("Database bootstrapped: schema + seed applied at {}", dbPath);
-            }
+            SchemaMigrator.migrate(conn);
         } catch (SQLException e) {
             throw new IllegalStateException("Failed to bootstrap SQLite database at " + dbPath, e);
         }
     }
 
-    private static boolean tableExists(Connection conn, String tableName) throws SQLException {
+    static boolean tableExists(Connection conn, String tableName) throws SQLException {
         String sql = "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = ?";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, tableName);
@@ -143,7 +132,7 @@ public final class DatabaseConfig {
         }
     }
 
-    private static String readResource(String name) {
+    static String readResource(String name) {
         try (InputStream in = DatabaseConfig.class.getResourceAsStream(name)) {
             if (in == null) {
                 throw new IllegalStateException("Missing classpath resource: " + name);

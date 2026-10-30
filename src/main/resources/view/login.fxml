@@ -18,6 +18,7 @@
         <TextField fx:id="emailField" promptText="you@school.edu.ph"/>
         <Label text="Password" styleClass="field-label"/>
         <PasswordField fx:id="passwordField" promptText="Your password"/>
+        <Hyperlink fx:id="forgotLink" text="Forgot password?" alignment="CENTER_RIGHT"/>
         <Label fx:id="errorLabel" styleClass="error-label" visible="false" managed="false" wrapText="true"/>
         <Button fx:id="loginButton" text="Log in" defaultButton="true" maxWidth="Infinity"
                 styleClass="primary-button"/>

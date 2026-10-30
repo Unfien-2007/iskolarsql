@@ -30,6 +30,11 @@
                 <Region HBox.hgrow="ALWAYS"/>
                 <Button fx:id="bannerButton" text="Log in"/>
             </HBox>
+            <HBox fx:id="syncBar" spacing="10" alignment="CENTER_LEFT">
+                <Label fx:id="syncLabel" styleClass="sync-label" wrapText="true"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Button fx:id="syncButton" text="Refresh catalog"/>
+            </HBox>
             <Label fx:id="resultLabel" styleClass="result-label"/>
             <HBox spacing="10" alignment="CENTER_LEFT">
                 <Label fx:id="selectionLabel" styleClass="result-label" visible="false" managed="false"/>

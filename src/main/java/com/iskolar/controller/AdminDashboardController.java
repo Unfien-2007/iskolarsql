@@ -1,7 +1,9 @@
 package com.iskolar.controller;
 
 import com.iskolar.dao.DaoFactory;
+import com.iskolar.dto.ScholarshipDraft;
 import com.iskolar.model.Scholarship;
+import com.iskolar.service.ServiceFactory;
 import com.iskolar.util.SessionManager;
 import com.iskolar.util.ViewNavigator;
 import javafx.beans.property.ReadOnlyStringWrapper;
@@ -91,8 +93,30 @@ public class AdminDashboardController {
         editButton.setOnAction(e -> openEditor(selected().scholarshipId()));
         toggleButton.setOnAction(e -> {
             Scholarship s = selected();
-            DaoFactory.scholarshipDao().setActive(s.scholarshipId(), !s.isActive());
-            load();
+            try {
+                var bundle = DaoFactory.scholarshipDao()
+                        .findEligibilityBundle(s.scholarshipId()).orElse(null);
+                if (bundle == null) {
+                    load();
+                    return;
+                }
+                Scholarship flipped = new Scholarship(
+                        s.scholarshipId(), s.createdBy(), s.title(), s.providerName(),
+                        s.providerType(), s.description(), s.tuitionBenefit(),
+                        s.monthlyStipend(), s.returnServiceYears(), s.applicationUrl(),
+                        s.openDate(), s.deadlineDate(), !s.isActive());
+                ScholarshipDraft draft = new ScholarshipDraft(
+                        flipped, bundle.criteria(), bundle.allowedProgramIds(),
+                        bundle.allowedYearLevels(), bundle.tagRequirements(),
+                        bundle.requiredDocumentIds());
+                ServiceFactory.adminGateway().update(
+                        contentBox.getScene().getWindow(), adminEmail(), s.scholarshipId(), draft);
+                load();
+            } catch (com.iskolar.sync.SyncException ex) {
+                com.iskolar.sync.AdminCatalogGateway.showError(
+                        contentBox.getScene().getWindow(), ex.getMessage());
+                load();
+            }
         });
         deleteButton.setOnAction(e -> {
             Scholarship s = selected();
@@ -101,8 +125,15 @@ public class AdminDashboardController {
                     ButtonType.YES, ButtonType.CANCEL);
             confirm.setTitle("Delete scholarship");
             confirm.showAndWait().filter(r -> r == ButtonType.YES).ifPresent(r -> {
-                DaoFactory.scholarshipDao().delete(s.scholarshipId());
-                load();
+                try {
+                    ServiceFactory.adminGateway().delete(
+                            contentBox.getScene().getWindow(), adminEmail(), s.scholarshipId());
+                    load();
+                } catch (com.iskolar.sync.SyncException ex) {
+                    com.iskolar.sync.AdminCatalogGateway.showError(
+                            contentBox.getScene().getWindow(), ex.getMessage());
+                    load();
+                }
             });
         });
 
@@ -129,6 +160,10 @@ public class AdminDashboardController {
 
     private Scholarship selected() {
         return table.getSelectionModel().getSelectedItem();
+    }
+
+    private String adminEmail() {
+        return SessionManager.current().map(SessionManager.Session::email).orElse("");
     }
 
     private void updateButtons() {

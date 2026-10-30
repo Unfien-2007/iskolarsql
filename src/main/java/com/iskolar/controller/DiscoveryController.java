@@ -9,6 +9,7 @@ import com.iskolar.model.ProviderType;
 import com.iskolar.model.Scholarship;
 import com.iskolar.model.ScholarshipCriteria;
 import com.iskolar.service.ServiceFactory;
+import com.iskolar.service.SyncService;
 import com.iskolar.util.SessionManager;
 import com.iskolar.util.ViewNavigator;
 import com.iskolar.view.ComparisonPanel;
@@ -74,6 +75,10 @@ public class DiscoveryController {
     @FXML
     private Button bannerButton;
     @FXML
+    private Label syncLabel;
+    @FXML
+    private Button syncButton;
+    @FXML
     private FlowPane cardPane;
 
     private final PauseTransition provinceDebounce = new PauseTransition(Duration.millis(350));
@@ -108,10 +113,46 @@ public class DiscoveryController {
 
         compareButton.setOnAction(e -> openComparison());
 
+        // catalog sync indicator
+        syncButton.setOnAction(e -> ServiceFactory.syncService().syncInBackground());
+        ServiceFactory.syncService().addListener(this::onSyncStatus);
+        showLocalSyncState();
+
         // responsive grid: cards stretch to fill every row edge-to-edge
         cardPane.widthProperty().addListener((obs, oldVal, newVal) -> applyCardWidths());
 
         refresh();
+    }
+
+    private void showLocalSyncState() {
+        var service = ServiceFactory.syncService();
+        syncLabel.setText(service.localVersion() > 0
+                ? "Using cached catalog · " + service.updatedText()
+                : "Using bundled catalog — " + service.updatedText());
+        syncLabel.getStyleClass().remove("offline");
+    }
+
+    private void onSyncStatus(SyncService.SyncResult result) {
+        var service = ServiceFactory.syncService();
+        if (result.syncing()) {
+            syncLabel.setText("Syncing catalog…");
+            syncLabel.getStyleClass().remove("offline");
+            return;
+        }
+        if (!result.success()) {
+            syncLabel.setText("Offline — using cached catalog · " + service.updatedText());
+            if (!syncLabel.getStyleClass().contains("offline")) {
+                syncLabel.getStyleClass().add("offline");
+            }
+            return;
+        }
+        syncLabel.getStyleClass().remove("offline");
+        syncLabel.setText(result.changed()
+                ? "Catalog updated · version " + result.version() + " · " + service.updatedText()
+                : "Catalog up to date · version " + result.version() + " · " + service.updatedText());
+        if (result.changed()) {
+            refresh(); // re-render the grid against the fresh catalog
+        }
     }
 
     /** Displays {@code "Any …"} for a {@code null} selection. */

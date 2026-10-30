@@ -19,8 +19,44 @@ public final class Prefs {
     private static final String KEY_SESSION_USER = "session.userId";
     private static final String KEY_SESSION_EMAIL = "session.email";
     private static final String KEY_SESSION_ROLE = "session.role";
+    private static final String KEY_API_URL = "sync.apiUrl";
+    private static final String KEY_JWT = "server.jwt";
+    private static final String KEY_JWT_EMAIL = "server.jwt.email";
+
+    /** Default catalog-server base URL; overridable with {@code -Diskolar.apiUrl=...}. */
+    private static final String DEFAULT_API_URL =
+            System.getProperty("iskolar.apiUrl", "http://localhost:8080");
 
     private Prefs() {
+    }
+
+    // ---- sync (catalog server) ------------------------------------------
+
+    /** Base URL of the central catalog server (no trailing slash). */
+    public static String apiUrl() {
+        return NODE.get(KEY_API_URL, DEFAULT_API_URL);
+    }
+
+    public static void apiUrl(String url) {
+        NODE.put(KEY_API_URL, url);
+    }
+
+    public static String jwt() {
+        return NODE.get(KEY_JWT, null);
+    }
+
+    public static String jwtEmail() {
+        return NODE.get(KEY_JWT_EMAIL, "");
+    }
+
+    public static void jwt(String token, String email) {
+        NODE.put(KEY_JWT, token);
+        NODE.put(KEY_JWT_EMAIL, email);
+    }
+
+    public static void clearJwt() {
+        NODE.remove(KEY_JWT);
+        NODE.remove(KEY_JWT_EMAIL);
     }
 
     // ---- theme -------------------------------------------------------
