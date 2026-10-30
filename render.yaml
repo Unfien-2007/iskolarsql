@@ -7,6 +7,9 @@ services:
     healthCheckPath: /api/health
     envVars:
       # Paste your Neon connection string (postgres://… or postgresql://…).
+      # Credentials embedded in the URL are extracted automatically; the two
+      # variables below are only needed when the URL has no credentials or
+      # when you want to override them.
       - key: ISC_DB_URL
         sync: false
       - key: ISC_DB_USERNAME

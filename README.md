@@ -74,3 +74,24 @@ connection).
 - `required_province IS NULL` → no residency gate
 - `is_mandatory = 1` tag → hard disqualifier; `0` → preferred-tag bonus
 - Deadlines in `seed.sql` are relative to today, so urgency pills always demo correctly
+
+## Central catalog server (optional)
+
+The `server/` directory is a standalone Spring Boot module that turns the app
+into a hub-and-spoke system: a central PostgreSQL catalog + accounts, with the
+desktop app working fully offline on cached data.
+
+- **Endpoints** — `POST /api/auth/register`, `POST /api/auth/login`,
+  `GET /api/auth/me`, `POST /api/auth/forgot`, `POST /api/auth/reset`,
+  `GET /api/catalog/version`, `GET /api/catalog`, admin-only
+  `POST/PUT/DELETE /api/admin/scholarships`, `GET /api/health`
+- **Client behavior** — catalog auto-syncs on startup with retry/backoff;
+  login is online-first with an offline credential cache; admin edits and
+  registration require a connection
+- **Deploy** — a `render.yaml` Blueprint at the repo root deploys it to
+  Render with a Neon PostgreSQL database (both free); see
+  [`server/README.md`](server/README.md) for the full walkthrough and local
+  setup (Docker Postgres + `cd server && mvn spring-boot:run`)
+
+The app runs exactly as before without a server — the bundled catalog and
+local accounts remain the default.

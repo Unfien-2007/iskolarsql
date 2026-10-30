@@ -1,0 +1,26 @@
+# Build outputs
+target/
+server/target/
+
+# Version control & IDE
+.git/
+.idea/
+*.iml
+.vscode/
+.settings/
+.classpath
+.project
+
+# Local databases & scratch files
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+cp.txt
+
+# The server image only needs the server/ module — skip the desktop app sources
+src/
+
+# Render harness screenshots and other binaries
+*.png
+*.jpg

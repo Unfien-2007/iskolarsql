@@ -42,6 +42,12 @@ mvn spring-boot:run
 ```
 
 Defaults point at `jdbc:postgresql://localhost:5432/iskolar`, user `postgres`.
+If you created the container with the command above, provide its password:
+
+```powershell
+$env:ISC_DB_PASSWORD = "iskolar"
+mvn spring-boot:run
+```
 
 ### Configuration (environment variables)
 
@@ -49,14 +55,18 @@ Defaults point at `jdbc:postgresql://localhost:5432/iskolar`, user `postgres`.
 |--------------------|-------------------------------------------|-----------------------------|
 | `ISC_DB_URL`       | `postgres://` or `postgresql://` URL      | localhost default           |
 | `ISC_DB_JDBC_URL`  | Full `jdbc:postgresql://` URL             | localhost default           |
-| `ISC_DB_USERNAME`  | Database user                             | `postgres`                  |
-| `ISC_DB_PASSWORD`  | Database password                         | (empty)                     |
+| `ISC_DB_USERNAME`  | Database user (optional — extracted from `ISC_DB_URL` when it has credentials) | `postgres`  |
+| `ISC_DB_PASSWORD`  | Database password (optional — same)       | (empty)                     |
 | `ISC_JWT_SECRET`   | HS256 signing secret (≥ 32 chars)         | dev-only default            |
 | `ISC_SMTP_HOST`    | SMTP host for reset emails (see below)    | (empty = dev mode)          |
 | `PORT`             | HTTP port                                 | `8080`                      |
 
 `ISC_DB_URL` wins over `ISC_DB_JDBC_URL` and accepts the `postgres://` scheme
-Neon/Render provide (normalized to `jdbc:` at startup).
+Neon/Render provide (normalized to `jdbc:` at startup). Credentials embedded in
+the URL are extracted into the datasource properties automatically, so a Neon
+string like `postgresql://user:pass@host/db` works with **no** extra variables;
+explicit `ISC_DB_USERNAME` / `ISC_DB_PASSWORD` values override the URL when
+both are set.
 
 ## Test
 
@@ -69,17 +79,38 @@ First run downloads the embedded PostgreSQL binaries (~30 MB).
 
 ## Deploy (free tier)
 
-1. **Neon** — create a free Postgres project; copy the connection string
-   (`postgresql://user:pass@host/db`). Flyway creates + seeds the schema on
-   first boot.
-2. **Render** — create a new Web Service from this repo (or push the
-   `render.yaml` blueprint), set `ISC_DB_URL` / `ISC_DB_USERNAME` /
-   `ISC_DB_PASSWORD`, and deploy. The `PORT` and `ISC_JWT_SECRET` variables are
-   handled by the blueprint.
-3. **Stay warm (optional)** — Render's free tier sleeps after ~15 min idle and
-   cold-starts in 30–60 s. A free cron ping (e.g. UptimeRobot / cron-job.org
-   hitting `/api/health` every 10 min) keeps it responsive within the 750
-   free hours/month.
+**Blueprint (recommended).** The repo root contains `render.yaml`, so Render
+can create the service in one click:
+
+1. **Neon** — create a free Postgres project and copy the connection string
+   (`postgresql://user:pass@host/db?sslmode=require`). Flyway creates + seeds
+   the schema on first boot.
+2. **Render** — *New + → Blueprint* → connect this repo. Fill in the
+   `ISC_DB_URL` variable with the Neon string (its embedded credentials are
+   extracted automatically — set `ISC_DB_USERNAME` / `ISC_DB_PASSWORD` only if
+   the URL has none), then deploy. `PORT` and `ISC_JWT_SECRET` are handled by
+   the blueprint.
+3. **Verify** — `GET https://<service>.onrender.com/api/health` → `{"status":"ok"}`,
+   then `/api/catalog/version` → `{"version":1}`.
+4. **Point the desktop app** at the URL (it defaults to
+   `http://localhost:8080` and reads the `iskolar.apiUrl` system property).
+
+Manual service (same result): *New + → Web Service* → repo → **Docker**
+runtime, **Dockerfile path** `server/Dockerfile`, **Root Directory** empty
+(repo root — the Dockerfile expects the root as build context), health check
+`/api/health`, same environment variables.
+
+**Neon gotchas**
+
+- Keep `?sslmode=require` in the connection string — Neon requires SSL.
+- If the first boot fails during the Flyway migration with a
+  PgBouncer/transaction-pooling error, you copied Neon's **pooled** host
+  (`…-pooler.…`). Switch to the **direct** host and enable Neon's free IPv4
+  add-on — Render cannot reach IPv6-only hosts.
+- **Cold start** — Render's free tier sleeps after ~15 min idle (30–60 s wake),
+  and Neon auto-suspends too. A free cron ping (e.g. cron-job.org hitting
+  `/api/health` every 10 min) keeps the API warm within the 750 free
+  hours/month; the desktop app retries failed syncs automatically.
 
 ## Notes
 
