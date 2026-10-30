@@ -148,13 +148,18 @@
             </plugin>
 
             <!-- Run with:  mvn javafx:run
-                 Launcher (com.iskolar.Launcher) is delivered in Phase 4. -->
+                 Launcher (com.iskolar.Launcher) is delivered in Phase 4.
+                 The catalog API URL points at the deployed Render service;
+                 override with -Diskolar.apiUrl=... for a local server. -->
             <plugin>
                 <groupId>org.openjfx</groupId>
                 <artifactId>javafx-maven-plugin</artifactId>
                 <version>0.0.8</version>
                 <configuration>
                     <mainClass>com.iskolar.Launcher</mainClass>
+                    <options>
+                        <option>-Diskolar.apiUrl=https://iskolarpath-api.onrender.com</option>
+                    </options>
                 </configuration>
             </plugin>
         </plugins>
