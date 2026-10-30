@@ -259,3 +259,10 @@ INSERT INTO scholarship_documents (scholarship_id, document_type_id) VALUES
 -- app_state
 -- ---------------------------------------------------------------------
 INSERT INTO app_state (key, value) VALUES ('catalog_version', '1');
+
+-- Keep the identity sequence past the explicitly-numbered seed rows so new
+-- server-created scholarships never collide with seeded ids.
+SELECT setval(pg_get_serial_sequence('scholarships', 'scholarship_id'),
+              (SELECT COALESCE(MAX(scholarship_id), 1) FROM scholarships));
+SELECT setval(pg_get_serial_sequence('scholarship_criteria', 'criteria_id'),
+              (SELECT COALESCE(MAX(criteria_id), 1) FROM scholarship_criteria));
