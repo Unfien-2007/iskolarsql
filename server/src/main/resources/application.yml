@@ -1,0 +1,17 @@
+server:
+  port: ${PORT:8080}
+
+spring:
+  application:
+    name: iskolarpath-server
+  datasource:
+    url: ${ISC_DB_JDBC_URL:jdbc:postgresql://localhost:5432/iskolar}
+    username: ${ISC_DB_USERNAME:postgres}
+    password: ${ISC_DB_PASSWORD:}
+  flyway:
+    enabled: true
+  jackson:
+    default-property-inclusion: non_null
+
+app:
+  jwt-secret: ${ISC_JWT_SECRET:iskolarpath-dev-secret-change-me-please-00000000}

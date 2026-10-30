@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: iskolarpath-api
+    runtime: docker
+    plan: free
+    dockerfilePath: ./server/Dockerfile
+    healthCheckPath: /api/health
+    envVars:
+      # Paste your Neon connection string (postgres://… or postgresql://…).
+      - key: ISC_DB_URL
+        sync: false
+      - key: ISC_DB_USERNAME
+        sync: false
+      - key: ISC_DB_PASSWORD
+        sync: false
+      # Auto-generated on first deploy.
+      - key: ISC_JWT_SECRET
+        generateValue: true
+      - key: PORT
+        value: 8080
