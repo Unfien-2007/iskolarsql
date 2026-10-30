@@ -4,6 +4,7 @@ import com.iskolar.model.Role;
 import com.iskolar.model.ThemePref;
 import com.iskolar.model.User;
 import com.iskolar.util.Dates;
+import com.iskolar.util.ThemeManager;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -82,6 +83,32 @@ public class UserDao {
         } catch (SQLException e) {
             throw new DataAccessException("Failed to update theme preference for user " + userId, e);
         }
+    }
+
+    /**
+     * Find-or-create the local {@code users} row for a server-authenticated
+     * account, refreshing its password hash and role. Called after every
+     * successful online sign-in so offline fallback keeps working even when
+     * the password was changed on the server or the account first logged in
+     * on another device.
+     */
+    public User upsertFromServer(String email, String passwordHash, Role role) {
+        Optional<User> existing = findByEmail(email);
+        if (existing.isEmpty()) {
+            return insert(email, passwordHash, role, ThemeManager.current());
+        }
+        User u = existing.get();
+        String sql = "UPDATE users SET password_hash = ?, role = ? WHERE user_id = ?";
+        try (Connection c = dataSource.getConnection();
+             PreparedStatement ps = c.prepareStatement(sql)) {
+            ps.setString(1, passwordHash);
+            ps.setString(2, role.name());
+            ps.setLong(3, u.userId());
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            throw new DataAccessException("Failed to refresh user: " + email, e);
+        }
+        return new User(u.userId(), u.email(), passwordHash, role, u.themePref(), u.createdAt());
     }
 
     public int count() {

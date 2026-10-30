@@ -94,6 +94,22 @@ public final class CatalogApiClient {
         }
     }
 
+    /**
+     * {@code POST /api/auth/register} — creates a STUDENT account on the
+     * server and returns credentials plus a JWT (the server auto-logs new
+     * accounts in).
+     */
+    public AuthResponse register(String email, String password) {
+        HttpResponse<String> response = send(request("/api/auth/register")
+                .POST(jsonBody(Map.of("email", email, "password", password))));
+        expectOk(response);
+        try {
+            return json.readValue(response.body(), AuthResponse.class);
+        } catch (IOException e) {
+            throw new SyncException("Invalid registration response from the server.", e);
+        }
+    }
+
     // ------------------------------------------------------------------
     // Admin writes (JWT required)
     // ------------------------------------------------------------------

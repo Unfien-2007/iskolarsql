@@ -4,6 +4,7 @@ import com.iskolar.service.AuthResult;
 import com.iskolar.service.ServiceFactory;
 import com.iskolar.util.ViewNavigator;
 import com.iskolar.view.ShellView;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Hyperlink;
@@ -11,7 +12,10 @@ import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 
-/** Self-registration (always creates a STUDENT account, then auto-logs in). */
+/**
+ * Self-registration: creates a STUDENT account on the central catalog server
+ * (online-only) and signs the new student in right away.
+ */
 public class RegisterController {
 
     @FXML
@@ -39,13 +43,35 @@ public class RegisterController {
             showError("Passwords do not match.");
             return;
         }
-        AuthResult result = ServiceFactory.authService().register(emailField.getText(), passwordField.getText());
-        if (!result.success()) {
-            showError(result.message());
-            return;
+        String email = emailField.getText();
+        String password = passwordField.getText();
+        setBusy(true);
+        Thread worker = new Thread(() -> {
+            AuthResult result = ServiceFactory.authService().register(email, password);
+            Platform.runLater(() -> {
+                setBusy(false);
+                if (!result.success()) {
+                    showError(result.message());
+                    return;
+                }
+                ShellView.refreshSessionUi();
+                ViewNavigator.show(ViewNavigator.DISCOVERY_VIEW);
+            });
+        }, "auth-register");
+        worker.setDaemon(true);
+        worker.start();
+    }
+
+    private void setBusy(boolean busy) {
+        registerButton.setDisable(busy);
+        emailField.setDisable(busy);
+        passwordField.setDisable(busy);
+        confirmField.setDisable(busy);
+        registerButton.setText(busy ? "Creating account…" : "Create account");
+        if (busy) {
+            errorLabel.setVisible(false);
+            errorLabel.setManaged(false);
         }
-        ShellView.refreshSessionUi();
-        ViewNavigator.show(ViewNavigator.DISCOVERY_VIEW);
     }
 
     private void showError(String message) {
