@@ -232,7 +232,8 @@ public final class CatalogApiClient {
         return HttpRequest.newBuilder()
                 .uri(URI.create(baseUrl + path))
                 .timeout(REQUEST_TIMEOUT)
-                .header("Accept", "application/json");
+                .header("Accept", "application/json")
+                .header("Content-Type", "application/json");
     }
 
     private static String bearer(String token) {
