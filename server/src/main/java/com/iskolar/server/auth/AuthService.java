@@ -57,6 +57,7 @@ public class AuthService {
             throw new ApiException(HttpStatus.UNAUTHORIZED,
                     "Invalid email or password.");
         }
+        users.touchLastSeen(row.userId());
         return toResponse(row);
     }
 

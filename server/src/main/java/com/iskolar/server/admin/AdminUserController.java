@@ -16,6 +16,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.Duration;
+import java.time.Instant;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Locale;
 
@@ -27,6 +30,9 @@ import java.util.Locale;
 @RestController
 @RequestMapping("/api/admin/users")
 public class AdminUserController {
+
+    /** An account counts as online when seen within this window. */
+    private static final Duration ONLINE_WINDOW = Duration.ofMinutes(10);
 
     private final UserRepository users;
     private final AccountStatusService statuses;
@@ -108,7 +114,17 @@ public class AdminUserController {
     }
 
     private static AdminUserDto toDto(UserRepository.UserListRow row) {
+        Instant lastSeen = null;
+        if (row.lastSeenAt() != null) {
+            try {
+                lastSeen = Instant.parse(row.lastSeenAt());
+            } catch (DateTimeParseException ignored) {
+                // Treat an unreadable timestamp as "never seen".
+            }
+        }
+        boolean online = lastSeen != null
+                && Duration.between(lastSeen, Instant.now()).compareTo(ONLINE_WINDOW) < 0;
         return new AdminUserDto(row.userId(), row.email(), row.role(),
-                row.isActive(), row.createdAt());
+                row.isActive(), row.createdAt(), row.lastSeenAt(), online);
     }
 }

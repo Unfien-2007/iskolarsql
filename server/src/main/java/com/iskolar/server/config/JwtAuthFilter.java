@@ -45,6 +45,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 request.setAttribute(AUTH_ATTRIBUTE,
                         new AuthPrincipal(principal.userId(), principal.email(), status.role()));
                 request.setAttribute(ACTIVE_ATTRIBUTE, status.active());
+                if (status.active()) {
+                    statuses.touch(principal.userId());
+                }
             });
         }
         chain.doFilter(request, response);

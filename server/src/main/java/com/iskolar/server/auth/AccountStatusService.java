@@ -15,6 +15,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class AccountStatusService {
 
     private static final long TTL_MS = 60_000;
+    private static final long TOUCH_INTERVAL_MS = 60_000;
 
     /** Account state resolved from the database. */
     public record AccountStatus(boolean active, String role) {
@@ -24,6 +25,7 @@ public class AccountStatusService {
     }
 
     private final Map<Long, Entry> cache = new ConcurrentHashMap<>();
+    private final Map<Long, Long> lastTouch = new ConcurrentHashMap<>();
     private final UserRepository users;
 
     public AccountStatusService(UserRepository users) {
@@ -45,6 +47,21 @@ public class AccountStatusService {
                 .orElse(new AccountStatus(false, tokenRole));
         cache.put(userId, new Entry(status, now + TTL_MS));
         return status;
+    }
+
+    /**
+     * Records presence at most once a minute per account, so authenticated
+     * polling costs one UPDATE per account per minute instead of one per
+     * request.
+     */
+    public void touch(long userId) {
+        long now = System.currentTimeMillis();
+        Long previous = lastTouch.get(userId);
+        if (previous != null && now - previous < TOUCH_INTERVAL_MS) {
+            return;
+        }
+        lastTouch.put(userId, now);
+        users.touchLastSeen(userId);
     }
 
     public void invalidate(long userId) {
