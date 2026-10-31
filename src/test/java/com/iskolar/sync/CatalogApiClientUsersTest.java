@@ -38,7 +38,8 @@ class CatalogApiClientUsersTest {
                         exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8));
                 respond(exchange, 200,
                         "{\"userId\":5,\"email\":\"student@iskolar.app\",\"role\":\"ADMIN\","
-                                + "\"isActive\":false,\"createdAt\":\"2026-10-30T10:00:00Z\"}");
+                                + "\"isActive\":false,\"createdAt\":\"2026-10-30T10:00:00Z\","
+                                + "\"lastSeenAt\":\"2026-10-31T10:05:00Z\",\"online\":false}");
                 return;
             }
             String auth = exchange.getRequestHeaders().getFirst("Authorization");
@@ -48,9 +49,11 @@ class CatalogApiClientUsersTest {
             }
             respond(exchange, 200, "["
                     + "{\"userId\":1,\"email\":\"admin@iskolar.app\",\"role\":\"ADMIN\","
-                    + "\"isActive\":true,\"createdAt\":\"2026-10-01T08:00:00Z\"},"
+                    + "\"isActive\":true,\"createdAt\":\"2026-10-01T08:00:00Z\","
+                    + "\"lastSeenAt\":\"2026-10-31T09:00:00Z\",\"online\":true},"
                     + "{\"userId\":2,\"email\":\"student@iskolar.app\",\"role\":\"STUDENT\","
-                    + "\"isActive\":true,\"createdAt\":\"2026-10-02T09:30:00Z\"}"
+                    + "\"isActive\":true,\"createdAt\":\"2026-10-02T09:30:00Z\","
+                    + "\"lastSeenAt\":null,\"online\":false}"
                     + "]");
         });
         server.start();
@@ -72,6 +75,10 @@ class CatalogApiClientUsersTest {
         assertTrue(users.get(0).isActive());
         assertEquals("STUDENT", users.get(1).role());
         assertEquals("2026-10-02T09:30:00Z", users.get(1).createdAt());
+        assertTrue(users.get(0).online(), "seeded admin should be online");
+        assertEquals("2026-10-31T09:00:00Z", users.get(0).lastSeenAt());
+        assertFalse(users.get(1).online());
+        assertEquals(null, users.get(1).lastSeenAt());
     }
 
     @Test

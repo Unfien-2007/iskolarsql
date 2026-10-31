@@ -1,13 +1,22 @@
 package com.iskolar;
 
 import com.iskolar.config.DatabaseConfig;
+import com.iskolar.service.AuthService;
+import com.iskolar.service.ServiceFactory;
+import com.iskolar.sync.TokenStore;
 import com.iskolar.util.Fonts;
+import com.iskolar.util.SessionManager;
 import com.iskolar.util.ThemeManager;
+import com.iskolar.util.ViewNavigator;
 import com.iskolar.view.ShellView;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 
 import java.util.Objects;
 
@@ -39,25 +48,39 @@ public class ScholarshipApp extends Application {
         // Kick off a background catalog sync once the window is visible. After
         // every successful sync the cached sign-in is re-validated against the
         // server — accounts disabled centrally get signed out locally.
-        var syncService = com.iskolar.service.ServiceFactory.syncService();
+        var syncService = ServiceFactory.syncService();
         syncService.addListener(result -> {
             if (result.success()) {
-                Thread worker = new Thread(() -> {
-                    var outcome = com.iskolar.service.ServiceFactory.authService()
-                            .revalidateOnReconnect();
-                    if (outcome == com.iskolar.service.AuthService.Revalidation.SIGNED_OUT) {
-                        javafx.application.Platform.runLater(() -> {
-                            ShellView.refreshSessionUi();
-                            com.iskolar.util.ViewNavigator.show(
-                                    com.iskolar.util.ViewNavigator.DISCOVERY_VIEW);
-                        });
-                    }
-                }, "iskolar-auth-revalidate");
-                worker.setDaemon(true);
-                worker.start();
+                revalidateSession();
             }
         });
         syncService.syncInBackground();
+
+        // Signed-in users re-validate every five minutes while the app stays
+        // open. This keeps them marked online in the admin portal and revokes
+        // disabled accounts shortly after they are disabled centrally.
+        Timeline heartbeat = new Timeline(
+                new KeyFrame(Duration.minutes(5), e -> revalidateSession()));
+        heartbeat.setCycleCount(Timeline.INDEFINITE);
+        heartbeat.play();
+    }
+
+    /** Re-checks the cached token off the FX thread; signs out revoked accounts. */
+    private static void revalidateSession() {
+        if (SessionManager.current().isEmpty() || TokenStore.token().isEmpty()) {
+            return;
+        }
+        Thread worker = new Thread(() -> {
+            AuthService.Revalidation outcome = ServiceFactory.authService().revalidateOnReconnect();
+            if (outcome == AuthService.Revalidation.SIGNED_OUT) {
+                Platform.runLater(() -> {
+                    ShellView.refreshSessionUi();
+                    ViewNavigator.show(ViewNavigator.DISCOVERY_VIEW);
+                });
+            }
+        }, "iskolar-auth-revalidate");
+        worker.setDaemon(true);
+        worker.start();
     }
 
     @Override

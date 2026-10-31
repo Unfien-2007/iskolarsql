@@ -45,9 +45,10 @@ public final class AdminDtos {
             List<Long> documentIds) {
     }
 
-    /** Account row exposed to the admin portal. */
+    /** Account row exposed to the admin portal, including presence. */
     public record AdminUserDto(long userId, String email, String role,
-                               boolean isActive, String createdAt) {
+                               boolean isActive, String createdAt,
+                               String lastSeenAt, boolean online) {
     }
 
     /** Partial account update: either field may be omitted. */

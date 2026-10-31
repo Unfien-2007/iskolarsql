@@ -9,7 +9,10 @@ import com.iskolar.sync.CatalogDtos.AdminUserDto;
 import com.iskolar.sync.SyncException;
 import com.iskolar.util.SessionManager;
 import com.iskolar.util.ViewNavigator;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.beans.property.ReadOnlyStringWrapper;
+import javafx.util.Duration;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
@@ -68,6 +71,8 @@ public class AdminDashboardController {
     @FXML
     private TableColumn<AdminUserDto, String> userStatusCol;
     @FXML
+    private TableColumn<AdminUserDto, String> userActivityCol;
+    @FXML
     private TableColumn<AdminUserDto, String> userCreatedCol;
     @FXML
     private Button refreshUsersButton;
@@ -82,6 +87,7 @@ public class AdminDashboardController {
 
     private boolean usersLoading;
     private boolean usersLoaded;
+    private Timeline presenceRefresh;
 
     @FXML
     private void initialize() {
@@ -135,6 +141,21 @@ public class AdminDashboardController {
                 }
             }
         });
+        userActivityCol.setCellValueFactory(cd -> new ReadOnlyStringWrapper(activityText(cd.getValue())));
+        userActivityCol.setCellFactory(col -> new javafx.scene.control.TableCell<>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                    setGraphic(null);
+                } else {
+                    Label pill = new Label(item);
+                    pill.getStyleClass().add(item.equals("Online") ? "presence-online" : "presence-offline");
+                    setGraphic(pill);
+                }
+            }
+        });
         userCreatedCol.setCellValueFactory(cd -> new ReadOnlyStringWrapper(shortDate(cd.getValue().createdAt())));
         usersTable.getSelectionModel().selectedItemProperty()
                 .addListener((obs, old, val) -> updateUserButtons());
@@ -146,6 +167,15 @@ public class AdminDashboardController {
                 loadUsers();
             }
         });
+        // Keep the Online column fresh while the Users tab is open.
+        presenceRefresh = new Timeline(new KeyFrame(Duration.seconds(30), e -> {
+            if (usersLoaded && !usersLoading
+                    && tabs.getSelectionModel().getSelectedIndex() == 1) {
+                loadUsers();
+            }
+        }));
+        presenceRefresh.setCycleCount(Timeline.INDEFINITE);
+        presenceRefresh.play();
         disableUserButton.setOnAction(e -> changeUserActive(!selectedUser().isActive()));
         roleUserButton.setOnAction(e ->
                 changeUserRole("ADMIN".equals(selectedUser().role()) ? "STUDENT" : "ADMIN"));
@@ -272,7 +302,9 @@ public class AdminDashboardController {
         try {
             var users = ServiceFactory.adminGateway().listUsers(window(), adminEmail());
             usersTable.getItems().setAll(users);
-            usersStatusLabel.setText(users.size() + (users.size() == 1 ? " account" : " accounts"));
+            long online = users.stream().filter(AdminUserDto::online).count();
+            usersStatusLabel.setText(users.size() + (users.size() == 1 ? " account" : " accounts")
+                    + (online > 0 ? " · " + online + " online" : ""));
             usersLoaded = true;
         } catch (SyncException ex) {
             usersStatusLabel.setText("Could not load accounts.");
@@ -337,6 +369,33 @@ public class AdminDashboardController {
 
     private static String roleLabel(String role) {
         return "ADMIN".equals(role) ? "Admin" : "Student";
+    }
+
+    /** "Online" or a relative "Last seen …" for the Activity column. */
+    private static String activityText(AdminUserDto user) {
+        if (user.online()) {
+            return "Online";
+        }
+        if (user.lastSeenAt() == null || user.lastSeenAt().isBlank()) {
+            return "Never signed in";
+        }
+        try {
+            java.time.Instant seen = java.time.Instant.parse(user.lastSeenAt());
+            long minutes = java.time.Duration.between(seen, java.time.Instant.now()).toMinutes();
+            if (minutes < 1) {
+                return "Just now";
+            }
+            if (minutes < 60) {
+                return "Last seen " + minutes + "m ago";
+            }
+            long hours = minutes / 60;
+            if (hours < 24) {
+                return "Last seen " + hours + "h ago";
+            }
+            return "Last seen " + (hours / 24) + "d ago";
+        } catch (RuntimeException ex) {
+            return "—";
+        }
     }
 
     private static String shortDate(String isoTimestamp) {

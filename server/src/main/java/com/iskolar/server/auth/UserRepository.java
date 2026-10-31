@@ -56,15 +56,20 @@ public class UserRepository {
     /** All accounts for the admin portal, oldest first. */
     public List<UserListRow> findAllForAdmin() {
         return jdbc.query(
-                "SELECT user_id, email, role, is_active, created_at FROM users ORDER BY user_id",
+                "SELECT user_id, email, role, is_active, created_at, last_seen_at "
+                        + "FROM users ORDER BY user_id",
                 (rs, rowNum) -> new UserListRow(
                         rs.getLong("user_id"),
                         rs.getString("email"),
                         rs.getString("role"),
                         rs.getBoolean("is_active"),
-                        rs.getTimestamp("created_at") == null
-                                ? null
-                                : rs.getTimestamp("created_at").toInstant().toString()));
+                        iso(rs.getTimestamp("created_at")),
+                        iso(rs.getTimestamp("last_seen_at"))));
+    }
+
+    /** Records presence for an account that just authenticated. */
+    public void touchLastSeen(long userId) {
+        jdbc.update("UPDATE users SET last_seen_at = now() WHERE user_id = ?", userId);
     }
 
     public void updateRole(long userId, String role) {
@@ -91,6 +96,10 @@ public class UserRepository {
 
     /** Account row for the admin portal (no password hash). */
     public record UserListRow(long userId, String email, String role,
-                              boolean isActive, String createdAt) {
+                              boolean isActive, String createdAt, String lastSeenAt) {
+    }
+
+    private static String iso(java.sql.Timestamp timestamp) {
+        return timestamp == null ? null : timestamp.toInstant().toString();
     }
 }

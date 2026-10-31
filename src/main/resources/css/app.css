@@ -780,3 +780,16 @@
 .sync-label.offline {
     -fx-text-fill: -color-warning-fg;
 }
+
+/* ---------------------------------------------------------------------
+   Presence indicator (Admin > Users)
+   --------------------------------------------------------------------- */
+.presence-online {
+    -fx-text-fill: -color-success-fg;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+}
+.presence-offline {
+    -fx-text-fill: -color-fg-subtle;
+    -fx-font-size: 11px;
+}

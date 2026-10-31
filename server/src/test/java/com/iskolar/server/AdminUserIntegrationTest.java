@@ -202,6 +202,33 @@ class AdminUserIntegrationTest {
     }
 
     // ------------------------------------------------------------------
+    // Presence
+    // ------------------------------------------------------------------
+
+    @Test
+    void presenceMarksRecentlyActiveAccountsOnline() throws Exception {
+        register("presence@iskolar.app", "presence-pass-1");
+        String adminToken = tokenFor("admin@iskolar.app", "password");
+
+        // A brand-new account that has never signed in is not online yet.
+        mvc.perform(get("/api/admin/users").header("Authorization", "Bearer " + adminToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[?(@.email == 'admin@iskolar.app')].online", hasItem(true)))
+                .andExpect(jsonPath("$[?(@.email == 'presence@iskolar.app')].online", hasItem(false)));
+
+        // Signing in records presence, and an authenticated call refreshes it.
+        String studentToken = tokenFor("presence@iskolar.app", "presence-pass-1");
+        mvc.perform(get("/api/auth/me").header("Authorization", "Bearer " + studentToken))
+                .andExpect(status().isOk());
+
+        mvc.perform(get("/api/admin/users").header("Authorization", "Bearer " + adminToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[?(@.email == 'presence@iskolar.app')].online", hasItem(true)))
+                .andExpect(jsonPath("$[?(@.email == 'presence@iskolar.app')].lastSeenAt",
+                        hasItem(org.hamcrest.Matchers.notNullValue())));
+    }
+
+    // ------------------------------------------------------------------
     // Helpers
     // ------------------------------------------------------------------
 

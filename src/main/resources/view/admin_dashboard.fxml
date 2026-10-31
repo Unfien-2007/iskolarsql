@@ -51,6 +51,7 @@
                             <TableColumn fx:id="userEmailCol" text="Email" prefWidth="320"/>
                             <TableColumn fx:id="userRoleCol" text="Role" prefWidth="110"/>
                             <TableColumn fx:id="userStatusCol" text="Status" prefWidth="110"/>
+                            <TableColumn fx:id="userActivityCol" text="Activity" prefWidth="160"/>
                             <TableColumn fx:id="userCreatedCol" text="Created" prefWidth="130"/>
                         </columns>
                     </TableView>

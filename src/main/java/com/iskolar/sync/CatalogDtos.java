@@ -113,9 +113,10 @@ public final class CatalogDtos {
     // Admin user payloads (mirror server AdminDtos)
     // ------------------------------------------------------------------
 
-    /** {@code GET /api/admin/users} row. */
+    /** {@code GET /api/admin/users} row, including presence. */
     public record AdminUserDto(long userId, String email, String role,
-                               boolean isActive, String createdAt) {
+                               boolean isActive, String createdAt,
+                               String lastSeenAt, boolean online) {
     }
 
     /** {@code PATCH /api/admin/users/{id}} body — either field may be omitted. */
