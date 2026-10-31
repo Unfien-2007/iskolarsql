@@ -3,6 +3,7 @@ package com.iskolar.server.admin;
 import com.iskolar.server.admin.AdminDtos.ScholarshipWrite;
 import com.iskolar.server.auth.AuthPrincipal;
 import com.iskolar.server.common.ApiException;
+import com.iskolar.server.config.JwtAuthFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -33,9 +34,12 @@ public class AdminScholarshipController {
     }
 
     private AuthPrincipal requireAdmin(HttpServletRequest request) {
-        Object attr = request.getAttribute("auth");
+        Object attr = request.getAttribute(JwtAuthFilter.AUTH_ATTRIBUTE);
         if (!(attr instanceof AuthPrincipal principal)) {
             throw new ApiException(HttpStatus.UNAUTHORIZED, "Authentication required.");
+        }
+        if (Boolean.FALSE.equals(request.getAttribute(JwtAuthFilter.ACTIVE_ATTRIBUTE))) {
+            throw new ApiException(HttpStatus.UNAUTHORIZED, "This account has been disabled.");
         }
         if (!principal.isAdmin()) {
             throw new ApiException(HttpStatus.FORBIDDEN, "Admin access required.");
