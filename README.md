@@ -60,11 +60,14 @@ auto-applies both on first boot — no manual setup needed. The database file
 lives at `%APPDATA%\Iskolar\iskolar.db` (WAL mode, foreign keys enforced per
 connection).
 
-**Demo accounts** (password: `password`)
+**Seed account** (password: `password`)
 
 - `admin@iskolar.app` — ADMIN
-- `maria.santos@email.com` — STUDENT (BSIT, GWA 91.50, missing ITR)
-- `juan.delacruz@email.com` — STUDENT (BSCE, GWA 86.25, 4Ps/PWD)
+
+Student accounts are created through registration in the app (the account is
+verified against the catalog server once, then works offline from the local
+cache). The sample student profiles used by the automated tests live in
+`src/test/resources/db/test_profiles.sql`.
 
 ### Key engine conventions baked into the schema
 

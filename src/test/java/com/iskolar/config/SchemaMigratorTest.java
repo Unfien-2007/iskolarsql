@@ -64,7 +64,7 @@ class SchemaMigratorTest {
             assertTrue(tableExists(conn, "users"), "baseline users table");
             assertTrue(tableExists(conn, "sync_state"), "v2 sync_state table");
             assertTrue(tableExists(conn, "auth_cache"), "v2 auth_cache table");
-            assertEquals(3, count(conn, "users"), "seed data should be present");
+            assertEquals(1, count(conn, "users"), "seed data should be present");
         }
     }
 
@@ -101,7 +101,7 @@ class SchemaMigratorTest {
             SchemaMigrator.migrate(conn);
 
             assertEquals(2, maxVersion(conn), "second run must not advance or duplicate versions");
-            assertEquals(3, count(conn, "users"), "seed data must not be duplicated");
+            assertEquals(1, count(conn, "users"), "seed data must not be duplicated");
             assertTrue(tableExists(conn, "sync_state"));
             assertTrue(tableExists(conn, "auth_cache"));
         }

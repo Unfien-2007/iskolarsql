@@ -17,7 +17,7 @@
         <Label text="Admin Portal" styleClass="view-title"/>
         <Label text="Manage the scholarship catalog and the accounts that can access this portal."
                styleClass="view-subtitle" wrapText="true"/>
-        <TabPane tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS">
+        <TabPane fx:id="tabs" tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS">
             <Tab text="Scholarships">
                 <VBox spacing="10">
                     <HBox spacing="8">

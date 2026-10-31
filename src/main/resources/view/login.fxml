@@ -23,6 +23,5 @@
         <Button fx:id="loginButton" text="Log in" defaultButton="true" maxWidth="Infinity"
                 styleClass="primary-button"/>
         <Hyperlink fx:id="registerLink" text="New here? Create an account"/>
-        <Label text="Demo: maria.santos@email.com / password" styleClass="demo-hint"/>
     </VBox>
 </StackPane>
