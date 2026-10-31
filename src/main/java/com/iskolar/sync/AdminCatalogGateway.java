@@ -63,6 +63,21 @@ public final class AdminCatalogGateway {
         refreshLocalCatalog();
     }
 
+    /** Lists server accounts (admin portal Users tab). */
+    public List<CatalogDtos.AdminUserDto> listUsers(Window owner, String adminEmail) {
+        String token = requireToken(owner, adminEmail);
+        return withRetryOnUnauthorized(token, owner, adminEmail,
+                sync.client()::listUsers);
+    }
+
+    /** Changes a role and/or the active flag; returns the updated account. */
+    public CatalogDtos.AdminUserDto updateUser(Window owner, String adminEmail,
+                                               long userId, String role, Boolean isActive) {
+        String token = requireToken(owner, adminEmail);
+        return withRetryOnUnauthorized(token, owner, adminEmail,
+                t -> sync.client().updateUser(t, userId, role, isActive));
+    }
+
     // ------------------------------------------------------------------
     // Internals
     // ------------------------------------------------------------------

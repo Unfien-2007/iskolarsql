@@ -53,7 +53,44 @@ public class UserRepository {
                 passwordHash, userId);
     }
 
+    /** All accounts for the admin portal, oldest first. */
+    public List<UserListRow> findAllForAdmin() {
+        return jdbc.query(
+                "SELECT user_id, email, role, is_active, created_at FROM users ORDER BY user_id",
+                (rs, rowNum) -> new UserListRow(
+                        rs.getLong("user_id"),
+                        rs.getString("email"),
+                        rs.getString("role"),
+                        rs.getBoolean("is_active"),
+                        rs.getTimestamp("created_at") == null
+                                ? null
+                                : rs.getTimestamp("created_at").toInstant().toString()));
+    }
+
+    public void updateRole(long userId, String role) {
+        jdbc.update("UPDATE users SET role = ?, updated_at = now() WHERE user_id = ?",
+                role, userId);
+    }
+
+    public void updateActive(long userId, boolean active) {
+        jdbc.update("UPDATE users SET is_active = ?, updated_at = now() WHERE user_id = ?",
+                active, userId);
+    }
+
+    /** Active admins other than {@code userId} — used to keep one admin alive. */
+    public int countActiveAdminsExcluding(long userId) {
+        Integer count = jdbc.queryForObject(
+                "SELECT count(*) FROM users WHERE role = 'ADMIN' AND is_active AND user_id <> ?",
+                Integer.class, userId);
+        return count == null ? 0 : count;
+    }
+
     /** User row as stored on the server. */
     public record UserRow(long userId, String email, String passwordHash, String role, boolean isActive) {
+    }
+
+    /** Account row for the admin portal (no password hash). */
+    public record UserListRow(long userId, String email, String role,
+                              boolean isActive, String createdAt) {
     }
 }

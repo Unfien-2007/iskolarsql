@@ -108,4 +108,17 @@ public final class CatalogDtos {
             List<TagRequirementDto> requiredTags,
             List<Long> documentIds) {
     }
+
+    // ------------------------------------------------------------------
+    // Admin user payloads (mirror server AdminDtos)
+    // ------------------------------------------------------------------
+
+    /** {@code GET /api/admin/users} row. */
+    public record AdminUserDto(long userId, String email, String role,
+                               boolean isActive, String createdAt) {
+    }
+
+    /** {@code PATCH /api/admin/users/{id}} body — either field may be omitted. */
+    public record UserUpdateDto(String role, Boolean isActive) {
+    }
 }

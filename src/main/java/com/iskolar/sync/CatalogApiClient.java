@@ -4,10 +4,13 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.iskolar.sync.CatalogDtos.AdminUserDto;
 import com.iskolar.sync.CatalogDtos.AuthResponse;
 import com.iskolar.sync.CatalogDtos.CatalogSnapshot;
 import com.iskolar.sync.CatalogDtos.ScholarshipWriteDto;
+import com.iskolar.sync.CatalogDtos.UserUpdateDto;
 
 import java.io.IOException;
 import java.net.URI;
@@ -15,6 +18,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -182,6 +186,42 @@ public final class CatalogApiClient {
             throw new SyncException.UnauthorizedException(errorMessage(response));
         }
         expectOk(response);
+    }
+
+    // ------------------------------------------------------------------
+    // Admin user management (JWT required)
+    // ------------------------------------------------------------------
+
+    /** {@code GET /api/admin/users} — every account, oldest first. */
+    public List<AdminUserDto> listUsers(String token) {
+        HttpResponse<String> response = send(request("/api/admin/users")
+                .GET()
+                .header("Authorization", bearer(token)));
+        if (response.statusCode() == 401) {
+            throw new SyncException.UnauthorizedException(errorMessage(response));
+        }
+        expectOk(response);
+        try {
+            return json.readValue(response.body(), new TypeReference<List<AdminUserDto>>() { });
+        } catch (IOException e) {
+            throw new SyncException("Invalid user list from the server.", e);
+        }
+    }
+
+    /** {@code PATCH /api/admin/users/{id}} — role and/or active flag. */
+    public AdminUserDto updateUser(String token, long userId, String role, Boolean isActive) {
+        HttpResponse<String> response = send(request("/api/admin/users/" + userId)
+                .method("PATCH", jsonBody(new UserUpdateDto(role, isActive)))
+                .header("Authorization", bearer(token)));
+        if (response.statusCode() == 401) {
+            throw new SyncException.UnauthorizedException(errorMessage(response));
+        }
+        expectOk(response);
+        try {
+            return json.readValue(response.body(), AdminUserDto.class);
+        } catch (IOException e) {
+            throw new SyncException("Invalid response from the catalog server.", e);
+        }
     }
 
     // ------------------------------------------------------------------

@@ -44,4 +44,13 @@ public final class AdminDtos {
             List<TagRequirementDto> requiredTags,
             List<Long> documentIds) {
     }
+
+    /** Account row exposed to the admin portal. */
+    public record AdminUserDto(long userId, String email, String role,
+                               boolean isActive, String createdAt) {
+    }
+
+    /** Partial account update: either field may be omitted. */
+    public record UserUpdateRequest(String role, Boolean isActive) {
+    }
 }

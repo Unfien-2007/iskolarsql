@@ -4,6 +4,9 @@ import com.iskolar.dao.DaoFactory;
 import com.iskolar.dto.ScholarshipDraft;
 import com.iskolar.model.Scholarship;
 import com.iskolar.service.ServiceFactory;
+import com.iskolar.sync.AdminCatalogGateway;
+import com.iskolar.sync.CatalogDtos.AdminUserDto;
+import com.iskolar.sync.SyncException;
 import com.iskolar.util.SessionManager;
 import com.iskolar.util.ViewNavigator;
 import javafx.beans.property.ReadOnlyStringWrapper;
@@ -16,6 +19,7 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.layout.VBox;
+import javafx.stage.Window;
 
 import java.time.LocalDate;
 
@@ -55,6 +59,25 @@ public class AdminDashboardController {
     private TableColumn<Scholarship, String> statusCol;
 
     @FXML
+    private TableView<AdminUserDto> usersTable;
+    @FXML
+    private TableColumn<AdminUserDto, String> userEmailCol;
+    @FXML
+    private TableColumn<AdminUserDto, String> userRoleCol;
+    @FXML
+    private TableColumn<AdminUserDto, String> userStatusCol;
+    @FXML
+    private TableColumn<AdminUserDto, String> userCreatedCol;
+    @FXML
+    private Button refreshUsersButton;
+    @FXML
+    private Button roleUserButton;
+    @FXML
+    private Button disableUserButton;
+    @FXML
+    private Label usersStatusLabel;
+
+    @FXML
     private void initialize() {
         titleCol.setCellValueFactory(cd -> new ReadOnlyStringWrapper(cd.getValue().title()));
         providerCol.setCellValueFactory(cd -> new ReadOnlyStringWrapper(cd.getValue().providerName()));
@@ -87,6 +110,32 @@ public class AdminDashboardController {
             return row;
         });
         table.getSelectionModel().selectedItemProperty().addListener((obs, old, val) -> updateButtons());
+
+        userEmailCol.setCellValueFactory(cd -> new ReadOnlyStringWrapper(cd.getValue().email()));
+        userRoleCol.setCellValueFactory(cd -> new ReadOnlyStringWrapper(roleLabel(cd.getValue().role())));
+        userStatusCol.setCellValueFactory(cd -> new ReadOnlyStringWrapper(
+                cd.getValue().isActive() ? "Active" : "Disabled"));
+        userStatusCol.setCellFactory(col -> new javafx.scene.control.TableCell<>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                    setGraphic(null);
+                } else {
+                    Label pill = new Label(item);
+                    pill.getStyleClass().add(item.equals("Active") ? "status-active" : "status-inactive");
+                    setGraphic(pill);
+                }
+            }
+        });
+        userCreatedCol.setCellValueFactory(cd -> new ReadOnlyStringWrapper(shortDate(cd.getValue().createdAt())));
+        usersTable.getSelectionModel().selectedItemProperty()
+                .addListener((obs, old, val) -> updateUserButtons());
+        refreshUsersButton.setOnAction(e -> loadUsers());
+        disableUserButton.setOnAction(e -> changeUserActive(!selectedUser().isActive()));
+        roleUserButton.setOnAction(e ->
+                changeUserRole("ADMIN".equals(selectedUser().role()) ? "STUDENT" : "ADMIN"));
 
         newButton.setOnAction(e -> ViewNavigator.show(ViewNavigator.ADMIN_FORM_VIEW,
                 c -> ((AdminScholarshipFormController) c).initNew()));
@@ -150,6 +199,7 @@ public class AdminDashboardController {
             gatePane.setVisible(false);
             gatePane.setManaged(false);
             load();
+            loadUsers();
         }
     }
 
@@ -189,5 +239,92 @@ public class AdminDashboardController {
             return "";
         }
         return String.valueOf(java.time.temporal.ChronoUnit.DAYS.between(LocalDate.now(), deadline));
+    }
+
+    // ------------------------------------------------------------------
+    // Users tab
+    // ------------------------------------------------------------------
+
+    private AdminUserDto selectedUser() {
+        return usersTable.getSelectionModel().getSelectedItem();
+    }
+
+    /** Loads accounts from the server. Admin edits are online-only. */
+    private void loadUsers() {
+        usersStatusLabel.setText("Loading accounts…");
+        refreshUsersButton.setDisable(true);
+        try {
+            var users = ServiceFactory.adminGateway().listUsers(window(), adminEmail());
+            usersTable.getItems().setAll(users);
+            usersStatusLabel.setText(users.size() + (users.size() == 1 ? " account" : " accounts"));
+        } catch (SyncException ex) {
+            usersStatusLabel.setText("Could not load accounts.");
+            AdminCatalogGateway.showError(window(), ex.getMessage());
+        } finally {
+            refreshUsersButton.setDisable(false);
+            updateUserButtons();
+        }
+    }
+
+    private void changeUserActive(boolean active) {
+        AdminUserDto user = selectedUser();
+        if (user == null) {
+            return;
+        }
+        String action = active ? "Enable" : "Disable";
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION,
+                action + " the account " + user.email() + "?",
+                ButtonType.YES, ButtonType.CANCEL);
+        confirm.setTitle(action + " account");
+        confirm.showAndWait().filter(r -> r == ButtonType.YES).ifPresent(r -> {
+            try {
+                ServiceFactory.adminGateway().updateUser(
+                        window(), adminEmail(), user.userId(), null, active);
+                loadUsers();
+            } catch (SyncException ex) {
+                AdminCatalogGateway.showError(window(), ex.getMessage());
+            }
+        });
+    }
+
+    private void changeUserRole(String role) {
+        AdminUserDto user = selectedUser();
+        if (user == null) {
+            return;
+        }
+        try {
+            ServiceFactory.adminGateway().updateUser(
+                    window(), adminEmail(), user.userId(), role, null);
+            loadUsers();
+        } catch (SyncException ex) {
+            AdminCatalogGateway.showError(window(), ex.getMessage());
+        }
+    }
+
+    private void updateUserButtons() {
+        AdminUserDto user = selectedUser();
+        boolean hasSelection = user != null;
+        boolean self = hasSelection && user.email().equalsIgnoreCase(adminEmail());
+        disableUserButton.setDisable(!hasSelection || self);
+        roleUserButton.setDisable(!hasSelection || self);
+        if (hasSelection) {
+            disableUserButton.setText(user.isActive() ? "Disable" : "Enable");
+            roleUserButton.setText("ADMIN".equals(user.role()) ? "Make student" : "Make admin");
+        }
+    }
+
+    private Window window() {
+        return contentBox.getScene() == null ? null : contentBox.getScene().getWindow();
+    }
+
+    private static String roleLabel(String role) {
+        return "ADMIN".equals(role) ? "Admin" : "Student";
+    }
+
+    private static String shortDate(String isoTimestamp) {
+        if (isoTimestamp == null || isoTimestamp.length() < 10) {
+            return "—";
+        }
+        return isoTimestamp.substring(0, 10);
     }
 }
