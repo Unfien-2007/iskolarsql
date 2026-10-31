@@ -21,8 +21,9 @@ import java.util.regex.Pattern;
  * authoritative), and fall back to the local {@code users} table and the
  * {@code auth_cache} offline credential cache when it is not. Every
  * successful online sign-in refreshes the cached hash, stores the JWT, and
- * syncs the local user row. Registration and admin sign-in require the
- * server.
+ * syncs the local user row. Only registration requires the server; sign-in
+ * falls back to cached credentials (admins included — catalog writes are
+ * still online-only).
  *
  * <p>Network calls block; callers run this off the JavaFX thread.</p>
  */
@@ -86,23 +87,27 @@ public class AuthService {
 
     private AuthResult loginOffline(String email, String password) {
         User local = userDao.findByEmail(email).orElse(null);
-        if (local != null && PasswordUtils.verify(password, local.passwordHash())) {
-            return startLocalSession(local);
+        if (local != null) {
+            return PasswordUtils.verify(password, local.passwordHash())
+                    ? startLocalSession(local)
+                    : AuthResult.failure("Invalid email or password.");
         }
         AuthCacheDao.CachedAuth cached = authCacheDao.findByEmail(email).orElse(null);
-        if (cached != null && PasswordUtils.verify(password, cached.passwordHash())) {
+        if (cached != null) {
+            if (!PasswordUtils.verify(password, cached.passwordHash())) {
+                return AuthResult.failure("Invalid email or password.");
+            }
             // Account was verified online before (possibly on another device):
             // materialize the local user row and sign in.
             User materialized = userDao.upsertFromServer(email, cached.passwordHash(), cached.role());
             return startLocalSession(materialized);
         }
-        return AuthResult.failure("Invalid email or password.");
+        // Neither a local row nor a cached credential: we cannot tell whether
+        // the account exists, so report the real problem (no connection).
+        return AuthResult.failure("Could not reach the server. Check your connection and try again.");
     }
 
     private AuthResult startLocalSession(User user) {
-        if (user.role() == Role.ADMIN) {
-            return AuthResult.failure("Admin sign-in requires an internet connection.");
-        }
         SessionManager.start(user.userId(), user.email(), user.role());
         return AuthResult.success(user);
     }

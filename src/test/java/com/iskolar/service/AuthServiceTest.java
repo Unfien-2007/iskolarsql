@@ -153,11 +153,20 @@ class AuthServiceTest {
     }
 
     @Test
-    void offlineAdminLoginIsBlocked() {
+    void offlineAdminLoginWorks() {
         AuthResult result = offline().login("admin@iskolar.app", "password");
 
+        assertTrue(result.success());
+        assertTrue(SessionManager.isAdmin());
+    }
+
+    @Test
+    void offlineLoginForUnknownAccountReportsConnectionProblem() {
+        AuthResult result = offline().login("nobody@email.com", "password123");
+
         assertFalse(result.success());
-        assertEquals("Admin sign-in requires an internet connection.", result.message());
+        assertEquals("Could not reach the server. Check your connection and try again.",
+                result.message());
         assertTrue(SessionManager.current().isEmpty());
     }
 

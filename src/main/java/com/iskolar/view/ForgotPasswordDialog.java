@@ -2,7 +2,6 @@ package com.iskolar.view;
 
 import com.iskolar.service.AuthResult;
 import com.iskolar.service.ServiceFactory;
-import com.iskolar.util.ThemeManager;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.scene.control.Button;
@@ -29,17 +28,10 @@ public final class ForgotPasswordDialog {
     public static void show(Window owner, String prefilledEmail) {
         Dialog<Void> dialog = new Dialog<>();
         dialog.setTitle("Reset password");
-        if (owner != null) {
-            dialog.initOwner(owner);
-        }
         dialog.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
         dialog.getDialogPane().getStylesheets().add(Objects.requireNonNull(
                 ForgotPasswordDialog.class.getResource("/css/app.css"),
                 "css/app.css missing from classpath").toExternalForm());
-        dialog.getDialogPane().getStyleClass().add("app-root");
-        if (ThemeManager.isDark()) {
-            dialog.getDialogPane().getStyleClass().add("dark");
-        }
 
         VBox content = new VBox(10);
         content.getStyleClass().add("details-root");
@@ -48,6 +40,7 @@ public final class ForgotPasswordDialog {
 
         buildRequestStep(content, prefilledEmail);
         dialog.getDialogPane().setContent(content);
+        ThemedDialog.install(dialog, owner, "Password reset");
         dialog.showAndWait();
     }
 

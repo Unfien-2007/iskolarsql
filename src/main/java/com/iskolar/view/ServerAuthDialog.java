@@ -8,6 +8,7 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.layout.VBox;
 import javafx.stage.Window;
 
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -22,32 +23,35 @@ public final class ServerAuthDialog {
 
     public static Optional<String> promptPassword(Window owner, String email) {
         Dialog<String> dialog = new Dialog<>();
-        if (owner != null) {
-            dialog.initOwner(owner);
-        }
         dialog.setTitle("Sign in to the catalog server");
-        dialog.setHeaderText("Admin edits are stored on the central server.");
+        dialog.getDialogPane().getStylesheets().add(Objects.requireNonNull(
+                ServerAuthDialog.class.getResource("/css/app.css"),
+                "css/app.css missing from classpath").toExternalForm());
 
         ButtonType signIn = new ButtonType("Sign in", ButtonBar.ButtonData.OK_DONE);
         dialog.getDialogPane().getButtonTypes().addAll(signIn, ButtonType.CANCEL);
 
-        PasswordField passwordField = new PasswordField();
-        passwordField.setPromptText("Server password");
+        Label note = new Label("Admin edits are stored on the central server.");
+        note.getStyleClass().add("details-note");
+        note.setWrapText(true);
         Label emailLabel = new Label("Signed in as " + email);
         emailLabel.getStyleClass().add("details-provider");
-        VBox content = new VBox(10, emailLabel, passwordField);
+        PasswordField passwordField = new PasswordField();
+        passwordField.setPromptText("Server password");
+
+        VBox content = new VBox(10, note, emailLabel, passwordField);
         content.getStyleClass().add("details-root");
-        content.setPrefWidth(320);
+        content.setPrefWidth(340);
         dialog.getDialogPane().setContent(content);
-        dialog.getDialogPane().getStylesheets().add(ServerAuthDialog.class
-                .getResource("/css/app.css").toExternalForm());
-        dialog.getDialogPane().getStyleClass().add("app-root");
-        if (com.iskolar.util.ThemeManager.isDark()) {
-            dialog.getDialogPane().getStyleClass().add("dark");
-        }
+
+        var signInButton = dialog.getDialogPane().lookupButton(signIn);
+        signInButton.setDisable(true);
+        passwordField.textProperty().addListener((obs, old, value) ->
+                signInButton.setDisable(value == null || value.isBlank()));
+
+        ThemedDialog.install(dialog, owner, "Catalog server");
 
         dialog.setResultConverter(button -> button == signIn ? passwordField.getText() : null);
-        Optional<String> result = dialog.showAndWait();
-        return result.filter(password -> password != null && !password.isBlank());
+        return dialog.showAndWait().filter(password -> password != null && !password.isBlank());
     }
 }

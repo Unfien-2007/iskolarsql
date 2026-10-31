@@ -18,6 +18,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TabPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Window;
 
@@ -76,6 +77,11 @@ public class AdminDashboardController {
     private Button disableUserButton;
     @FXML
     private Label usersStatusLabel;
+    @FXML
+    private TabPane tabs;
+
+    private boolean usersLoading;
+    private boolean usersLoaded;
 
     @FXML
     private void initialize() {
@@ -133,6 +139,13 @@ public class AdminDashboardController {
         usersTable.getSelectionModel().selectedItemProperty()
                 .addListener((obs, old, val) -> updateUserButtons());
         refreshUsersButton.setOnAction(e -> loadUsers());
+        // Load accounts only when the Users tab is opened. Loading them up front
+        // prompts for the server password as soon as the admin portal opens.
+        tabs.getSelectionModel().selectedIndexProperty().addListener((obs, old, index) -> {
+            if (index != null && index.intValue() == 1 && !usersLoaded && !usersLoading) {
+                loadUsers();
+            }
+        });
         disableUserButton.setOnAction(e -> changeUserActive(!selectedUser().isActive()));
         roleUserButton.setOnAction(e ->
                 changeUserRole("ADMIN".equals(selectedUser().role()) ? "STUDENT" : "ADMIN"));
@@ -199,7 +212,6 @@ public class AdminDashboardController {
             gatePane.setVisible(false);
             gatePane.setManaged(false);
             load();
-            loadUsers();
         }
     }
 
@@ -251,16 +263,22 @@ public class AdminDashboardController {
 
     /** Loads accounts from the server. Admin edits are online-only. */
     private void loadUsers() {
+        if (usersLoading) {
+            return;
+        }
+        usersLoading = true;
         usersStatusLabel.setText("Loading accounts…");
         refreshUsersButton.setDisable(true);
         try {
             var users = ServiceFactory.adminGateway().listUsers(window(), adminEmail());
             usersTable.getItems().setAll(users);
             usersStatusLabel.setText(users.size() + (users.size() == 1 ? " account" : " accounts"));
+            usersLoaded = true;
         } catch (SyncException ex) {
             usersStatusLabel.setText("Could not load accounts.");
             AdminCatalogGateway.showError(window(), ex.getMessage());
         } finally {
+            usersLoading = false;
             refreshUsersButton.setDisable(false);
             updateUserButtons();
         }

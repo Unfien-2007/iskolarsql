@@ -285,11 +285,6 @@
     -fx-font-size: 12px;
 }
 
-.demo-hint {
-    -fx-font-size: 11px;
-    -fx-text-fill: -color-fg-subtle;
-}
-
 .primary-button {
     -fx-background-color: -color-accent-emphasis;
     -fx-text-fill: white;
