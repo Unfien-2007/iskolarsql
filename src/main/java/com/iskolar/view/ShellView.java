@@ -282,6 +282,9 @@ public final class ShellView {
         Button button = new Button(text, FontIcon.of(icon, 18));
         button.getStyleClass().add("nav-button");
         button.setMaxWidth(Double.MAX_VALUE);
+        // Registered like the toggle destinations so the 68px rail drops its
+        // label instead of ellipsizing it to "…" next to the icon.
+        NAV_TITLES.put(button, text);
         installTooltip(button, text);
         button.setOnAction(e -> action.run());
         return button;
