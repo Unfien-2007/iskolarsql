@@ -13,6 +13,7 @@ import com.iskolar.view.Snackbar;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
@@ -31,7 +32,13 @@ public class TrackerController {
     @FXML
     private VBox boardPane;
     @FXML
+    private ScrollPane boardScroll;
+    @FXML
     private HBox boardRow;
+    @FXML
+    private VBox emptyPane;
+    @FXML
+    private Button emptyBrowseButton;
     @FXML
     private VBox gatePane;
     @FXML
@@ -55,9 +62,11 @@ public class TrackerController {
                     "Open wizard", () -> ViewNavigator.show(ViewNavigator.WIZARD_VIEW));
             return;
         }
+        // Signed-in student with a profile: show the board and hide the gate.
         studentId = profile.get().studentId();
         gatePane.setVisible(false);
         gatePane.setManaged(false);
+        emptyBrowseButton.setOnAction(e -> ViewNavigator.show(ViewNavigator.DISCOVERY_VIEW));
         refresh();
     }
 
@@ -74,7 +83,18 @@ public class TrackerController {
         Map<Long, MatchResult> matches = ServiceFactory.matchingService().matchAll(studentId).stream()
                 .collect(Collectors.toMap(MatchResult::scholarshipId, r -> r));
 
+        // An empty board is one message, not six empty columns.
+        boolean empty = cards.isEmpty();
+        boardScroll.setVisible(!empty);
+        boardScroll.setManaged(!empty);
+        emptyPane.setVisible(empty);
+        emptyPane.setManaged(empty);
+
         boardRow.getChildren().clear();
+        if (empty) {
+            JourneyRail.setAwarded(false);
+            return;
+        }
         for (ApplicationStatus status : ApplicationStatus.values()) {
             boardRow.getChildren().add(buildColumn(status, cards, matches));
         }
@@ -111,11 +131,9 @@ public class TrackerController {
                 .filter(c -> c.application().status() == status)
                 .toList();
         if (columnCards.isEmpty()) {
-            Label empty = new Label(status == ApplicationStatus.SAVED
-                    ? "Nothing saved yet — add one from Discover"
-                    : "Nothing here yet");
+            // A quiet dash reads cleaner than repeating "nothing here" six times.
+            Label empty = new Label("—");
             empty.getStyleClass().add("kanban-empty");
-            empty.setWrapText(true);
             cardPane.getChildren().add(empty);
         } else {
             for (ApplicationCard card : columnCards) {

@@ -16,16 +16,28 @@
             <VBox fx:id="boardPane" spacing="10">
                 <VBox spacing="6" styleClass="discovery-header">
                     <Label text="My Application Tracker" styleClass="view-title"/>
-                    <Label text="Move your applications through the pipeline — every card remembers where you left off."
+                    <Label text="Track each application from saved to awarded."
                            styleClass="view-subtitle" wrapText="true"/>
                 </VBox>
                 <!-- fitToWidth lets the columns share the visible board width; when the
                      window is narrower than the columns' total min width the pane
                      falls back to horizontal scrolling. -->
-                <ScrollPane fitToWidth="true" fitToHeight="true" hbarPolicy="AS_NEEDED"
-                            styleClass="kanban-scroll">
+                <ScrollPane fx:id="boardScroll" fitToWidth="true" fitToHeight="true"
+                            hbarPolicy="AS_NEEDED" styleClass="kanban-scroll">
                     <HBox fx:id="boardRow" styleClass="kanban-row"/>
                 </ScrollPane>
+
+                <!-- One explanation beats six empty columns when nothing is tracked.
+                     The pane spans the board width and centres its own content. -->
+                <VBox fx:id="emptyPane" alignment="CENTER" spacing="10" maxWidth="Infinity"
+                      styleClass="empty-state" visible="false" VBox.vgrow="ALWAYS">
+                    <Label text="No applications yet" styleClass="empty-state-title"/>
+                    <Label text="Save a scholarship from Discover and it will show up here, ready to track."
+                           styleClass="empty-state-text" wrapText="true" maxWidth="420"
+                           textAlignment="CENTER"/>
+                    <Button fx:id="emptyBrowseButton" text="Browse scholarships"
+                            styleClass="primary-button"/>
+                </VBox>
             </VBox>
 
             <!-- Gate: no session or no profile -->

@@ -183,12 +183,15 @@ public class ScholarshipCardController {
         saveButton.setDisable(saved);
     }
 
-    /** {@code null} = guest — badge hidden, caption prompts sign-in. */
+    /** {@code null} = guest — badge and caption hidden; the header prompt covers it. */
     public void setMatch(MatchResult match) {
         if (match == null) {
             matchBadge.setVisible(false);
             matchBadge.setManaged(false);
-            matchCaption.setText("Sign in for your match score");
+            // Repeating "sign in for your score" on every card was visual noise;
+            // one compact prompt above the grid already says it.
+            matchCaption.setVisible(false);
+            matchCaption.setManaged(false);
             return;
         }
         matchBadge.getStyleClass().add(tierStyle(match.tier()));

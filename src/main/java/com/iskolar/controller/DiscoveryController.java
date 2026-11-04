@@ -107,8 +107,6 @@ public class DiscoveryController {
     @FXML
     private Label resultLabel;
     @FXML
-    private Label selectionLabel;
-    @FXML
     private Button compareButton;
     @FXML
     private ComboBox<SortOrder> sortCombo;
@@ -183,6 +181,10 @@ public class DiscoveryController {
         searchField.setTooltip(new Tooltip("Search by title or provider (Ctrl+F)"));
 
         // catalog sync indicator
+        syncButton.setGraphic(org.kordamp.ikonli.javafx.FontIcon.of(
+                org.kordamp.ikonli.feather.Feather.REFRESH_CW, 14));
+        syncButton.setTooltip(new Tooltip("Refresh the catalog from the server"));
+        syncButton.setAccessibleText("Refresh the catalog from the server");
         syncButton.setOnAction(e -> ServiceFactory.syncService().syncInBackground());
         ServiceFactory.syncService().addListener(this::onSyncStatus);
         showLocalSyncState();
@@ -277,7 +279,7 @@ public class DiscoveryController {
         }
         applyCardWidths();
         resultLabel.setText(scholarships.size()
-                + (scholarships.size() == 1 ? " scholarship found" : " scholarships found"));
+                + (scholarships.size() == 1 ? " scholarship" : " scholarships"));
         resetButton.setDisable(!hasActiveFilters());
         updateEmptyState(scholarships.isEmpty());
         updateCompareState();
@@ -495,11 +497,6 @@ public class DiscoveryController {
                     ? "Tick Compare on at least two scholarships"
                     : "Open the side-by-side comparison");
         }
-        selectionLabel.setVisible(count > 0);
-        selectionLabel.setManaged(count > 0);
-        if (count > 0) {
-            selectionLabel.setText(count + " selected (max " + MAX_COMPARE + ")");
-        }
     }
 
     /** Sidebar "Compare": opens the sheet when ready, otherwise explains the next step. */
@@ -543,11 +540,11 @@ public class DiscoveryController {
         guestBanner.setVisible(!hasProfile);
         guestBanner.setManaged(!hasProfile);
         if (session.isEmpty()) {
-            bannerLabel.setText("Sign in to see your personalized match score on every card.");
+            bannerLabel.setText("See your match score on every card.");
             bannerButton.setText("Log in");
             bannerButton.setOnAction(e -> ViewNavigator.show(ViewNavigator.LOGIN_VIEW));
         } else {
-            bannerLabel.setText("Complete your profile wizard to unlock personalized match scores.");
+            bannerLabel.setText("Finish your profile to unlock match scores.");
             bannerButton.setText("Open wizard");
             bannerButton.setOnAction(e -> ViewNavigator.show(ViewNavigator.WIZARD_VIEW));
         }
