@@ -98,7 +98,7 @@ public class TrackerCardController {
         providerLabel.setText(card.scholarship().providerName());
 
         LocalDate deadline = card.scholarship().deadlineDate();
-        deadlinePill.setText(DeadlineUrgency.text(deadline));
+        deadlinePill.setText("•  " + DeadlineUrgency.text(deadline));
         deadlinePill.getStyleClass().add(urgencyStyle(deadline));
         // The card footer shares one row with the match badge; without a min
         // width the pill shrinks and ellipsizes ("Closes within ...") first.

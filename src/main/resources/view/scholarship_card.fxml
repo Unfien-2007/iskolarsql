@@ -1,51 +1,57 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.Button?>
-<?import javafx.scene.control.CheckBox?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ToggleButton?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
 
 <!-- Discovery-grid scholarship card; data injected by ScholarshipCardController.
-     224px fits a two-line title, provider, deadline date, the two stacked
-     financial lines and the action row — at 210 the header was squeezed and
-     long titles fell back to a single ellipsized line. -->
+     Mirrors the reference: dotted provider pill + urgency pill, title, provider,
+     closing date, a two-column TUITION/STIPEND block, then Save / compare. -->
 <BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="com.iskolar.controller.ScholarshipCardController"
-            styleClass="scholarship-card" prefWidth="320" minHeight="224" maxHeight="224">
+            styleClass="scholarship-card" prefWidth="320" minHeight="230" maxHeight="230">
     <top>
         <HBox alignment="CENTER_LEFT" spacing="8">
-            <Label fx:id="providerBadge" styleClass="badge"/>
+            <HBox fx:id="providerBadge" alignment="CENTER_LEFT" spacing="6" styleClass="badge">
+                <Region fx:id="providerDot" styleClass="badge-dot"/>
+                <Label fx:id="providerBadgeText"/>
+            </HBox>
             <Region HBox.hgrow="ALWAYS"/>
             <Label fx:id="urgencyPill" styleClass="pill"/>
         </HBox>
     </top>
     <center>
         <VBox spacing="5">
-            <!-- maxHeight 50 = two 15px lines; 46 clipped the second line. -->
             <Label fx:id="titleLabel" styleClass="card-title" wrapText="true"
                    maxWidth="Infinity" maxHeight="50"/>
             <Label fx:id="providerLabel" styleClass="card-provider" wrapText="true"
                    maxWidth="Infinity" maxHeight="20"/>
-            <Label fx:id="deadlineLabel" styleClass="card-deadline" maxWidth="Infinity"/>
+            <Label fx:id="closesLabel" styleClass="card-closes" maxWidth="Infinity"/>
             <Region VBox.vgrow="ALWAYS"/>
-            <!-- Stacked rather than side by side: two long values shared one
-                 346px row and both ellipsized ("FULL TUITION + allow…"). -->
-            <Label fx:id="tuitionLabel" styleClass="card-highlight" wrapText="true"
-                   maxWidth="Infinity"/>
-            <Label fx:id="stipendLabel" styleClass="card-highlight" wrapText="true"
-                   maxWidth="Infinity"/>
+            <HBox spacing="18">
+                <VBox spacing="2" HBox.hgrow="ALWAYS">
+                    <Label text="TUITION" styleClass="card-field-label"/>
+                    <Label fx:id="tuitionValue" styleClass="card-field-value" wrapText="true"
+                           maxWidth="Infinity"/>
+                </VBox>
+                <VBox spacing="2" HBox.hgrow="ALWAYS">
+                    <Label text="STIPEND" styleClass="card-field-label"/>
+                    <Label fx:id="stipendValue" styleClass="card-field-value" wrapText="true"
+                           maxWidth="Infinity"/>
+                </VBox>
+            </HBox>
         </VBox>
     </center>
     <bottom>
-        <HBox alignment="CENTER_LEFT" spacing="10">
-            <Button fx:id="saveButton" text="Save" styleClass="ghost-button"/>
-            <CheckBox fx:id="compareCheck" text="Compare" styleClass="compare-check"/>
-            <Label fx:id="matchCaption" styleClass="match-caption"/>
-            <Region HBox.hgrow="ALWAYS"/>
+        <HBox alignment="CENTER_LEFT" spacing="8">
+            <Button fx:id="saveButton" styleClass="save-button" maxWidth="Infinity"
+                    HBox.hgrow="ALWAYS"/>
             <Label fx:id="matchBadge" styleClass="match-badge"/>
+            <ToggleButton fx:id="compareToggle" styleClass="compare-toggle"/>
         </HBox>
     </bottom>
 </BorderPane>

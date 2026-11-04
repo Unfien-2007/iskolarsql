@@ -12,10 +12,13 @@ import javafx.animation.Interpolator;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonBase;
+import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Label;
 import javafx.scene.control.Labeled;
 import javafx.scene.control.Separator;
@@ -61,9 +64,10 @@ public final class ShellView {
     private static ToggleButton adminButton;
     /** Destinations in rail order: Discover, My Applications, My Profile, Admin. */
     private static final List<ToggleButton> NAV_BUTTONS = new ArrayList<>();
-    private static final Map<Labeled, String> NAV_TITLES = new HashMap<>();
     private static final Map<ToggleButton, String> NAV_VIEWS = new HashMap<>();
     private static final Map<Node, Tooltip> TOOLTIPS = new HashMap<>();
+    /** Every sidebar item drawn as an icon tile (with a short label when collapsed). */
+    private static final List<RailItem> RAIL = new ArrayList<>();
     private static HBox userChip;
     private static boolean collapsed;
 
@@ -140,13 +144,16 @@ public final class ShellView {
      * the app's own caption — the stage is undecorated, so it also handles
      * dragging and double-click-to-maximise.
      */
-    private static HBox buildTopArea() {
+    /** Top band: centred numbered stepper, window controls overlaid at the right. */
+    private static StackPane buildTopArea() {
         HBox rail = JourneyRail.build();
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-        HBox bar = new HBox(rail, spacer, WindowChrome.controls());
-        bar.setAlignment(Pos.CENTER_LEFT);
+        StackPane bar = new StackPane(rail);
+        bar.setAlignment(Pos.CENTER);
         bar.getStyleClass().add("top-bar");
+        HBox controls = WindowChrome.controls();
+        StackPane.setAlignment(controls, Pos.CENTER_RIGHT);
+        StackPane.setMargin(controls, new Insets(0, 2, 0, 0));
+        bar.getChildren().add(controls);
         WindowChrome.makeDraggable(bar);
         return bar;
     }
@@ -208,17 +215,19 @@ public final class ShellView {
         // navigation rail — destinations keep a selected state; Compare is an
         // action that opens the comparison sheet, so it never stays "current".
         ToggleGroup group = new ToggleGroup();
-        navButton("Discover", Feather.COMPASS, group, ViewNavigator.DISCOVERY_VIEW);
-        navButton("My Applications", Feather.CHECK_SQUARE, group, ViewNavigator.TRACKER_VIEW);
-        Button compareNav = navAction("Compare", Feather.COLUMNS, () ->
+        navButton("Discover", "Discover", Feather.COMPASS, group, ViewNavigator.DISCOVERY_VIEW);
+        navButton("My Applications", "Applied", Feather.CHECK_SQUARE, group,
+                ViewNavigator.TRACKER_VIEW);
+        Button compareNav = navAction("Compare", "Compare", Feather.COLUMNS, () ->
                 ViewNavigator.show(ViewNavigator.DISCOVERY_VIEW, controller -> {
                     if (controller instanceof DiscoveryController discovery) {
                         discovery.openCompareFromSidebar();
                     }
                 }));
         installTooltip(compareNav, "Compare the scholarships you ticked");
-        navButton("My Profile", Feather.USER, group, ViewNavigator.WIZARD_VIEW);
-        adminButton = navButton("Admin Portal", Feather.SHIELD, group, ViewNavigator.ADMIN_DASHBOARD_VIEW);
+        navButton("My Profile", "Profile", Feather.USER, group, ViewNavigator.WIZARD_VIEW);
+        adminButton = navButton("Admin Portal", "Admin", Feather.SHIELD, group,
+                ViewNavigator.ADMIN_DASHBOARD_VIEW);
 
         VBox navBox = new VBox(4);
         navBox.getChildren().addAll(NAV_BUTTONS.get(0), NAV_BUTTONS.get(1), compareNav,
@@ -231,13 +240,13 @@ public final class ShellView {
         userChip.setAlignment(Pos.CENTER_LEFT);
         userChip.getStyleClass().add("user-chip");
 
-        logoutButton = footerButton("Log out", Feather.LOG_OUT);
+        logoutButton = footerButton("Log out", "Log out", Feather.LOG_OUT);
         logoutButton.setOnAction(e -> handleAuth());
 
-        themeButton = footerButton("Light", Feather.MOON);
+        themeButton = footerButton("Light", "Theme", Feather.MOON);
         themeButton.setOnAction(e -> toggleTheme());
 
-        authButton = footerButton("Log in", Feather.LOG_IN);
+        authButton = footerButton("Log in", "Log in", Feather.LOG_IN);
         authButton.setOnAction(e -> handleAuth());
 
         VBox footer = new VBox(8, userChip, logoutButton, themeButton, authButton);
@@ -251,11 +260,65 @@ public final class ShellView {
         return label;
     }
 
-    private static Button footerButton(String text, Feather icon) {
-        Button button = new Button(text, FontIcon.of(icon, 18));
-        button.getStyleClass().add("nav-button");
-        button.setMaxWidth(Double.MAX_VALUE);
+    /** One rail entry: the button, its icon tile and the short collapsed label. */
+    private static final class RailItem {
+        private final ButtonBase node;
+        private final StackPane tile;
+        private final Label mini;
+        private String title;
+
+        private RailItem(ButtonBase node, StackPane tile, Label mini, String title) {
+            this.node = node;
+            this.tile = tile;
+            this.mini = mini;
+            this.title = title;
+        }
+    }
+
+    /** Gives a sidebar button the icon-tile treatment used by the collapsed rail. */
+    private static void styleRailItem(ButtonBase node, String title, String shortTitle,
+                                      Feather icon) {
+        StackPane tile = new StackPane(FontIcon.of(icon, 18));
+        tile.getStyleClass().add("nav-tile");
+        Label mini = new Label(shortTitle);
+        mini.getStyleClass().add("nav-mini");
+        mini.setVisible(false);
+        VBox graphic = new VBox(3, tile, mini);
+        graphic.setAlignment(Pos.CENTER);
+
+        node.setGraphic(graphic);
+        node.setText(title);
+        node.setContentDisplay(ContentDisplay.LEFT);
+        node.getStyleClass().add("nav-button");
+        node.setMaxWidth(Double.MAX_VALUE);
+        RAIL.add(new RailItem(node, tile, mini, title));
+    }
+
+    private static Button footerButton(String text, String shortTitle, Feather icon) {
+        Button button = new Button();
+        styleRailItem(button, text, shortTitle, icon);
         return button;
+    }
+
+    private static void setRailTitle(ButtonBase node, String title) {
+        for (RailItem item : RAIL) {
+            if (item.node == node) {
+                item.title = title;
+                if (!collapsed) {
+                    node.setText(title);
+                }
+                return;
+            }
+        }
+    }
+
+    private static void setRailIcon(ButtonBase node, Feather icon) {
+        for (RailItem item : RAIL) {
+            if (item.node == node) {
+                item.tile.getChildren().setAll(FontIcon.of(icon, 18));
+                return;
+            }
+        }
     }
 
     /** Installs (or retargets) a tooltip that also covers the icon-only collapsed rail. */
@@ -271,16 +334,14 @@ public final class ShellView {
         }
     }
 
-    private static ToggleButton navButton(String text, Feather icon, ToggleGroup group,
-                                         String fxmlPath) {
+    private static ToggleButton navButton(String text, String shortTitle, Feather icon,
+                                         ToggleGroup group, String fxmlPath) {
         int index = NAV_BUTTONS.size();
-        ToggleButton button = new ToggleButton(text, FontIcon.of(icon, 18));
-        button.getStyleClass().add("nav-button");
-        button.setMaxWidth(Double.MAX_VALUE);
+        ToggleButton button = new ToggleButton();
         button.setToggleGroup(group);
         NAV_BUTTONS.add(button);
-        NAV_TITLES.put(button, text);
         NAV_VIEWS.put(button, fxmlPath);
+        styleRailItem(button, text, shortTitle, icon);
         // Tooltips keep the icon-only collapsed rail legible and expose the
         // Ctrl+1…4 accelerators that mirror the rail order.
         installTooltip(button, index < 4 ? text + "  (Ctrl+" + (index + 1) + ")" : text);
@@ -289,13 +350,9 @@ public final class ShellView {
     }
 
     /** A one-shot nav action (no toggle state) that still looks like the rail. */
-    private static Button navAction(String text, Feather icon, Runnable action) {
-        Button button = new Button(text, FontIcon.of(icon, 18));
-        button.getStyleClass().add("nav-button");
-        button.setMaxWidth(Double.MAX_VALUE);
-        // Registered like the toggle destinations so the 68px rail drops its
-        // label instead of ellipsizing it to "…" next to the icon.
-        NAV_TITLES.put(button, text);
+    private static Button navAction(String text, String shortTitle, Feather icon, Runnable action) {
+        Button button = new Button();
+        styleRailItem(button, text, shortTitle, icon);
         installTooltip(button, text);
         button.setOnAction(e -> action.run());
         return button;
@@ -321,7 +378,12 @@ public final class ShellView {
     }
 
     private static void applyCollapsedText() {
-        NAV_TITLES.forEach((node, title) -> node.setText(collapsed ? "" : title));
+        for (RailItem item : RAIL) {
+            item.node.setText(collapsed ? "" : item.title);
+            item.mini.setVisible(collapsed);
+            item.node.setContentDisplay(collapsed ? ContentDisplay.TOP : ContentDisplay.LEFT);
+            item.node.setAlignment(collapsed ? Pos.CENTER : Pos.CENTER_LEFT);
+        }
         brandLabel.setText(collapsed ? "" : "iskolarPath");
         nameLabel.setVisible(!collapsed);
         nameLabel.setManaged(!collapsed);
@@ -375,12 +437,11 @@ public final class ShellView {
 
         logoutButton.setVisible(loggedIn);
         logoutButton.setManaged(loggedIn);
-        logoutButton.setText(collapsed ? "" : "Log out");
+        setRailTitle(logoutButton, "Log out");
 
         authButton.setVisible(!loggedIn);
         authButton.setManaged(!loggedIn);
-        authButton.setText(collapsed ? "" : "Log in");
-        authButton.setGraphic(FontIcon.of(Feather.LOG_IN, 18));
+        setRailTitle(authButton, "Log in");
 
         boolean admin = loggedIn && session.get().role() == Role.ADMIN;
         adminButton.setVisible(admin);
@@ -397,9 +458,9 @@ public final class ShellView {
                 ? session.get().email() + " · " + SessionManager.current().get().role().name()
                 : "Not signed in — browse freely, log in to track applications");
 
-        themeButton.setGraphic(FontIcon.of(
-                ThemeManager.current() == ThemePref.DARK ? Feather.SUN : Feather.MOON, 18));
-        themeButton.setText(collapsed ? "" : (ThemeManager.current() == ThemePref.DARK ? "Dark" : "Light"));
+        setRailIcon(themeButton,
+                ThemeManager.current() == ThemePref.DARK ? Feather.SUN : Feather.MOON);
+        setRailTitle(themeButton, ThemeManager.current() == ThemePref.DARK ? "Dark" : "Light");
         installTooltip(themeButton, ThemeManager.current() == ThemePref.DARK
                 ? "Switch to light theme" : "Switch to dark theme");
     }

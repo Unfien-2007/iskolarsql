@@ -7,17 +7,20 @@ import com.iskolar.model.ProviderType;
 import com.iskolar.model.Scholarship;
 import com.iskolar.util.Dates;
 import com.iskolar.view.Motion;
-import javafx.beans.binding.Bindings;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.AccessibleRole;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
-import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.ToggleButton;
 import javafx.scene.control.Tooltip;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Region;
+import org.kordamp.ikonli.feather.Feather;
+import org.kordamp.ikonli.javafx.FontIcon;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -27,21 +30,21 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 /**
- * Discovery-grid card component: provider badge, deadline urgency pill,
- * financial highlights, match badge, a Save (bookmark) action and a Compare
- * checkbox feeding the side-by-side modal.
+ * Discovery-grid card: provider pill with a type dot, urgency pill, title,
+ * provider, closing date, a two-column tuition/stipend block, and a
+ * Save / compare action row.
+ *
+ * <p>The whole card opens the details drawer (mouse or Enter/Space); the Save
+ * button and compare toggle consume their own clicks.</p>
  */
 public class ScholarshipCardController {
 
-    /**
-     * Rough width of the card footer consumed by the Save button, the Compare
-     * checkbox, the match badge and their 10px gaps. The tier caption is capped
-     * to whatever is left so it ellipsizes instead of pushing the badge off the card.
-     */
-    private static final double FOOTER_RESERVED_WIDTH = 220;
-
     @FXML
-    private Label providerBadge;
+    private HBox providerBadge;
+    @FXML
+    private Region providerDot;
+    @FXML
+    private Label providerBadgeText;
     @FXML
     private Label urgencyPill;
     @FXML
@@ -49,19 +52,17 @@ public class ScholarshipCardController {
     @FXML
     private Label providerLabel;
     @FXML
-    private Label deadlineLabel;
+    private Label closesLabel;
     @FXML
-    private Label tuitionLabel;
+    private Label tuitionValue;
     @FXML
-    private Label stipendLabel;
+    private Label stipendValue;
     @FXML
     private Label matchBadge;
     @FXML
-    private Label matchCaption;
-    @FXML
     private Button saveButton;
     @FXML
-    private CheckBox compareCheck;
+    private ToggleButton compareToggle;
 
     private BorderPane root;
     private Scholarship scholarship;
@@ -70,14 +71,15 @@ public class ScholarshipCardController {
     private Consumer<Scholarship> onDetails;
     /** Guards {@link #setCompareSelected} so restoring state never re-fires the toggle. */
     private boolean suppressCompareEvents;
+    private boolean saved;
 
     /**
      * Loads one card.
      *
      * @param saved           {@code true} when the scholarship is already on the student's tracker
-     * @param onBookmark      called when the Save button is pressed; {@code true} = persisted
-     * @param onCompareToggle called with (scholarship, checked) when the checkbox toggles
-     * @param onDetails       called when the card itself is clicked (buttons/checkbox consume their own clicks)
+     * @param onBookmark      called when Save is pressed; {@code true} = persisted
+     * @param onCompareToggle called with (scholarship, selected) when the compare toggle flips
+     * @param onDetails       called when the card itself is clicked
      */
     public static ScholarshipCardController load(Scholarship scholarship, MatchResult match,
                                                  boolean saved,
@@ -99,9 +101,7 @@ public class ScholarshipCardController {
         controller.setScholarship(scholarship);
         controller.setMatch(match);
         controller.setSaved(saved);
-        // Keeps the tier caption from shoving the match badge off a narrow card.
-        controller.matchCaption.maxWidthProperty().bind(
-                Bindings.max(40, controller.root.widthProperty().subtract(FOOTER_RESERVED_WIDTH)));
+
         controller.root.setOnMouseClicked(e -> {
             if (controller.onDetails != null) {
                 controller.onDetails.accept(scholarship);
@@ -117,7 +117,7 @@ public class ScholarshipCardController {
                 + ", offered by " + scholarship.providerName());
         controller.root.setOnKeyPressed(e -> {
             if (e.getTarget() != controller.root) {
-                return; // let inner buttons/checkboxes handle their own keys
+                return; // let inner buttons/toggle handle their own keys
             }
             if (e.getCode() == KeyCode.ENTER || e.getCode() == KeyCode.SPACE) {
                 if (controller.onDetails != null) {
@@ -136,37 +136,40 @@ public class ScholarshipCardController {
     /** Restores a persisted compare tick without replaying the toggle callback. */
     public void setCompareSelected(boolean selected) {
         suppressCompareEvents = true;
-        compareCheck.setSelected(selected);
+        compareToggle.setSelected(selected);
         suppressCompareEvents = false;
     }
 
-    /** Locks the compare checkbox when the 3-scholarship limit is reached. */
+    /** Locks the compare toggle when the 3-scholarship limit is reached. */
     public void setCompareLocked(boolean locked) {
-        compareCheck.setDisable(locked);
+        compareToggle.setDisable(locked);
     }
 
     public void setScholarship(Scholarship s) {
         this.scholarship = s;
         titleLabel.setText(s.title());
         providerLabel.setText(s.providerName());
-        providerBadge.setText(s.providerType().displayName());
+        providerBadgeText.setText(s.providerType().displayName());
         providerBadge.getStyleClass().add(providerStyle(s.providerType()));
-        tuitionLabel.setText("Tuition: " + (s.tuitionBenefit() == null || s.tuitionBenefit().isBlank()
-                ? "See provider" : s.tuitionBenefit()));
-        stipendLabel.setText("Stipend: " + s.stipendLabel());
-        // The pill counts down; this line pins the exact date.
-        deadlineLabel.setText(deadlineText(s.deadlineDate()));
-        urgencyPill.setText(DeadlineUrgency.text(s.deadlineDate()));
+        closesLabel.setText(closesText(s.deadlineDate()));
+        tuitionValue.setText(s.tuitionBenefit() == null || s.tuitionBenefit().isBlank()
+                ? "See provider" : s.tuitionBenefit());
+        stipendValue.setText(s.stipendLabel());
+        urgencyPill.setText("•  " + DeadlineUrgency.text(s.deadlineDate()));
         urgencyPill.getStyleClass().add(urgencyStyle(s.deadlineDate()));
         if ("pill-red".equals(urgencyStyle(s.deadlineDate()))) {
             Motion.pulse(urgencyPill);
         }
 
-        compareCheck.selectedProperty().addListener((obs, old, checked) -> {
+        compareToggle.setGraphic(FontIcon.of(Feather.COLUMNS, 15));
+        compareToggle.setTooltip(new Tooltip("Add to comparison"));
+        compareToggle.setAccessibleText("Compare " + s.title());
+        compareToggle.selectedProperty().addListener((obs, old, checked) -> {
             if (!suppressCompareEvents) {
                 onCompareToggle.accept(s, checked);
             }
         });
+
         saveButton.setOnAction(e -> {
             // Only flip the button when the bookmark actually landed (guests bounce to login).
             if (onBookmark.test(s)) {
@@ -175,21 +178,26 @@ public class ScholarshipCardController {
         });
     }
 
-    /** Flips the Save button into its disabled, already-tracked state. */
-    private void setSaved(boolean saved) {
-        saveButton.setText(saved ? "Saved ✓" : "Save");
-        saveButton.setDisable(saved);
+    /** Flips the Save button into its filled, already-tracked state. */
+    private void setSaved(boolean isSaved) {
+        saved = isSaved;
+        saveButton.setText(isSaved ? "Saved" : "Save");
+        saveButton.setGraphic(FontIcon.of(isSaved ? Feather.CHECK : Feather.BOOKMARK, 14));
+        saveButton.getStyleClass().remove("saved");
+        if (isSaved) {
+            saveButton.getStyleClass().add("saved");
+        }
+        saveButton.setDisable(isSaved);
+        saveButton.setAccessibleText(isSaved
+                ? "Already saved to your tracker"
+                : "Save " + (scholarship == null ? "scholarship" : scholarship.title()));
     }
 
-    /** {@code null} = guest — badge and caption hidden; the header prompt covers it. */
+    /** {@code null} = guest — badge hidden; the header prompt covers it. */
     public void setMatch(MatchResult match) {
         if (match == null) {
             matchBadge.setVisible(false);
             matchBadge.setManaged(false);
-            // Repeating "sign in for your score" on every card was visual noise;
-            // one compact prompt above the grid already says it.
-            matchCaption.setVisible(false);
-            matchCaption.setManaged(false);
             return;
         }
         matchBadge.getStyleClass().add(tierStyle(match.tier()));
@@ -203,18 +211,16 @@ public class ScholarshipCardController {
             tooltip = match.tier().label() + " — " + String.join(" ", match.warnings());
         }
         Tooltip.install(matchBadge, new Tooltip(tooltip));
-        matchCaption.setText(match.tier().label() + (match.borderlineGrade() ? " · Borderline GWA" : ""));
+        matchBadge.setAccessibleText("Match score " + match.scoreLabel());
     }
 
-    /** Absolute deadline date shown under the provider name. */
-    private static String deadlineText(LocalDate deadline) {
+    /** "Closes Nov 5, 2026" / "Closed Nov 4, 2026" / "No deadline". */
+    private static String closesText(LocalDate deadline) {
         if (deadline == null) {
-            return "Deadline: not specified";
+            return "No deadline";
         }
         String date = Dates.displayDate(deadline);
-        return deadline.isBefore(LocalDate.now())
-                ? "Closed " + date
-                : "Deadline: " + date;
+        return deadline.isBefore(LocalDate.now()) ? "Closed " + date : "Closes " + date;
     }
 
     private static String urgencyStyle(LocalDate deadline) {

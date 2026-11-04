@@ -16,26 +16,25 @@
 <BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="com.iskolar.controller.DiscoveryController">
     <top>
-        <!-- Header is deliberately three bands: title, filters, and one meta
-             line carrying the result count, catalog status, sort and compare.
-             The guest prompt is a compact chip rather than a full-width bar. -->
-        <VBox spacing="8" styleClass="discovery-header">
+        <VBox spacing="10" styleClass="discovery-header">
             <Label text="Discover Scholarships" styleClass="view-title"/>
             <Label text="Scholarships you can apply for right now."
                    styleClass="view-subtitle" wrapText="true"/>
-            <FlowPane hgap="8" vgap="8" alignment="CENTER_LEFT" styleClass="filter-bar">
-                <TextField fx:id="searchField" promptText="Search title or provider" prefWidth="210"/>
-                <ComboBox fx:id="programCombo" promptText="Any degree program" prefWidth="200"/>
-                <ComboBox fx:id="yearCombo" promptText="Any year" prefWidth="110"/>
-                <ComboBox fx:id="providerCombo" promptText="Any provider type" prefWidth="175"/>
-                <TextField fx:id="provinceField" promptText="Location (province)" prefWidth="155"/>
-                <CheckBox fx:id="eligibleOnlyCheck" text="Eligible only"/>
-                <Button fx:id="resetButton" text="Reset" styleClass="ghost-button"/>
-            </FlowPane>
-            <HBox fx:id="guestBanner" spacing="8" alignment="CENTER_LEFT" maxWidth="-Infinity"
-                  styleClass="guest-hint">
-                <Label fx:id="bannerLabel" styleClass="guest-hint-text"/>
-                <Button fx:id="bannerButton" text="Log in" styleClass="link-button"/>
+            <HBox spacing="10" alignment="CENTER_LEFT">
+                <FlowPane hgap="8" vgap="8" alignment="CENTER_LEFT" HBox.hgrow="ALWAYS">
+                    <TextField fx:id="searchField" promptText="Search title or provider" prefWidth="210"/>
+                    <ComboBox fx:id="programCombo" promptText="Any degree program" prefWidth="200"/>
+                    <ComboBox fx:id="yearCombo" promptText="Any year" prefWidth="110"/>
+                    <ComboBox fx:id="providerCombo" promptText="Any provider type" prefWidth="175"/>
+                    <TextField fx:id="provinceField" promptText="Location (province)" prefWidth="155"/>
+                    <CheckBox fx:id="eligibleOnlyCheck" text="Eligible only"/>
+                </FlowPane>
+                <Button fx:id="resetButton" text="Reset" styleClass="link-button"/>
+            </HBox>
+            <HBox fx:id="guestBanner" spacing="12" alignment="CENTER_LEFT" styleClass="guest-banner">
+                <Label fx:id="bannerLabel" wrapText="true"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Button fx:id="bannerButton" text="Log in" styleClass="primary-button"/>
             </HBox>
             <HBox spacing="8" alignment="CENTER_LEFT">
                 <Label fx:id="resultLabel" styleClass="result-label"/>
@@ -46,7 +45,7 @@
                 <Label text="Sort" styleClass="result-label"/>
                 <ComboBox fx:id="sortCombo" prefWidth="180"/>
                 <Button fx:id="compareButton" text="Compare (0)" disable="true"
-                        styleClass="ghost-button"/>
+                        styleClass="outline-button"/>
             </HBox>
         </VBox>
     </top>

@@ -11,40 +11,42 @@
     -fx-font-family: "Inter", "Segoe UI", sans-serif;
 
     /* Warm Horizon — light ("cream") */
-    -color-accent-fg: #C2410C;
-    -color-accent-emphasis: #B93A08;
+    -color-accent-fg: #B4470A;
+    -color-accent-emphasis: #C2480B;
     -color-accent-muted: #D96C3F;
-    -color-accent-subtle: #FBE3D6;
-    -color-bg-default: #FBF7F1;
+    -color-accent-subtle: #FBE7DA;
+    -color-bg-default: #FAF6F0;
     -color-bg-overlay: #FFFFFF;
-    -color-bg-subtle: #F5EEE4;
+    -color-bg-subtle: #F3ECE2;
     -color-bg-inset: #EFE6D9;
-    -color-fg-default: #2D2A26;
+    -color-fg-default: #2B2824;
     -color-fg-muted: #6B6459;
     /* #9C9386 only reached 2.8:1 on the cream background; #6F675B clears AA (≈5.2:1). */
     -color-fg-subtle: #6F675B;
-    -color-border-default: #E7DED1;
-    -color-border-muted: #EFE7DB;
-    -color-border-subtle: #F6EFE4;
+    -color-border-default: #E5DBCC;
+    -color-border-muted: #EDE4D7;
+    -color-border-subtle: #F4EDE2;
+    /* Text/icons drawn on an accent-emphasis fill. */
+    -color-on-accent: #FFFFFF;
 }
 
 .app-root.dark {
-    /* Warm Horizon — dark ("embers") */
-    -color-accent-fg: #F2A24B;
-    -color-accent-emphasis: #FFB45C;
-    -color-accent-muted: #C77B32;
-    -color-accent-subtle: #4A2E14;
-    -color-bg-default: #1B1815;
-    -color-bg-overlay: #26221E;
-    -color-bg-subtle: #2E2925;
-    -color-bg-inset: #16130F;
-    -color-fg-default: #F1EDE6;
-    -color-fg-muted: #B3A99B;
-    /* #857B6E was 3.5:1 on the charcoal surface; #A79C8C clears AA (≈5.3:1). */
-    -color-fg-subtle: #A79C8C;
-    -color-border-default: #3A342D;
-    -color-border-muted: #332E28;
-    -color-border-subtle: #2B2621;
+    /* Near-black warm surfaces with ember accents (matches the reference). */
+    -color-accent-fg: #F6A85A;
+    -color-accent-emphasis: #FFA94D;
+    -color-accent-muted: #B07A3F;
+    -color-accent-subtle: #3B2A17;
+    -color-bg-default: #12100D;
+    -color-bg-overlay: #1A1713;
+    -color-bg-subtle: #171410;
+    -color-bg-inset: #0D0B09;
+    -color-fg-default: #F4F0E9;
+    -color-fg-muted: #A99E8E;
+    -color-fg-subtle: #8A8073;
+    -color-border-default: #2B2620;
+    -color-border-muted: #221E19;
+    -color-border-subtle: #1C1814;
+    -color-on-accent: #231305;
 }
 
 /* Display/heading faces ride on Poppins; everything else inherits Inter. */
@@ -991,4 +993,426 @@
 .scholarship-card,
 .tracker-card {
     -fx-cursor: hand;
+}
+
+/* =====================================================================
+   Reference-pass restyle
+   Near-black surfaces, bordered rounded cards, a numbered stepper and
+   icon-tile sidebar. Rules here win over the earlier sheet.
+   ===================================================================== */
+
+.view-title {
+    -fx-font-size: 30px;
+    -fx-font-weight: bold;
+}
+
+.view-subtitle {
+    -fx-font-size: 12.5px;
+}
+
+/* ---------------- Top band + numbered stepper ---------------- */
+
+.top-bar {
+    -fx-padding: 7 8 7 8;
+    -fx-background-color: -color-bg-default;
+    -fx-border-color: transparent transparent -color-border-muted transparent;
+    -fx-border-width: 0 0 1 0;
+}
+
+.app-root.dark .top-bar {
+    -fx-background-color: -color-bg-default;
+}
+
+.journey-rail {
+    -fx-padding: 0;
+    -fx-background-color: transparent;
+}
+
+.step {
+    -fx-background-color: transparent;
+    -fx-padding: 3 8;
+    -fx-background-radius: 8;
+    -fx-cursor: hand;
+}
+
+.step:hover {
+    -fx-background-color: -color-neutral-subtle;
+}
+
+.step-number {
+    -fx-min-width: 20;
+    -fx-min-height: 20;
+    -fx-max-width: 20;
+    -fx-max-height: 20;
+    -fx-alignment: CENTER;
+    -fx-background-color: transparent;
+    -fx-background-radius: 999;
+    -fx-border-color: -color-border-default;
+    -fx-border-width: 1;
+    -fx-border-radius: 999;
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-fg-muted;
+}
+
+.step-label {
+    -fx-font-size: 12px;
+    -fx-text-fill: -color-fg-muted;
+}
+
+.step.active .step-number {
+    -fx-background-color: -color-accent-emphasis;
+    -fx-border-color: -color-accent-emphasis;
+    -fx-text-fill: #241305;
+}
+
+.step.active .step-label {
+    -fx-text-fill: -color-fg-default;
+    -fx-font-weight: bold;
+}
+
+.step.awarded .step-number {
+    -fx-background-color: -color-warning-subtle;
+    -fx-border-color: -color-warning-muted;
+    -fx-text-fill: -color-warning-fg;
+}
+
+.step.awarded .step-label {
+    -fx-text-fill: -color-warning-fg;
+}
+
+.step-line {
+    -fx-background-color: -color-border-default;
+    -fx-min-height: 1;
+    -fx-pref-height: 1;
+    -fx-max-height: 1;
+    -fx-min-width: 56;
+    -fx-pref-width: 56;
+    -fx-max-width: 56;
+}
+
+/* ---------------- Sidebar rail ---------------- */
+
+.sidebar {
+    -fx-background-color: -color-bg-default;
+    -fx-border-color: transparent -color-border-muted transparent transparent;
+    -fx-border-width: 0 1 0 0;
+    -fx-padding: 10 8;
+}
+
+.nav-button {
+    -fx-padding: 6 8;
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+    -fx-graphic-text-gap: 10;
+    -fx-font-size: 13px;
+}
+
+.nav-tile {
+    -fx-min-width: 32;
+    -fx-min-height: 32;
+    -fx-max-width: 32;
+    -fx-max-height: 32;
+    -fx-background-color: transparent;
+    -fx-background-radius: 10;
+    -fx-border-color: transparent;
+    -fx-border-width: 1;
+    -fx-border-radius: 10;
+}
+
+.nav-tile .ikonli-font-icon {
+    -fx-icon-color: -color-fg-muted;
+}
+
+.nav-button:selected .nav-tile {
+    -fx-background-color: -color-accent-subtle;
+    -fx-border-color: -color-accent-muted;
+}
+
+.nav-button:selected .nav-tile .ikonli-font-icon {
+    -fx-icon-color: -color-accent-fg;
+}
+
+.nav-mini {
+    -fx-font-size: 9px;
+    -fx-text-fill: -color-fg-muted;
+}
+
+.nav-button:selected .nav-mini {
+    -fx-text-fill: -color-accent-fg;
+}
+
+.sidebar.collapsed .nav-button {
+    -fx-padding: 5 0;
+    -fx-background-radius: 10;
+}
+
+.sidebar.collapsed .nav-tile {
+    -fx-border-color: -color-border-default;
+}
+
+.sidebar.collapsed .nav-button:selected .nav-tile {
+    -fx-border-color: -color-accent-muted;
+}
+
+.sidebar.collapsed .icon-button {
+    -fx-border-color: -color-border-default;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+}
+
+/* ---------------- Filter bar / guest card ---------------- */
+
+.filter-bar .text-field,
+.filter-bar .combo-box {
+    -fx-background-radius: 9;
+    -fx-border-radius: 9;
+    -fx-pref-height: 34;
+    -fx-font-size: 12px;
+}
+
+.guest-banner {
+    -fx-background-color: -color-bg-subtle;
+    -fx-border-color: -color-border-default;
+    -fx-border-width: 1;
+    -fx-border-radius: 12;
+    -fx-background-radius: 12;
+    -fx-padding: 9 14;
+}
+
+.guest-banner .label {
+    -fx-text-fill: -color-fg-muted;
+    -fx-font-size: 12.5px;
+}
+
+.guest-banner .button {
+    -fx-background-color: -color-accent-emphasis;
+    -fx-text-fill: #201204;
+    -fx-font-weight: bold;
+    -fx-font-size: 12px;
+    -fx-background-radius: 8;
+    -fx-padding: 6 14;
+    -fx-cursor: hand;
+}
+
+.outline-button {
+    -fx-background-color: transparent;
+    -fx-border-color: -color-accent-emphasis;
+    -fx-border-width: 1;
+    -fx-border-radius: 9;
+    -fx-background-radius: 9;
+    -fx-text-fill: -color-accent-fg;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-padding: 6 14;
+    -fx-cursor: hand;
+}
+
+.outline-button:hover {
+    -fx-background-color: -color-accent-subtle;
+}
+
+.outline-button:disabled {
+    -fx-opacity: 0.45;
+}
+
+/* ---------------- Scholarship card ---------------- */
+
+.scholarship-card {
+    -fx-background-color: -color-bg-overlay;
+    -fx-border-color: -color-border-default;
+    -fx-border-width: 1;
+    -fx-border-radius: 14;
+    -fx-background-radius: 14;
+    -fx-padding: 14;
+    -fx-effect: null;
+}
+
+.scholarship-card:hover {
+    -fx-border-color: -color-accent-muted;
+    -fx-effect: null;
+}
+
+.badge {
+    -fx-background-color: -color-bg-inset;
+    -fx-border-color: -color-border-default;
+    -fx-border-width: 1;
+    -fx-background-radius: 999;
+    -fx-border-radius: 999;
+    -fx-padding: 2 9 2 7;
+    -fx-font-size: 10px;
+    -fx-font-weight: normal;
+    -fx-text-fill: -color-fg-muted;
+}
+
+.badge-dot {
+    -fx-min-width: 6;
+    -fx-min-height: 6;
+    -fx-max-width: 6;
+    -fx-max-height: 6;
+    -fx-background-radius: 999;
+    -fx-background-color: -color-fg-subtle;
+}
+
+.badge-gov .badge-dot { -fx-background-color: #E3A83F; }
+.badge-corp .badge-dot { -fx-background-color: #E07A3F; }
+.badge-ngo .badge-dot { -fx-background-color: #6FAF7B; }
+.badge-uni .badge-dot { -fx-background-color: #7C93C9; }
+.badge-lgu .badge-dot { -fx-background-color: #C9A66B; }
+.badge-intl .badge-dot { -fx-background-color: #C97C8E; }
+
+/* Provider type tint now lives on the dot, not the whole pill. */
+.badge-gov, .badge-corp, .badge-ngo,
+.badge-uni, .badge-lgu, .badge-intl {
+    -fx-background-color: -color-bg-inset;
+    -fx-text-fill: -color-fg-muted;
+}
+
+.pill {
+    -fx-padding: 2 9;
+    -fx-font-size: 10px;
+    -fx-background-radius: 999;
+}
+
+.card-title {
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-fg-default;
+}
+
+.card-provider {
+    -fx-font-size: 11.5px;
+    -fx-text-fill: -color-fg-muted;
+}
+
+.card-closes {
+    -fx-font-size: 11px;
+    -fx-text-fill: -color-fg-muted;
+}
+
+.card-field-label {
+    -fx-font-size: 9px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-fg-subtle;
+}
+
+.card-field-value {
+    -fx-font-size: 12.5px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-fg-default;
+}
+
+.match-badge {
+    -fx-font-size: 11px;
+    -fx-padding: 3 8;
+}
+
+.save-button {
+    -fx-background-color: transparent;
+    -fx-border-color: -color-border-default;
+    -fx-border-width: 1;
+    -fx-border-radius: 9;
+    -fx-background-radius: 9;
+    -fx-padding: 7 12;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-fg-default;
+    -fx-graphic-text-gap: 7;
+    -fx-cursor: hand;
+}
+
+.save-button .ikonli-font-icon {
+    -fx-icon-color: -color-fg-muted;
+}
+
+.save-button:hover {
+    -fx-border-color: -color-accent-muted;
+}
+
+.save-button.saved {
+    -fx-background-color: -color-accent-emphasis;
+    -fx-border-color: -color-accent-emphasis;
+    -fx-text-fill: #201204;
+}
+
+.save-button.saved .ikonli-font-icon {
+    -fx-icon-color: #201204;
+}
+
+.save-button.saved:disabled {
+    -fx-opacity: 1;
+}
+
+.compare-toggle {
+    -fx-background-color: transparent;
+    -fx-border-color: -color-border-default;
+    -fx-border-width: 1;
+    -fx-border-radius: 9;
+    -fx-background-radius: 9;
+    -fx-padding: 7;
+    -fx-cursor: hand;
+}
+
+.compare-toggle .ikonli-font-icon {
+    -fx-icon-color: -color-fg-muted;
+}
+
+.compare-toggle:hover {
+    -fx-border-color: -color-accent-muted;
+}
+
+.compare-toggle:selected {
+    -fx-background-color: -color-accent-subtle;
+    -fx-border-color: -color-accent-emphasis;
+}
+
+.compare-toggle:selected .ikonli-font-icon {
+    -fx-icon-color: -color-accent-fg;
+}
+
+/* Tracker cards follow the same surface language. */
+.tracker-card {
+    -fx-background-color: -color-bg-overlay;
+    -fx-border-color: -color-border-default;
+    -fx-border-width: 1;
+    -fx-border-radius: 12;
+    -fx-background-radius: 12;
+    -fx-effect: null;
+}
+
+.kanban-column {
+    -fx-background-color: -color-bg-subtle;
+    -fx-border-color: -color-border-muted;
+    -fx-border-width: 1;
+    -fx-border-radius: 12;
+    -fx-background-radius: 12;
+}
+
+/* Accent fills carry theme-aware text (white on the dark light-theme accent,
+   near-black on the bright dark-theme accent). */
+.primary-button {
+    -fx-text-fill: -color-on-accent;
+}
+
+.guest-banner .button {
+    -fx-text-fill: -color-on-accent;
+}
+
+.save-button.saved {
+    -fx-text-fill: -color-on-accent;
+}
+
+.save-button.saved .ikonli-font-icon {
+    -fx-icon-color: -color-on-accent;
+}
+
+/* Selected rail row stays quiet; the icon tile carries the accent. */
+.nav-button:selected {
+    -fx-background-color: -color-neutral-subtle;
+    -fx-text-fill: -color-accent-fg;
+}
+
+/* The stepper sits inside the top band, which paints its own background. */
+.app-root.dark .journey-rail {
+    -fx-background-color: transparent;
 }
