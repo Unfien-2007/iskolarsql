@@ -47,7 +47,8 @@ public class ScholarshipApp extends Application {
                 "css/app.css missing from classpath").toExternalForm());
         installShortcuts(scene);
 
-        stage.setTitle("iskolarPath: Discover, match, and track your scholarship journey.");
+        // The tagline belongs in the README, not the OS title bar.
+        stage.setTitle("iskolarPath");
         stage.setMinWidth(960);
         stage.setMinHeight(640);
         stage.setScene(scene);
