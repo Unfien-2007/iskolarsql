@@ -10,7 +10,9 @@
 
 <StackPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
            fx:controller="com.iskolar.controller.LoginController">
-    <VBox maxWidth="380" spacing="8" styleClass="auth-card">
+    <!-- maxHeight -Infinity keeps the card hugging its content instead of
+         stretching the full window height (the gate cards already do this). -->
+    <VBox maxWidth="380" maxHeight="-Infinity" spacing="8" styleClass="auth-card">
         <Label text="Welcome back" styleClass="view-title"/>
         <Label text="Log in to see personalized match scores and manage your applications."
                styleClass="view-subtitle" wrapText="true"/>
@@ -18,7 +20,8 @@
         <TextField fx:id="emailField" promptText="you@school.edu.ph"/>
         <Label text="Password" styleClass="field-label"/>
         <PasswordField fx:id="passwordField" promptText="Your password"/>
-        <Hyperlink fx:id="forgotLink" text="Forgot password?" alignment="CENTER_RIGHT"/>
+        <Hyperlink fx:id="forgotLink" text="Forgot password?" maxWidth="Infinity"
+                   alignment="CENTER_RIGHT"/>
         <Label fx:id="errorLabel" styleClass="error-label" visible="false" managed="false" wrapText="true"/>
         <Button fx:id="loginButton" text="Log in" defaultButton="true" maxWidth="Infinity"
                 styleClass="primary-button"/>

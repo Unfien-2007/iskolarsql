@@ -1,12 +1,16 @@
 package com.iskolar.view;
 
 import com.iskolar.dto.ComparisonRow;
+import com.iskolar.dto.MatchResult;
+import com.iskolar.util.Dates;
 import com.iskolar.util.GwaConverter;
 import javafx.animation.FadeTransition;
 import javafx.animation.ParallelTransition;
 import javafx.animation.ScaleTransition;
+import javafx.application.Platform;
 import javafx.event.EventHandler;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -42,6 +46,9 @@ public final class ComparisonPanel {
     private static VBox panel;
     private static EventHandler<KeyEvent> escHandler;
     private static Scene scene;
+    /** Focus owner to hand back when the overlay closes. */
+    private static Node previousFocus;
+    private static Button closeButton;
 
     private ComparisonPanel() {
     }
@@ -78,6 +85,7 @@ public final class ComparisonPanel {
         Scene target = host.getScene();
         if (target != null) {
             scene = target;
+            previousFocus = target.getFocusOwner();
             escHandler = e -> {
                 if (e.getCode() == KeyCode.ESCAPE) {
                     close();
@@ -95,6 +103,12 @@ public final class ComparisonPanel {
         scale.setToY(1);
         scale.setInterpolator(Motion.SPLINE);
         new ParallelTransition(fade, scale).play();
+
+        // Move keyboard focus into the overlay so Esc/Tab act on it, not the
+        // grid behind it; dismiss() hands focus back to where it came from.
+        if (closeButton != null) {
+            Platform.runLater(closeButton::requestFocus);
+        }
     }
 
     /** Removes the overlay immediately (used on navigation). */
@@ -109,6 +123,20 @@ public final class ComparisonPanel {
         }
         layer = null;
         panel = null;
+        closeButton = null;
+        focusBack(previousFocus);
+        previousFocus = null;
+    }
+
+    /** Restores focus to the control that opened the overlay (guard for detached nodes). */
+    static void focusBack(Node node) {
+        if (node == null) {
+            return;
+        }
+        Scene owner = node.getScene();
+        if (owner != null) {
+            node.requestFocus();
+        }
     }
 
     private static void close() {
@@ -136,10 +164,11 @@ public final class ComparisonPanel {
         eyebrow.getStyleClass().add("details-drawer-eyebrow");
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
-        Button closeButton = new Button();
+        closeButton = new Button();
         closeButton.setGraphic(FontIcon.of(Feather.X, 16));
         closeButton.getStyleClass().add("dialog-close");
         closeButton.setFocusTraversable(false);
+        closeButton.setAccessibleText("Close comparison");
         closeButton.setOnAction(e -> close());
         HBox header = new HBox(10, eyebrow, spacer, closeButton);
         header.getStyleClass().add("details-drawer-header");
@@ -162,19 +191,19 @@ public final class ComparisonPanel {
             grid.add(title, i + 1, 0);
         }
 
-        addRow(grid, rows, 1, "Provider", r -> r.scholarship().providerName());
-        addRow(grid, rows, 2, "Provider Type", r -> r.scholarship().providerType().displayName());
-        addRow(grid, rows, 3, "Tuition Coverage", r -> valueOrDash(r.scholarship().tuitionBenefit()));
-        addRow(grid, rows, 4, "Monthly Stipend", r -> r.scholarship().stipendLabel());
-        addRow(grid, rows, 5, "Maintaining GWA", r -> r.criteria().minGwaPercentage() == null
+        addRow(grid, rows, 1, "Your match", r -> matchText(r.match()), "compare-match");
+        addRow(grid, rows, 2, "Provider", r -> r.scholarship().providerName());
+        addRow(grid, rows, 3, "Provider Type", r -> r.scholarship().providerType().displayName());
+        addRow(grid, rows, 4, "Tuition Coverage", r -> valueOrDash(r.scholarship().tuitionBenefit()));
+        addRow(grid, rows, 5, "Monthly Stipend", r -> r.scholarship().stipendLabel());
+        addRow(grid, rows, 6, "Maintaining GWA", r -> r.criteria().minGwaPercentage() == null
                 ? "None required"
                 : "≥ " + GwaConverter.formatPercent(r.criteria().minGwaPercentage()));
-        addRow(grid, rows, 6, "Return of Service", r -> {
+        addRow(grid, rows, 7, "Return of Service", r -> {
             int years = r.scholarship().returnServiceYears();
             return years <= 0 ? "None" : years + (years == 1 ? " year" : " years");
         });
-        addRow(grid, rows, 7, "Deadline", r -> r.scholarship().deadlineDate() == null
-                ? "—" : r.scholarship().deadlineDate().toString());
+        addRow(grid, rows, 8, "Deadline", r -> Dates.displayDate(r.scholarship().deadlineDate()));
 
         ScrollPane scroll = new ScrollPane(grid);
         scroll.setFitToWidth(true);
@@ -186,16 +215,35 @@ public final class ComparisonPanel {
 
     private static void addRow(GridPane grid, List<ComparisonRow> rows, int rowIndex,
                                String attribute, Function<ComparisonRow, String> value) {
+        addRow(grid, rows, rowIndex, attribute, value, null);
+    }
+
+    private static void addRow(GridPane grid, List<ComparisonRow> rows, int rowIndex,
+                               String attribute, Function<ComparisonRow, String> value,
+                               String valueStyleClass) {
         Label label = new Label(attribute);
         label.getStyleClass().add("compare-attr");
         grid.add(label, 0, rowIndex);
         for (int i = 0; i < rows.size(); i++) {
             Label cell = new Label(value.apply(rows.get(i)));
             cell.getStyleClass().add("compare-value");
+            if (valueStyleClass != null) {
+                cell.getStyleClass().add(valueStyleClass);
+            }
             cell.setWrapText(true);
             cell.setMaxWidth(230);
             grid.add(cell, i + 1, rowIndex);
         }
+    }
+
+    /** Score + tier, or the sign-in prompt for guests and profile-less accounts. */
+    private static String matchText(MatchResult match) {
+        if (match == null) {
+            return "Sign in to see your score";
+        }
+        return match.scoreLabel() + (match.eligible()
+                ? " · " + match.tier().label()
+                : " · Not eligible");
     }
 
     private static String valueOrDash(String value) {

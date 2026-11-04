@@ -31,8 +31,8 @@ import java.util.List;
  * a Discover → Match → Track node path draws itself, the brand + tagline
  * rise in, then the overlay fades out (scaling up slightly) while the
  * sidebar slides in and the content rises — all on one sharp ease-out
- * spline. Plays on every launch and can be skipped at any time by
- * clicking anywhere on the overlay.
+ * spline. Plays on the first launch of a machine (see {@code ShellView}) and
+ * can be skipped at any time by clicking anywhere on the overlay.
  */
 final class IntroSplash {
 

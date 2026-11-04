@@ -8,10 +8,13 @@
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
 
-<!-- Discovery-grid scholarship card; data injected by ScholarshipCardController. -->
+<!-- Discovery-grid scholarship card; data injected by ScholarshipCardController.
+     224px fits a two-line title, provider, deadline date, the two stacked
+     financial lines and the action row — at 210 the header was squeezed and
+     long titles fell back to a single ellipsized line. -->
 <BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="com.iskolar.controller.ScholarshipCardController"
-            styleClass="scholarship-card" prefWidth="320" minHeight="210" maxHeight="210">
+            styleClass="scholarship-card" prefWidth="320" minHeight="224" maxHeight="224">
     <top>
         <HBox alignment="CENTER_LEFT" spacing="8">
             <Label fx:id="providerBadge" styleClass="badge"/>
@@ -20,17 +23,20 @@
         </HBox>
     </top>
     <center>
-        <VBox spacing="6">
+        <VBox spacing="5">
+            <!-- maxHeight 50 = two 15px lines; 46 clipped the second line. -->
             <Label fx:id="titleLabel" styleClass="card-title" wrapText="true"
-                   maxWidth="Infinity" maxHeight="46"/>
-            <Label fx:id="providerLabel" styleClass="card-provider" wrapText="true" maxWidth="Infinity"/>
+                   maxWidth="Infinity" maxHeight="50"/>
+            <Label fx:id="providerLabel" styleClass="card-provider" wrapText="true"
+                   maxWidth="Infinity" maxHeight="20"/>
+            <Label fx:id="deadlineLabel" styleClass="card-deadline" maxWidth="Infinity"/>
             <Region VBox.vgrow="ALWAYS"/>
-            <HBox spacing="14">
-                <!-- minWidth 0 lets long tuition/stipend values ellipsize inside a
-                     320px card instead of painting past the card edge. -->
-                <Label fx:id="tuitionLabel" styleClass="card-highlight" minWidth="0"/>
-                <Label fx:id="stipendLabel" styleClass="card-highlight" minWidth="0"/>
-            </HBox>
+            <!-- Stacked rather than side by side: two long values shared one
+                 346px row and both ellipsized ("FULL TUITION + allow…"). -->
+            <Label fx:id="tuitionLabel" styleClass="card-highlight" wrapText="true"
+                   maxWidth="Infinity"/>
+            <Label fx:id="stipendLabel" styleClass="card-highlight" wrapText="true"
+                   maxWidth="Infinity"/>
         </VBox>
     </center>
     <bottom>

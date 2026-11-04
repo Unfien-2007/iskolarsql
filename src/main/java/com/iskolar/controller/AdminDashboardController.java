@@ -112,6 +112,12 @@ public class AdminDashboardController {
             }
         });
 
+        // Fill the viewport instead of leaving a dead strip and a horizontal scrollbar.
+        table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
+        titleCol.setMinWidth(200);
+        providerCol.setMinWidth(140);
+        table.setPlaceholder(placeholder("No scholarships in the catalog yet — add one with New Scholarship."));
+
         table.setRowFactory(tv -> {
             TableRow<Scholarship> row = new TableRow<>();
             row.setOnMouseClicked(e -> {
@@ -157,6 +163,9 @@ public class AdminDashboardController {
             }
         });
         userCreatedCol.setCellValueFactory(cd -> new ReadOnlyStringWrapper(shortDate(cd.getValue().createdAt())));
+        usersTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
+        userEmailCol.setMinWidth(220);
+        usersTable.setPlaceholder(placeholder("No accounts loaded yet — press Refresh to fetch the user list."));
         usersTable.getSelectionModel().selectedItemProperty()
                 .addListener((obs, old, val) -> updateUserButtons());
         refreshUsersButton.setOnAction(e -> loadUsers());
@@ -361,6 +370,16 @@ public class AdminDashboardController {
             disableUserButton.setText(user.isActive() ? "Disable" : "Enable");
             roleUserButton.setText("ADMIN".equals(user.role()) ? "Make student" : "Make admin");
         }
+    }
+
+    /** Muted, wrapping empty-state label for the admin tables. */
+    private static Label placeholder(String message) {
+        Label label = new Label(message);
+        label.getStyleClass().add("empty-state-text");
+        label.setWrapText(true);
+        label.setMaxWidth(420);
+        label.setTextAlignment(javafx.scene.text.TextAlignment.CENTER);
+        return label;
     }
 
     private Window window() {

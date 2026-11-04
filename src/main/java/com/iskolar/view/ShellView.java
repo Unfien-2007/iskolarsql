@@ -1,8 +1,10 @@
 package com.iskolar.view;
 
+import com.iskolar.controller.DiscoveryController;
 import com.iskolar.dao.DaoFactory;
 import com.iskolar.model.Role;
 import com.iskolar.model.ThemePref;
+import com.iskolar.util.Prefs;
 import com.iskolar.util.SessionManager;
 import com.iskolar.util.ThemeManager;
 import com.iskolar.util.ViewNavigator;
@@ -34,7 +36,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Consumer;
 
 /**
  * The single-window shell: a collapsible left navigation rail (brand, nav
@@ -58,17 +59,23 @@ public final class ShellView {
     private static HBox brandMark;
     private static Region brandSpacer;
     private static ToggleButton adminButton;
+    /** Destinations in rail order: Discover, My Applications, My Profile, Admin. */
     private static final List<ToggleButton> NAV_BUTTONS = new ArrayList<>();
     private static final Map<Labeled, String> NAV_TITLES = new HashMap<>();
+    private static final Map<ToggleButton, String> NAV_VIEWS = new HashMap<>();
+    private static final Map<Node, Tooltip> TOOLTIPS = new HashMap<>();
+    private static HBox userChip;
     private static boolean collapsed;
 
     private ShellView() {
     }
 
     /**
-     * Builds the shell. On every launch an in-window intro splash plays over
-     * the shell and hands off into it (see {@link IntroSplash}); pass
-     * {@code -Diskolar.skipIntro=true} to bypass it during development.
+     * Builds the shell. The first launch on a machine plays the in-window intro
+     * splash and hands off into the shell (see {@link IntroSplash}); later
+     * launches open straight into Discover. Pass
+     * {@code -Diskolar.skipIntro=true} to bypass it during development, or
+     * {@code -Diskolar.forceIntro=true} to replay it.
      */
     public static Parent build() {
         BorderPane root = new BorderPane();
@@ -92,8 +99,15 @@ public final class ShellView {
      */
     private static final boolean SKIP_INTRO_ANIMATION = Boolean.getBoolean("iskolar.skipIntro");
 
+    /** Replay the splash on a machine that has already seen it ({@code -Diskolar.forceIntro=true}). */
+    private static final boolean FORCE_INTRO = Boolean.getBoolean("iskolar.forceIntro");
+
+    /**
+     * The splash is a first-run welcome, not a launch tax: it plays once per
+     * machine and is remembered in {@link Prefs}.
+     */
     private static boolean shouldPlayIntro() {
-        return !SKIP_INTRO_ANIMATION;
+        return !SKIP_INTRO_ANIMATION && (FORCE_INTRO || !Prefs.introPlayed());
     }
 
     /**
@@ -115,6 +129,7 @@ public final class ShellView {
         content.setOpacity(0);
         content.setTranslateY(12);
 
+        Prefs.introPlayed(true); // first-run only from here on
         IntroSplash splash = IntroSplash.attach(stack, sidebar, content, () -> { });
         splash.play();
         return stack;
@@ -125,10 +140,31 @@ public final class ShellView {
         return JourneyRail.build();
     }
 
-    /** Fires a sidebar nav button by index (used by the journey rail). */
+    /** Fires a sidebar nav button by index (used by the journey rail + shortcuts). */
     public static void fireNav(int index) {
         if (index >= 0 && index < NAV_BUTTONS.size()) {
-            NAV_BUTTONS.get(index).fire();
+            ToggleButton button = NAV_BUTTONS.get(index);
+            if (button.isVisible()) {
+                button.fire();
+            }
+        }
+    }
+
+    /**
+     * Mirrors the destination now on screen in the rail, so navigation from the
+     * journey rail, a gate button, or a snackbar never leaves the wrong item
+     * highlighted. Called by {@link ViewNavigator} after every swap.
+     */
+    public static void syncSelection(String viewPath) {
+        for (ToggleButton button : NAV_BUTTONS) {
+            String path = NAV_VIEWS.get(button);
+            boolean current = path != null && path.equals(viewPath);
+            // The scholarship form is reached through the Admin Portal entry.
+            if (!current && ViewNavigator.ADMIN_DASHBOARD_VIEW.equals(path)
+                    && ViewNavigator.ADMIN_FORM_VIEW.equals(viewPath)) {
+                current = true;
+            }
+            button.setSelected(current);
         }
     }
 
@@ -152,28 +188,37 @@ public final class ShellView {
         collapseButton = new Button("", FontIcon.of(Feather.MENU, 18));
         collapseButton.getStyleClass().add("icon-button");
         collapseButton.setTooltip(new Tooltip("Collapse sidebar"));
+        collapseButton.setAccessibleText("Collapse sidebar");
         collapseButton.setOnAction(e -> toggleSidebar());
         brandRow = new HBox(6, brandMark, brandSpacer, collapseButton);
         brandRow.setAlignment(Pos.CENTER_LEFT);
         brandRow.getStyleClass().add("brand");
 
-        // navigation rail
+        // navigation rail — destinations keep a selected state; Compare is an
+        // action that opens the comparison sheet, so it never stays "current".
         ToggleGroup group = new ToggleGroup();
-        navButton("Discover", Feather.COMPASS, group, ViewNavigator.DISCOVERY_VIEW, null);
-        navButton("My Applications", Feather.CHECK_SQUARE, group, ViewNavigator.TRACKER_VIEW, null);
-        navButton("Compare", Feather.COLUMNS, group, ViewNavigator.DISCOVERY_VIEW, null);
-        navButton("My Profile", Feather.USER, group, ViewNavigator.WIZARD_VIEW, null);
-        adminButton = navButton("Admin Portal", Feather.SHIELD, group, ViewNavigator.ADMIN_DASHBOARD_VIEW, null);
+        navButton("Discover", Feather.COMPASS, group, ViewNavigator.DISCOVERY_VIEW);
+        navButton("My Applications", Feather.CHECK_SQUARE, group, ViewNavigator.TRACKER_VIEW);
+        Button compareNav = navAction("Compare", Feather.COLUMNS, () ->
+                ViewNavigator.show(ViewNavigator.DISCOVERY_VIEW, controller -> {
+                    if (controller instanceof DiscoveryController discovery) {
+                        discovery.openCompareFromSidebar();
+                    }
+                }));
+        installTooltip(compareNav, "Compare the scholarships you ticked");
+        navButton("My Profile", Feather.USER, group, ViewNavigator.WIZARD_VIEW);
+        adminButton = navButton("Admin Portal", Feather.SHIELD, group, ViewNavigator.ADMIN_DASHBOARD_VIEW);
 
         VBox navBox = new VBox(4);
-        navBox.getChildren().addAll(NAV_BUTTONS);
+        navBox.getChildren().addAll(NAV_BUTTONS.get(0), NAV_BUTTONS.get(1), compareNav,
+                NAV_BUTTONS.get(2), adminButton);
         VBox.setVgrow(navBox, Priority.ALWAYS);
 
         // footer: session chip + log out + theme toggle + login
-        HBox chip = new HBox(10, FontIcon.of(Feather.USER, 18),
+        userChip = new HBox(10, FontIcon.of(Feather.USER, 18),
                 new VBox(1, nameLabel = styledLabel("user-name"), roleLabel = styledLabel("user-role")));
-        chip.setAlignment(Pos.CENTER_LEFT);
-        chip.getStyleClass().add("user-chip");
+        userChip.setAlignment(Pos.CENTER_LEFT);
+        userChip.getStyleClass().add("user-chip");
 
         logoutButton = footerButton("Log out", Feather.LOG_OUT);
         logoutButton.setOnAction(e -> handleAuth());
@@ -184,7 +229,7 @@ public final class ShellView {
         authButton = footerButton("Log in", Feather.LOG_IN);
         authButton.setOnAction(e -> handleAuth());
 
-        VBox footer = new VBox(8, chip, logoutButton, themeButton, authButton);
+        VBox footer = new VBox(8, userChip, logoutButton, themeButton, authButton);
         sidebar.getChildren().addAll(brandRow, new Separator(), navBox, footer);
         return sidebar;
     }
@@ -202,15 +247,43 @@ public final class ShellView {
         return button;
     }
 
+    /** Installs (or retargets) a tooltip that also covers the icon-only collapsed rail. */
+    private static void installTooltip(Node node, String text) {
+        Tooltip tip = TOOLTIPS.get(node);
+        if (tip == null) {
+            tip = new Tooltip(text);
+            tip.setShowDelay(Duration.millis(350));
+            Tooltip.install(node, tip);
+            TOOLTIPS.put(node, tip);
+        } else {
+            tip.setText(text);
+        }
+    }
+
     private static ToggleButton navButton(String text, Feather icon, ToggleGroup group,
-                                          String fxmlPath, Consumer<Object> controllerInit) {
+                                         String fxmlPath) {
+        int index = NAV_BUTTONS.size();
         ToggleButton button = new ToggleButton(text, FontIcon.of(icon, 18));
         button.getStyleClass().add("nav-button");
         button.setMaxWidth(Double.MAX_VALUE);
         button.setToggleGroup(group);
         NAV_BUTTONS.add(button);
         NAV_TITLES.put(button, text);
-        button.setOnAction(e -> ViewNavigator.show(fxmlPath, controllerInit));
+        NAV_VIEWS.put(button, fxmlPath);
+        // Tooltips keep the icon-only collapsed rail legible and expose the
+        // Ctrl+1…4 accelerators that mirror the rail order.
+        installTooltip(button, index < 4 ? text + "  (Ctrl+" + (index + 1) + ")" : text);
+        button.setOnAction(e -> ViewNavigator.show(fxmlPath));
+        return button;
+    }
+
+    /** A one-shot nav action (no toggle state) that still looks like the rail. */
+    private static Button navAction(String text, Feather icon, Runnable action) {
+        Button button = new Button(text, FontIcon.of(icon, 18));
+        button.getStyleClass().add("nav-button");
+        button.setMaxWidth(Double.MAX_VALUE);
+        installTooltip(button, text);
+        button.setOnAction(e -> action.run());
         return button;
     }
 
@@ -255,6 +328,7 @@ public final class ShellView {
         brandRow.setAlignment(collapsed ? Pos.CENTER : Pos.CENTER_LEFT);
         brandLabel.setText(collapsed ? "" : "iskolarPath");
         collapseButton.setTooltip(new Tooltip(collapsed ? "Expand sidebar" : "Collapse sidebar"));
+        collapseButton.setAccessibleText(collapsed ? "Expand sidebar" : "Collapse sidebar");
     }
 
     private static void toggleTheme() {
@@ -267,6 +341,7 @@ public final class ShellView {
     private static void handleAuth() {
         if (SessionManager.current().isPresent()) {
             SessionManager.logout();
+            DiscoveryController.clearCompareSelection();
             JourneyRail.setAwarded(false);
             refreshSessionUi();
             NAV_BUTTONS.get(0).fire();
@@ -299,14 +374,19 @@ public final class ShellView {
 
         if (loggedIn) {
             nameLabel.setText(session.get().email());
-            roleLabel.setText(session.get().role().name());
+            roleLabel.setText(session.get().role() == Role.ADMIN ? "Administrator" : "Student");
         } else {
             nameLabel.setText("Guest");
-            roleLabel.setText("Browse freely — no login needed");
+            roleLabel.setText("Browsing as guest");
         }
+        installTooltip(userChip, loggedIn
+                ? session.get().email() + " · " + SessionManager.current().get().role().name()
+                : "Not signed in — browse freely, log in to track applications");
 
         themeButton.setGraphic(FontIcon.of(
                 ThemeManager.current() == ThemePref.DARK ? Feather.SUN : Feather.MOON, 18));
         themeButton.setText(collapsed ? "" : (ThemeManager.current() == ThemePref.DARK ? "Dark" : "Light"));
+        installTooltip(themeButton, ThemeManager.current() == ThemePref.DARK
+                ? "Switch to light theme" : "Switch to dark theme");
     }
 }

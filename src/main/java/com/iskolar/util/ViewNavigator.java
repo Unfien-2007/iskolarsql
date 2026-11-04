@@ -3,6 +3,8 @@ package com.iskolar.util;
 import com.iskolar.view.ComparisonPanel;
 import com.iskolar.view.JourneyRail;
 import com.iskolar.view.ScholarshipDetailsPanel;
+import com.iskolar.view.ShellView;
+import com.iskolar.view.Snackbar;
 import javafx.animation.FadeTransition;
 import javafx.animation.Interpolator;
 import javafx.fxml.FXMLLoader;
@@ -66,15 +68,20 @@ public final class ViewNavigator {
         try {
             FXMLLoader loader = new FXMLLoader(ViewNavigator.class.getResource(fxmlPath));
             Parent view = loader.load();
-            if (controllerInit != null) {
-                controllerInit.accept(loader.getController());
-            }
             ScholarshipDetailsPanel.dismiss();
             ComparisonPanel.dismiss();
+            Snackbar.dismiss();
             StackPane host = new StackPane(view);
             centerHost = host;
             target.setCenter(host);
+            // The controller initializer runs after the host is installed so an
+            // initializer that opens an in-app overlay (e.g. the sidebar's
+            // Compare) attaches to the view that is actually on screen.
+            if (controllerInit != null) {
+                controllerInit.accept(loader.getController());
+            }
             JourneyRail.select(fxmlPath);
+            ShellView.syncSelection(fxmlPath);
             fadeIn(host);
         } catch (IOException e) {
             throw new IllegalStateException("Failed to load view: " + fxmlPath, e);
@@ -88,10 +95,12 @@ public final class ViewNavigator {
         }
         ScholarshipDetailsPanel.dismiss();
         ComparisonPanel.dismiss();
+        Snackbar.dismiss();
         StackPane host = new StackPane(view);
         centerHost = host;
         root.setCenter(host);
         JourneyRail.select(null);
+        ShellView.syncSelection(null);
         fadeIn(host);
     }
 

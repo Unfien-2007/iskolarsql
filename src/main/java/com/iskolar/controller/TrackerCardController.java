@@ -8,11 +8,14 @@ import com.iskolar.model.MatchTier;
 import com.iskolar.view.Motion;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.AccessibleRole;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tooltip;
-import javafx.scene.layout.HBox;
+import javafx.scene.input.KeyCode;
+import javafx.scene.layout.FlowPane;
+import javafx.scene.layout.Region;
 import org.kordamp.ikonli.feather.Feather;
 import org.kordamp.ikonli.javafx.FontIcon;
 
@@ -37,11 +40,9 @@ public class TrackerCardController {
     @FXML
     private Label matchBadge;
     @FXML
-    private Label statusCaption;
-    @FXML
     private Button removeButton;
     @FXML
-    private HBox actionsBox;
+    private FlowPane actionsBox;
 
     /**
      * Loads one Kanban card.
@@ -62,6 +63,11 @@ public class TrackerCardController {
         TrackerCardController controller = loader.getController();
         controller.init(card, match, onAdvance, onRemove);
         Node root = loader.getRoot();
+        // Cards fill whatever width the column has, so narrowing the board to
+        // fit six stages never leaves a card wider than its column.
+        if (root instanceof Region region) {
+            region.setMaxWidth(Double.MAX_VALUE);
+        }
         root.setOnMouseClicked(e -> {
             if (onDetails != null) {
                 onDetails.run();
@@ -69,6 +75,21 @@ public class TrackerCardController {
         });
         root.setOnMouseEntered(e -> Motion.hoverLift(root, true));
         root.setOnMouseExited(e -> Motion.hoverLift(root, false));
+        root.setFocusTraversable(true);
+        root.setAccessibleRole(AccessibleRole.BUTTON);
+        root.setAccessibleText(card.scholarship().title() + ", "
+                + card.application().status().displayName());
+        root.setOnKeyPressed(e -> {
+            if (e.getTarget() != root) {
+                return;
+            }
+            if (e.getCode() == KeyCode.ENTER || e.getCode() == KeyCode.SPACE) {
+                if (onDetails != null) {
+                    onDetails.run();
+                }
+                e.consume();
+            }
+        });
         return root;
     }
 
@@ -80,6 +101,10 @@ public class TrackerCardController {
         LocalDate deadline = card.scholarship().deadlineDate();
         deadlinePill.setText(urgencyText(deadline));
         deadlinePill.getStyleClass().add(urgencyStyle(deadline));
+        // The card footer shares one row with the match badge; without a min
+        // width the pill shrinks and ellipsizes ("Closes within ...") first.
+        deadlinePill.setMinWidth(Region.USE_PREF_SIZE);
+        matchBadge.setMinWidth(Region.USE_PREF_SIZE);
         if ("pill-red".equals(urgencyStyle(deadline))) {
             Motion.pulse(deadlinePill);
         }
@@ -96,19 +121,33 @@ public class TrackerCardController {
                     : match.gateReason();
             Tooltip.install(matchBadge, new Tooltip(tip));
         }
-        statusCaption.setText(card.application().status().displayName());
 
-        removeButton.setGraphic(FontIcon.of(Feather.TRASH_2, 14));
+        removeButton.setGraphic(FontIcon.of(Feather.TRASH_2, 12));
+        removeButton.setAccessibleText("Remove " + card.scholarship().title() + " from tracker");
         removeButton.setOnAction(e -> onRemove.run());
 
         actionsBox.getChildren().clear();
         for (ApplicationStatus next : card.application().status().nextTransitions()) {
-            Button button = new Button("→ " + next.displayName());
+            // Short verbs keep two actions readable inside a ~168px column;
+            // the full stage name is still in the tooltip.
+            Button button = new Button(actionLabel(next));
             button.getStyleClass().addAll("advance-button", "ghost-button");
-            button.setMaxWidth(Double.MAX_VALUE);
+            button.setTooltip(new Tooltip("Move to " + next.displayName()));
             button.setOnAction(e -> onAdvance.accept(next));
             actionsBox.getChildren().add(button);
         }
+    }
+
+    /** Imperative button label for a target stage (see {@link ApplicationStatus#displayName()}). */
+    private static String actionLabel(ApplicationStatus target) {
+        return switch (target) {
+            case SAVED -> "Save";
+            case PREPARING_DOCS -> "Prepare docs";
+            case APPLIED -> "Applied";
+            case INTERVIEW -> "Interview";
+            case AWARDED -> "Awarded";
+            case REJECTED -> "Reject";
+        };
     }
 
     private static String urgencyText(LocalDate deadline) {
@@ -119,7 +158,7 @@ public class TrackerCardController {
         long days = ChronoUnit.DAYS.between(LocalDate.now(), deadline);
         return switch (urgency) {
             case EXPIRED -> "Deadline passed";
-            case RED -> "Closes within 48h";
+            case RED -> "48h left";
             default -> days + (days == 1 ? " day left" : " days left");
         };
     }

@@ -43,4 +43,13 @@ public class ApplicationService {
     public void remove(long applicationId) {
         applicationDao.delete(applicationId);
     }
+
+    /**
+     * Re-creates a card removed by mistake (the tracker's Undo action). The
+     * upsert keeps it a no-op when the scholarship is already tracked again;
+     * the re-created row gets a new {@code application_id}.
+     */
+    public Application restore(int studentId, long scholarshipId, ApplicationStatus status, String notes) {
+        return applicationDao.save(studentId, scholarshipId, status, notes);
+    }
 }

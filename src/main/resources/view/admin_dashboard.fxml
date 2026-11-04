@@ -61,7 +61,8 @@
     </VBox>
 
     <!-- Access gate -->
-    <VBox fx:id="gatePane" alignment="CENTER" spacing="12" maxWidth="420" styleClass="auth-card">
+    <VBox fx:id="gatePane" alignment="CENTER" spacing="12" maxWidth="420" maxHeight="-Infinity"
+          styleClass="auth-card">
         <Label text="Admin access only" styleClass="view-title"/>
         <Label fx:id="gateLabel" text="This area is restricted to administrator accounts."
                styleClass="view-subtitle" wrapText="true" textAlignment="CENTER"/>

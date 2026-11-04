@@ -9,6 +9,7 @@ import com.iskolar.util.SessionManager;
 import com.iskolar.util.ViewNavigator;
 import com.iskolar.view.JourneyRail;
 import com.iskolar.view.ScholarshipDetailsPanel;
+import com.iskolar.view.Snackbar;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -101,14 +102,20 @@ public class TrackerController {
 
         VBox cardPane = new VBox(8);
         VBox.setVgrow(cardPane, Priority.ALWAYS);
+        // .kanban-column pads 10px on each side; capping the card lane here
+        // keeps cards inside the column even as the board is compressed.
+        cardPane.maxWidthProperty().bind(column.widthProperty().subtract(20));
         column.getChildren().add(cardPane);
 
         List<ApplicationCard> columnCards = cards.stream()
                 .filter(c -> c.application().status() == status)
                 .toList();
         if (columnCards.isEmpty()) {
-            Label empty = new Label("No applications");
+            Label empty = new Label(status == ApplicationStatus.SAVED
+                    ? "Nothing saved yet — add one from Discover"
+                    : "Nothing here yet");
             empty.getStyleClass().add("kanban-empty");
+            empty.setWrapText(true);
             cardPane.getChildren().add(empty);
         } else {
             for (ApplicationCard card : columnCards) {
@@ -119,14 +126,27 @@ public class TrackerController {
                             ServiceFactory.applicationService().move(card.application().applicationId(), next);
                             refresh();
                         },
-                        () -> {
-                            ServiceFactory.applicationService().remove(card.application().applicationId());
-                            refresh();
-                        },
+                        () -> removeCard(card),
                         () -> openDetails(card.scholarship().scholarshipId(), matches)));
             }
         }
         return column;
+    }
+
+    /**
+     * Deletes a tracker card but keeps a one-click Undo in the snackbar, so an
+     * accidental trash click never silently loses a saved scholarship.
+     */
+    private void removeCard(ApplicationCard card) {
+        var application = card.application();
+        ServiceFactory.applicationService().remove(application.applicationId());
+        refresh();
+        Snackbar.show("Removed \"" + card.scholarship().title() + "\" from your tracker", "Undo", () -> {
+            ServiceFactory.applicationService().restore(
+                    application.studentId(), application.scholarshipId(),
+                    application.status(), application.notes());
+            refresh();
+        });
     }
 
     /** Opens the full scholarship details in the in-app side panel. */

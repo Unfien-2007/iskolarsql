@@ -2,6 +2,7 @@ package com.iskolar.view;
 
 import com.iskolar.util.ViewNavigator;
 import javafx.geometry.Pos;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
@@ -16,6 +17,9 @@ import java.util.List;
  * the top of the shell that highlights the current stage of the scholarship
  * journey and echoes the intro splash's node path. The Award step lights up
  * gold once the student has at least one AWARDED application.
+ *
+ * <p>Each step is a real {@code Button} so the strip is tabbable and
+ * Enter/Space navigates, just like the sidebar rail it mirrors.</p>
  */
 public final class JourneyRail {
 
@@ -23,10 +27,10 @@ public final class JourneyRail {
     private static final Feather[] STEP_ICONS = {
             Feather.COMPASS, Feather.TARGET, Feather.TRENDING_UP, Feather.AWARD};
     /** ShellView nav-button index for each step (Award jumps to the tracker). */
-    private static final int[] STEP_NAV = {0, 3, 1, 1};
+    private static final int[] STEP_NAV = {0, 2, 1, 1};
 
     private static HBox rail;
-    private static final List<HBox> steps = new ArrayList<>();
+    private static final List<Button> steps = new ArrayList<>();
 
     private JourneyRail() {
     }
@@ -42,11 +46,15 @@ public final class JourneyRail {
             icon.getStyleClass().add("rail-icon");
             Label label = new Label(STEP_NAMES[i]);
             label.getStyleClass().add("rail-label");
-            HBox step = new HBox(6, icon, label);
-            step.getStyleClass().add("rail-step");
-            step.setAlignment(Pos.CENTER_LEFT);
+            HBox stepContent = new HBox(6, icon, label);
+            stepContent.setAlignment(Pos.CENTER_LEFT);
+
             final int navIndex = STEP_NAV[i];
-            step.setOnMouseClicked(e -> ShellView.fireNav(navIndex));
+            Button step = new Button();
+            step.setGraphic(stepContent);
+            step.getStyleClass().add("rail-step");
+            step.setAccessibleText("Go to " + STEP_NAMES[i]);
+            step.setOnAction(e -> ShellView.fireNav(navIndex));
             steps.add(step);
             rail.getChildren().add(step);
 
@@ -85,7 +93,7 @@ public final class JourneyRail {
             default -> -1;
         };
         for (int i = 0; i < steps.size(); i++) {
-            HBox step = steps.get(i);
+            Button step = steps.get(i);
             step.getStyleClass().remove("active");
             if (i == active) {
                 step.getStyleClass().add("active");
@@ -98,7 +106,7 @@ public final class JourneyRail {
         if (rail == null || steps.size() < STEP_NAMES.length) {
             return;
         }
-        HBox awardStep = steps.get(STEP_NAMES.length - 1);
+        Button awardStep = steps.get(STEP_NAMES.length - 1);
         if (isAwarded) {
             awardStep.getStyleClass().add("awarded");
         } else {

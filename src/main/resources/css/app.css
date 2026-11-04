@@ -86,7 +86,8 @@
     -fx-border-radius: 6;
     -fx-alignment: CENTER_LEFT;
     -fx-padding: 10 12;
-    -fx-gap: 12;
+    /* Labeled's icon↔text gap (there is no -fx-gap on Button). */
+    -fx-graphic-text-gap: 12;
     -fx-font-size: 13px;
     -fx-text-fill: -color-fg-muted;
     -fx-cursor: hand;
@@ -203,7 +204,7 @@
     -fx-border-color: -color-border-muted;
     -fx-border-radius: 10;
     -fx-background-radius: 10;
-    -fx-padding: 14;
+    -fx-padding: 12;
     -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.06), 10, 0, 0, 2);
 }
 
@@ -220,6 +221,12 @@
 
 .card-provider {
     -fx-font-size: 12px;
+    -fx-text-fill: -color-fg-muted;
+}
+
+/* Absolute deadline date under the provider; the pill above counts it down. */
+.card-deadline {
+    -fx-font-size: 11px;
     -fx-text-fill: -color-fg-muted;
 }
 
@@ -384,19 +391,19 @@
 }
 
 .kanban-row {
-    -fx-padding: 12 24 20 24;
-    -fx-spacing: 12;
+    -fx-padding: 12 20 16 20;
+    -fx-spacing: 10;
 }
 
 /* Columns share the board width via HBox.setHgrow in TrackerController and are
-   clamped between these bounds, so six stages read as a board instead of a
-   6 x 256px strip that always overflows a 1280px window. */
+   clamped between these bounds. Six stages must fit a 1280px window (the app's
+   minimum), which leaves roughly 160px per column after the rail and gaps. */
 .kanban-column {
     -fx-background-color: -color-bg-subtle;
     -fx-background-radius: 10;
     -fx-padding: 10;
-    -fx-pref-width: 240;
-    -fx-min-width: 210;
+    -fx-pref-width: 190;
+    -fx-min-width: 150;
     -fx-max-width: 320;
     -fx-spacing: 8;
 }
@@ -435,9 +442,33 @@
     -fx-border-color: -color-accent-muted;
 }
 
+/* Columns are narrow (six stages share the board), so card type steps down. */
+.tracker-card .card-title {
+    -fx-font-size: 13px;
+}
+
+.tracker-card .card-provider {
+    -fx-font-size: 11px;
+}
+
+/* Compact match badge, pill and trash keep the meta row on one line at ~148px. */
+.tracker-card .match-badge {
+    -fx-font-size: 11px;
+    -fx-padding: 2 8;
+}
+
+.tracker-card .pill {
+    -fx-font-size: 10px;
+    -fx-padding: 2 7;
+}
+
+.tracker-card .icon-button {
+    -fx-padding: 3;
+}
+
 .advance-button {
     -fx-font-size: 11px;
-    -fx-padding: 4 10;
+    -fx-padding: 4 8;
 }
 
 /* ---------------- Admin ---------------- */
@@ -505,6 +536,13 @@
 .compare-value {
     -fx-font-size: 12px;
     -fx-text-fill: -color-fg-default;
+}
+
+/* Match score is the decision row of the comparison; make it stand out. */
+.compare-match {
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-accent-fg;
+    -fx-font-size: 13px;
 }
 
 /* ---------------- Scholarship details modal ---------------- */
@@ -685,11 +723,13 @@
 }
 
 .rail-step {
+    -fx-background-color: transparent;
     -fx-padding: 3 8;
     -fx-background-radius: 999;
     -fx-border-color: transparent;
     -fx-border-width: 1;
     -fx-border-radius: 999;
+    -fx-graphic-text-gap: 6;
     -fx-cursor: hand;
 }
 
@@ -809,6 +849,58 @@
     -fx-font-size: 11px;
 }
 
+/* ---------------------------------------------------------------------
+   Empty states (discovery grid, admin tables)
+   --------------------------------------------------------------------- */
+.empty-state {
+    -fx-padding: 40 24;
+    -fx-background-color: transparent;
+}
+.empty-state-title {
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-fg-default;
+}
+.empty-state-text {
+    -fx-font-size: 13px;
+    -fx-text-fill: -color-fg-muted;
+}
+
+/* ---------------------------------------------------------------------
+   Snackbar (tracker Undo)
+   --------------------------------------------------------------------- */
+.snackbar {
+    -fx-background-color: -color-bg-overlay;
+    -fx-background-radius: 10;
+    -fx-border-color: -color-border-default;
+    -fx-border-radius: 10;
+    -fx-padding: 12 14;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.16), 18, 0, 0, 6);
+}
+.snackbar-message {
+    -fx-font-size: 13px;
+    -fx-text-fill: -color-fg-default;
+}
+.snackbar-action {
+    -fx-background-color: transparent;
+    -fx-background-radius: 6;
+    /* Same reserved 1px border trick as the rail buttons: focus adds no layout shift. */
+    -fx-border-color: transparent;
+    -fx-border-width: 1;
+    -fx-border-radius: 6;
+    -fx-padding: 4 10;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-accent-fg;
+    -fx-cursor: hand;
+}
+.snackbar-action:hover {
+    -fx-background-color: -color-accent-subtle;
+}
+.snackbar-action:focused {
+    -fx-border-color: -color-accent-muted;
+}
+
 /* =====================================================================
    Keyboard focus
    Custom-chrome buttons paint their own -fx-background-color, which drops
@@ -820,6 +912,19 @@
 .nav-button:focused,
 .icon-button:focused,
 .rail-step:focused,
-.ghost-button:focused {
+.ghost-button:focused,
+.scholarship-card:focused,
+.tracker-card:focused {
     -fx-border-color: -color-accent-muted;
+}
+
+/* Whole-card affordances: keyboard users tab to the card and press Enter. */
+.scholarship-card:focused,
+.tracker-card:focused {
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.12), 14, 0, 0, 3);
+}
+
+.scholarship-card,
+.tracker-card {
+    -fx-cursor: hand;
 }

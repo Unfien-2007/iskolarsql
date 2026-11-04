@@ -11,6 +11,7 @@ import com.iskolar.model.MatchTier;
 import com.iskolar.model.ProviderType;
 import com.iskolar.model.Scholarship;
 import com.iskolar.model.ScholarshipCriteria;
+import com.iskolar.util.Dates;
 import com.iskolar.util.GwaConverter;
 import javafx.animation.FadeTransition;
 import javafx.animation.ParallelTransition;
@@ -67,6 +68,9 @@ public final class ScholarshipDetailsPanel {
     private static EventHandler<MouseEvent> outsideHandler;
     private static Scene escScene;
     private static boolean closing;
+    /** Focus owner to hand back when the drawer closes. */
+    private static Node previousFocus;
+    private static Button closeButton;
 
     private ScholarshipDetailsPanel() {
     }
@@ -112,6 +116,7 @@ public final class ScholarshipDetailsPanel {
         Scene scene = host.getScene();
         if (scene != null) {
             escScene = scene;
+            previousFocus = scene.getFocusOwner();
             escHandler = e -> {
                 if (e.getCode() == KeyCode.ESCAPE) {
                     close();
@@ -134,6 +139,12 @@ public final class ScholarshipDetailsPanel {
         FadeTransition fade = new FadeTransition(Duration.millis(220), panel);
         fade.setToValue(1);
         new ParallelTransition(slide, fade).play();
+
+        // Enter the drawer with focus on its close control so Tab walks the
+        // drawer content and Esc works without a mouse.
+        if (closeButton != null) {
+            javafx.application.Platform.runLater(closeButton::requestFocus);
+        }
     }
 
     /** Removes the panel immediately (used on navigation). */
@@ -153,7 +164,12 @@ public final class ScholarshipDetailsPanel {
         }
         layer = null;
         panel = null;
+        closeButton = null;
         host = null;
+        if (previousFocus != null && previousFocus.getScene() != null) {
+            previousFocus.requestFocus();
+        }
+        previousFocus = null;
     }
 
     private static void close() {
@@ -180,10 +196,11 @@ public final class ScholarshipDetailsPanel {
         eyebrow.getStyleClass().add("details-drawer-eyebrow");
         javafx.scene.layout.Region spacer = new javafx.scene.layout.Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
-        Button closeButton = new Button();
+        closeButton = new Button();
         closeButton.setGraphic(FontIcon.of(Feather.X, 16));
         closeButton.getStyleClass().add("dialog-close");
         closeButton.setFocusTraversable(false);
+        closeButton.setAccessibleText("Close scholarship details");
         closeButton.setOnAction(e -> close());
         HBox header = new HBox(10, eyebrow, spacer, closeButton);
         header.getStyleClass().add("details-drawer-header");
@@ -447,7 +464,7 @@ public final class ScholarshipDetailsPanel {
     }
 
     private static String dateOrDash(LocalDate date) {
-        return date == null ? "—" : date.toString();
+        return Dates.displayDate(date);
     }
 
     private static String returnService(int years) {
@@ -462,7 +479,7 @@ public final class ScholarshipDetailsPanel {
         long days = ChronoUnit.DAYS.between(LocalDate.now(), deadline);
         return switch (urgency) {
             case EXPIRED -> "Deadline passed";
-            case RED -> "Closes within 48h";
+            case RED -> "48h left";
             default -> days + (days == 1 ? " day left" : " days left");
         };
     }

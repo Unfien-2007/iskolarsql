@@ -5,6 +5,7 @@ import com.iskolar.service.AuthService;
 import com.iskolar.service.ServiceFactory;
 import com.iskolar.sync.TokenStore;
 import com.iskolar.util.Fonts;
+import com.iskolar.util.Prefs;
 import com.iskolar.util.SessionManager;
 import com.iskolar.util.ThemeManager;
 import com.iskolar.util.ViewNavigator;
@@ -13,8 +14,14 @@ import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.TextField;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.KeyCombination;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
@@ -34,15 +41,27 @@ public class ScholarshipApp extends Application {
         ThemeManager.applySavedTheme();
 
         Parent shell = ShellView.build();
-        Scene scene = new Scene(shell, 1280, 800);
+        Scene scene = new Scene(shell, initialWidth(), initialHeight());
         scene.getStylesheets().add(Objects.requireNonNull(
                 ScholarshipApp.class.getResource("/css/app.css"),
                 "css/app.css missing from classpath").toExternalForm());
+        installShortcuts(scene);
 
         stage.setTitle("iskolarPath: Discover, match, and track your scholarship journey.");
         stage.setMinWidth(960);
         stage.setMinHeight(640);
         stage.setScene(scene);
+        if (Prefs.windowMaximized()) {
+            stage.setMaximized(true);
+        }
+        // Remember the window size between sessions; skip the write when the
+        // user closes while maximized so the restored size stays the small one.
+        stage.setOnCloseRequest(e -> {
+            Prefs.windowMaximized(stage.isMaximized());
+            if (!stage.isMaximized()) {
+                Prefs.windowSize(stage.getWidth(), stage.getHeight());
+            }
+        });
         stage.show();
 
         // Kick off a background catalog sync once the window is visible. After
@@ -63,6 +82,40 @@ public class ScholarshipApp extends Application {
                 new KeyFrame(Duration.minutes(5), e -> revalidateSession()));
         heartbeat.setCycleCount(Timeline.INDEFINITE);
         heartbeat.play();
+    }
+
+    /** Restored window size, clamped to the app minimum and this screen's width. */
+    private static double initialWidth() {
+        double screenWidth = Screen.getPrimary().getVisualBounds().getWidth();
+        return Math.min(Math.max(960, Prefs.windowWidth()), Math.max(960, screenWidth));
+    }
+
+    private static double initialHeight() {
+        double screenHeight = Screen.getPrimary().getVisualBounds().getHeight();
+        return Math.min(Math.max(640, Prefs.windowHeight()), Math.max(640, screenHeight));
+    }
+
+    /**
+     * App-wide keyboard shortcuts: Ctrl+F jumps to the Discovery search box and
+     * Ctrl+1…4 switch destinations, mirroring the sidebar order.
+     */
+    private static void installShortcuts(Scene scene) {
+        scene.getAccelerators().put(
+                new KeyCodeCombination(KeyCode.F, KeyCombination.SHORTCUT_DOWN),
+                () -> {
+                    Node search = scene.getRoot().lookup("#searchField");
+                    if (search instanceof TextField field) {
+                        field.requestFocus();
+                        field.selectAll();
+                    }
+                });
+        KeyCode[] digits = {KeyCode.DIGIT1, KeyCode.DIGIT2, KeyCode.DIGIT3, KeyCode.DIGIT4};
+        for (int i = 0; i < digits.length; i++) {
+            final int navIndex = i;
+            scene.getAccelerators().put(
+                    new KeyCodeCombination(digits[i], KeyCombination.SHORTCUT_DOWN),
+                    () -> ShellView.fireNav(navIndex));
+        }
     }
 
     /** Re-checks the cached token off the FX thread; signs out revoked accounts. */

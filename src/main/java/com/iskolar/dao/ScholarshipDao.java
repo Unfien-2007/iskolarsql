@@ -71,7 +71,8 @@ public class ScholarshipDao {
 
     /**
      * Guest discovery query: active, currently open, not-yet-expired
-     * scholarships with optional program / year / provider / province filters.
+     * scholarships with optional program / year / provider / province / keyword
+     * filters.
      */
     public List<Scholarship> findActiveForDiscovery(DiscoveryFilter filter) {
         StringBuilder sql = new StringBuilder("""
@@ -112,9 +113,24 @@ public class ScholarshipDao {
             sql.append(" AND (c.required_province IS NULL OR UPPER(c.required_province) = UPPER(?))");
             params.add(filter.province().trim());
         }
+        if (filter.keyword() != null && !filter.keyword().isBlank()) {
+            // Substring match on title + provider; ESCAPE keeps a typed % or _ literal.
+            sql.append(" AND (LOWER(s.title) LIKE ? ESCAPE '\\'"
+                    + " OR LOWER(s.provider_name) LIKE ? ESCAPE '\\')");
+            String needle = "%" + escapeLike(filter.keyword().trim().toLowerCase()) + "%";
+            params.add(needle);
+            params.add(needle);
+        }
         sql.append(" ORDER BY s.deadline_date ASC");
 
         return queryScholarships(sql.toString(), params);
+    }
+
+    /** Escapes {@code LIKE} metacharacters so a typed {@code %} or {@code _} stays literal. */
+    private static String escapeLike(String value) {
+        return value.replace("\\", "\\\\")
+                .replace("%", "\\%")
+                .replace("_", "\\_");
     }
 
     /** Full catalog (admin dashboard), newest-active first. */

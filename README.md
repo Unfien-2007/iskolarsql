@@ -52,6 +52,15 @@ mvn -q test        # Phase 3+ (MatchingService tests)
 mvn javafx:run     # Phase 4+ (Launcher delivered in Phase 4)
 ```
 
+## Keyboard & interaction
+
+- `Ctrl+F` focuses the Discover search box; `Esc` clears it without losing the rest of the filters.
+- `Ctrl+1…4` jump to Discover, My Applications, My Profile and Admin Portal — the same order as the sidebar.
+- Tab to a scholarship or tracker card and press `Enter`/`Space` to open its details, so the grid is usable without a mouse.
+- `Esc` closes the details drawer and the comparison sheet; focus returns to whatever opened them.
+- Compare ticks survive navigation between Discover and the tracker, and the sidebar **Compare** entry opens the sheet once two or three scholarships are ticked.
+- The window size and the last theme are remembered on the next launch.
+
 ## Database
 
 `src/main/resources/db/schema.sql` and `seed.sql` define the SQLite schema
