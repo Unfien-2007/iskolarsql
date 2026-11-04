@@ -21,7 +21,8 @@
     -color-bg-inset: #EFE6D9;
     -color-fg-default: #2D2A26;
     -color-fg-muted: #6B6459;
-    -color-fg-subtle: #9C9386;
+    /* #9C9386 only reached 2.8:1 on the cream background; #6F675B clears AA (≈5.2:1). */
+    -color-fg-subtle: #6F675B;
     -color-border-default: #E7DED1;
     -color-border-muted: #EFE7DB;
     -color-border-subtle: #F6EFE4;
@@ -39,7 +40,8 @@
     -color-bg-inset: #16130F;
     -color-fg-default: #F1EDE6;
     -color-fg-muted: #B3A99B;
-    -color-fg-subtle: #857B6E;
+    /* #857B6E was 3.5:1 on the charcoal surface; #A79C8C clears AA (≈5.3:1). */
+    -color-fg-subtle: #A79C8C;
     -color-border-default: #3A342D;
     -color-border-muted: #332E28;
     -color-border-subtle: #2B2621;
@@ -78,6 +80,10 @@
 .nav-button {
     -fx-background-color: transparent;
     -fx-background-radius: 6;
+    /* Transparent border reserves the ring's 1px so :focused never reflows the rail. */
+    -fx-border-color: transparent;
+    -fx-border-width: 1;
+    -fx-border-radius: 6;
     -fx-alignment: CENTER_LEFT;
     -fx-padding: 10 12;
     -fx-gap: 12;
@@ -115,6 +121,9 @@
 .icon-button {
     -fx-background-color: transparent;
     -fx-background-radius: 6;
+    -fx-border-color: transparent;
+    -fx-border-width: 1;
+    -fx-border-radius: 6;
     -fx-padding: 6;
     -fx-cursor: hand;
 }
@@ -161,7 +170,7 @@
 }
 
 .result-label {
-    -fx-font-size: 12px;
+    -fx-font-size: 13px;
     -fx-text-fill: -color-fg-muted;
 }
 
@@ -379,13 +388,16 @@
     -fx-spacing: 12;
 }
 
+/* Columns share the board width via HBox.setHgrow in TrackerController and are
+   clamped between these bounds, so six stages read as a board instead of a
+   6 x 256px strip that always overflows a 1280px window. */
 .kanban-column {
     -fx-background-color: -color-bg-subtle;
     -fx-background-radius: 10;
     -fx-padding: 10;
-    -fx-pref-width: 256;
-    -fx-min-width: 256;
-    -fx-max-width: 256;
+    -fx-pref-width: 240;
+    -fx-min-width: 210;
+    -fx-max-width: 320;
     -fx-spacing: 8;
 }
 
@@ -405,7 +417,7 @@
 }
 
 .kanban-empty {
-    -fx-font-size: 11px;
+    -fx-font-size: 12px;
     -fx-text-fill: -color-fg-subtle;
     -fx-padding: 8 4;
 }
@@ -675,6 +687,9 @@
 .rail-step {
     -fx-padding: 3 8;
     -fx-background-radius: 999;
+    -fx-border-color: transparent;
+    -fx-border-width: 1;
+    -fx-border-radius: 999;
     -fx-cursor: hand;
 }
 
@@ -792,4 +807,19 @@
 .presence-offline {
     -fx-text-fill: -color-fg-subtle;
     -fx-font-size: 11px;
+}
+
+/* =====================================================================
+   Keyboard focus
+   Custom-chrome buttons paint their own -fx-background-color, which drops
+   the AtlantaFX focus ring — repaint one so tabbing is always visible.
+   (The base rules above reserve 1px of transparent border, so focus never
+   changes layout.)
+   ===================================================================== */
+
+.nav-button:focused,
+.icon-button:focused,
+.rail-step:focused,
+.ghost-button:focused {
+    -fx-border-color: -color-accent-muted;
 }

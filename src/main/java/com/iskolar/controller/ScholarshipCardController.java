@@ -6,6 +6,7 @@ import com.iskolar.model.MatchTier;
 import com.iskolar.model.ProviderType;
 import com.iskolar.model.Scholarship;
 import com.iskolar.view.Motion;
+import javafx.beans.binding.Bindings;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
@@ -28,6 +29,13 @@ import java.util.function.Consumer;
  * checkbox feeding the side-by-side modal.
  */
 public class ScholarshipCardController {
+
+    /**
+     * Rough width of the card footer consumed by the Save button, the Compare
+     * checkbox, the match badge and their 10px gaps. The tier caption is capped
+     * to whatever is left so it ellipsizes instead of pushing the badge off the card.
+     */
+    private static final double FOOTER_RESERVED_WIDTH = 220;
 
     @FXML
     private Label providerBadge;
@@ -81,6 +89,9 @@ public class ScholarshipCardController {
         controller.onDetails = onDetails;
         controller.setScholarship(scholarship);
         controller.setMatch(match);
+        // Keeps the tier caption from shoving the match badge off a narrow card.
+        controller.matchCaption.maxWidthProperty().bind(
+                Bindings.max(40, controller.root.widthProperty().subtract(FOOTER_RESERVED_WIDTH)));
         controller.root.setOnMouseClicked(e -> {
             if (controller.onDetails != null) {
                 controller.onDetails.accept(scholarship);

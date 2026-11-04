@@ -11,7 +11,7 @@
 <!-- Discovery-grid scholarship card; data injected by ScholarshipCardController. -->
 <BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="com.iskolar.controller.ScholarshipCardController"
-            styleClass="scholarship-card" prefWidth="340" minHeight="210" maxHeight="210">
+            styleClass="scholarship-card" prefWidth="320" minHeight="210" maxHeight="210">
     <top>
         <HBox alignment="CENTER_LEFT" spacing="8">
             <Label fx:id="providerBadge" styleClass="badge"/>
@@ -26,8 +26,10 @@
             <Label fx:id="providerLabel" styleClass="card-provider" wrapText="true" maxWidth="Infinity"/>
             <Region VBox.vgrow="ALWAYS"/>
             <HBox spacing="14">
-                <Label fx:id="tuitionLabel" styleClass="card-highlight"/>
-                <Label fx:id="stipendLabel" styleClass="card-highlight"/>
+                <!-- minWidth 0 lets long tuition/stipend values ellipsize inside a
+                     320px card instead of painting past the card edge. -->
+                <Label fx:id="tuitionLabel" styleClass="card-highlight" minWidth="0"/>
+                <Label fx:id="stipendLabel" styleClass="card-highlight" minWidth="0"/>
             </HBox>
         </VBox>
     </center>

@@ -45,8 +45,11 @@ public class DiscoveryController {
     private static final int MAX_COMPARE = 3;
     /** Matches hgap in discovery.fxml. */
     private static final double CARD_HGAP = 16;
-    /** Matches prefWidth in scholarship_card.fxml; cards never shrink below this. */
-    private static final double CARD_MIN_WIDTH = 340;
+    /** Matches prefWidth in scholarship_card.fxml; cards never shrink below this.
+     *  At 320 a 1280px window (1060px center) lays out three columns instead of two. */
+    private static final double CARD_MIN_WIDTH = 320;
+    /** Upper bound so narrow windows don't stretch a single card across the viewport. */
+    private static final double CARD_MAX_WIDTH = 460;
     /** card-flow CSS padding: 24px left + 24px right. */
     private static final double CARD_FLOW_H_PADDING = 48;
     /** Small slack so pixel-snapped card widths never overflow a row and wrap early. */
@@ -203,6 +206,8 @@ public class DiscoveryController {
     /**
      * Stretches every card so each row of the flow pane spans the full
      * available width — no blank strip along the right edge of the grid.
+     * Width is capped at {@link #CARD_MAX_WIDTH} so a one- or two-column
+     * viewport yields readable, left-aligned cards instead of one very wide card.
      */
     private void applyCardWidths() {
         double available = cardPane.getWidth() - CARD_FLOW_H_PADDING;
@@ -211,7 +216,8 @@ public class DiscoveryController {
         }
         int columns = (int) Math.max(1,
                 Math.floor((available + CARD_HGAP) / (CARD_MIN_WIDTH + CARD_HGAP)));
-        double cardWidth = (available - (columns - 1) * CARD_HGAP - CARD_WIDTH_SLACK) / columns;
+        double cardWidth = Math.min(CARD_MAX_WIDTH,
+                (available - (columns - 1) * CARD_HGAP - CARD_WIDTH_SLACK) / columns);
         for (Node node : cardPane.getChildren()) {
             if (node instanceof Region region) {
                 region.setPrefWidth(cardWidth);

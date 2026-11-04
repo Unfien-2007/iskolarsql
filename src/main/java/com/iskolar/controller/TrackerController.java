@@ -85,6 +85,8 @@ public class TrackerController {
                              Map<Long, MatchResult> matches) {
         VBox column = new VBox(8);
         column.getStyleClass().add("kanban-column");
+        // Share spare board width between columns; .kanban-column clamps min/max.
+        HBox.setHgrow(column, Priority.ALWAYS);
 
         Label title = new Label(status.displayName());
         title.getStyleClass().add("kanban-title");

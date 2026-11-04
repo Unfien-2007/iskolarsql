@@ -19,7 +19,11 @@
                     <Label text="Move your applications through the pipeline — every card remembers where you left off."
                            styleClass="view-subtitle" wrapText="true"/>
                 </VBox>
-                <ScrollPane fitToHeight="true" hbarPolicy="AS_NEEDED" styleClass="kanban-scroll">
+                <!-- fitToWidth lets the columns share the visible board width; when the
+                     window is narrower than the columns' total min width the pane
+                     falls back to horizontal scrolling. -->
+                <ScrollPane fitToWidth="true" fitToHeight="true" hbarPolicy="AS_NEEDED"
+                            styleClass="kanban-scroll">
                     <HBox fx:id="boardRow" styleClass="kanban-row"/>
                 </ScrollPane>
             </VBox>
