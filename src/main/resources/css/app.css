@@ -739,15 +739,51 @@
    Path journey rail (Discover → Match → Track → Award)
    ===================================================================== */
 
-.journey-rail {
-    -fx-padding: 5 24;
+/* =====================================================================
+   Top band — the app's own caption (the stage is undecorated)
+   ===================================================================== */
+
+.top-bar {
+    -fx-padding: 4 6 4 24;
     -fx-background-color: linear-gradient(to right, rgba(194, 65, 12, 0.07), rgba(242, 162, 75, 0.07));
     -fx-border-color: transparent transparent -color-border-muted transparent;
     -fx-border-width: 0 0 1 0;
 }
 
-.app-root.dark .journey-rail {
+.app-root.dark .top-bar {
     -fx-background-color: linear-gradient(to right, rgba(194, 65, 12, 0.12), rgba(242, 162, 75, 0.09));
+}
+
+.journey-rail {
+    -fx-padding: 0;
+    -fx-background-color: transparent;
+}
+
+.window-controls {
+    -fx-padding: 0 0 0 10;
+}
+
+.window-button {
+    -fx-background-color: transparent;
+    -fx-background-radius: 4;
+    -fx-padding: 4 9;
+    -fx-cursor: hand;
+}
+
+.window-button:hover {
+    -fx-background-color: -color-neutral-subtle;
+}
+
+.window-button .ikonli-font-icon {
+    -fx-icon-color: -color-fg-muted;
+}
+
+.window-close:hover {
+    -fx-background-color: -color-danger-subtle;
+}
+
+.window-close:hover .ikonli-font-icon {
+    -fx-icon-color: -color-danger-fg;
 }
 
 .rail-step {

@@ -10,6 +10,7 @@ import com.iskolar.util.SessionManager;
 import com.iskolar.util.ThemeManager;
 import com.iskolar.util.ViewNavigator;
 import com.iskolar.view.ShellView;
+import com.iskolar.view.WindowChrome;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Application;
@@ -23,6 +24,7 @@ import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 import javafx.util.Duration;
 
 import java.util.Objects;
@@ -39,6 +41,9 @@ public class ScholarshipApp extends Application {
     public void start(Stage stage) {
         Fonts.load();
         ThemeManager.applySavedTheme();
+        // The app draws its own caption, so the stage has no native title bar.
+        stage.initStyle(StageStyle.UNDECORATED);
+        WindowChrome.install(stage);
 
         Parent shell = ShellView.build();
         Scene scene = new Scene(shell, initialWidth(), initialHeight());
@@ -46,8 +51,9 @@ public class ScholarshipApp extends Application {
                 ScholarshipApp.class.getResource("/css/app.css"),
                 "css/app.css missing from classpath").toExternalForm());
         installShortcuts(scene);
+        WindowChrome.attach(scene);
 
-        // The tagline belongs in the README, not the OS title bar.
+        // Taskbar/Alt-Tab label; nothing is drawn in the window itself.
         stage.setTitle("iskolarPath");
         stage.setMinWidth(960);
         stage.setMinHeight(640);

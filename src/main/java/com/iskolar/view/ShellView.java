@@ -135,9 +135,20 @@ public final class ShellView {
         return stack;
     }
 
-    /** Top area: the Path journey rail. */
+    /**
+     * Top area: the Path journey rail plus the window controls. The band is
+     * the app's own caption — the stage is undecorated, so it also handles
+     * dragging and double-click-to-maximise.
+     */
     private static HBox buildTopArea() {
-        return JourneyRail.build();
+        HBox rail = JourneyRail.build();
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+        HBox bar = new HBox(rail, spacer, WindowChrome.controls());
+        bar.setAlignment(Pos.CENTER_LEFT);
+        bar.getStyleClass().add("top-bar");
+        WindowChrome.makeDraggable(bar);
+        return bar;
     }
 
     /** Fires a sidebar nav button by index (used by the journey rail + shortcuts). */
