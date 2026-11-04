@@ -3,13 +3,13 @@ package com.iskolar.controller;
 import com.iskolar.service.AuthResult;
 import com.iskolar.service.ServiceFactory;
 import com.iskolar.util.ViewNavigator;
+import com.iskolar.view.PasswordInput;
 import com.iskolar.view.ShellView;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
-import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 
 /**
@@ -21,9 +21,9 @@ public class RegisterController {
     @FXML
     private TextField emailField;
     @FXML
-    private PasswordField passwordField;
+    private PasswordInput passwordField;
     @FXML
-    private PasswordField confirmField;
+    private PasswordInput confirmField;
     @FXML
     private Label errorLabel;
     @FXML
@@ -34,6 +34,7 @@ public class RegisterController {
     @FXML
     private void initialize() {
         registerButton.setOnAction(e -> register());
+        passwordField.setOnAction(e -> register());
         confirmField.setOnAction(e -> register());
         loginLink.setOnAction(e -> ViewNavigator.show(ViewNavigator.LOGIN_VIEW));
     }

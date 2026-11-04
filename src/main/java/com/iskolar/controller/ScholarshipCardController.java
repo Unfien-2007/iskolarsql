@@ -22,7 +22,6 @@ import javafx.scene.layout.BorderPane;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -155,10 +154,9 @@ public class ScholarshipCardController {
         tuitionLabel.setText("Tuition: " + (s.tuitionBenefit() == null || s.tuitionBenefit().isBlank()
                 ? "See provider" : s.tuitionBenefit()));
         stipendLabel.setText("Stipend: " + s.stipendLabel());
-        // The urgency pill counts down; this line pins the actual date so a card
-        // is actionable without opening the details drawer.
+        // The pill counts down; this line pins the exact date.
         deadlineLabel.setText(deadlineText(s.deadlineDate()));
-        urgencyPill.setText(urgencyText(s.deadlineDate()));
+        urgencyPill.setText(DeadlineUrgency.text(s.deadlineDate()));
         urgencyPill.getStyleClass().add(urgencyStyle(s.deadlineDate()));
         if ("pill-red".equals(urgencyStyle(s.deadlineDate()))) {
             Motion.pulse(urgencyPill);
@@ -217,19 +215,6 @@ public class ScholarshipCardController {
         return deadline.isBefore(LocalDate.now())
                 ? "Closed " + date
                 : "Deadline: " + date;
-    }
-
-    private static String urgencyText(LocalDate deadline) {
-        if (deadline == null) {
-            return "No deadline";
-        }
-        DeadlineUrgency urgency = DeadlineUrgency.of(deadline);
-        long days = ChronoUnit.DAYS.between(LocalDate.now(), deadline);
-        return switch (urgency) {
-            case EXPIRED -> "Deadline passed";
-            case RED -> "48h left";
-            default -> days + (days == 1 ? " day left" : " days left");
-        };
     }
 
     private static String urgencyStyle(LocalDate deadline) {

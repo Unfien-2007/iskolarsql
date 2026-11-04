@@ -27,6 +27,32 @@ public enum DeadlineUrgency {
         return tooltip;
     }
 
+    /**
+     * Human label for a deadline: {@code "Due today"}, {@code "1 day left"},
+     * {@code "5 days left"}, {@code "Deadline passed"} or {@code "No deadline"}.
+     *
+     * <p>Lives beside {@link #of(LocalDate)} so the pill's colour and its text
+     * can never disagree — a deadline that falls today reads "Due today"
+     * rather than "48h left".</p>
+     */
+    public static String text(LocalDate deadline) {
+        if (deadline == null) {
+            return "No deadline";
+        }
+        LocalDate today = LocalDate.now();
+        if (deadline.isBefore(today)) {
+            return "Deadline passed";
+        }
+        long days = ChronoUnit.DAYS.between(today, deadline);
+        if (days == 0) {
+            return "Due today";
+        }
+        if (days == 1) {
+            return "1 day left";
+        }
+        return days + " days left";
+    }
+
     /** Classifies a deadline relative to today (end-of-day cutoff). */
     public static DeadlineUrgency of(LocalDate deadline) {
         if (deadline == null) {

@@ -22,7 +22,6 @@ import org.kordamp.ikonli.javafx.FontIcon;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
 import java.util.function.Consumer;
 
 /**
@@ -99,7 +98,7 @@ public class TrackerCardController {
         providerLabel.setText(card.scholarship().providerName());
 
         LocalDate deadline = card.scholarship().deadlineDate();
-        deadlinePill.setText(urgencyText(deadline));
+        deadlinePill.setText(DeadlineUrgency.text(deadline));
         deadlinePill.getStyleClass().add(urgencyStyle(deadline));
         // The card footer shares one row with the match badge; without a min
         // width the pill shrinks and ellipsizes ("Closes within ...") first.
@@ -147,19 +146,6 @@ public class TrackerCardController {
             case INTERVIEW -> "Interview";
             case AWARDED -> "Awarded";
             case REJECTED -> "Reject";
-        };
-    }
-
-    private static String urgencyText(LocalDate deadline) {
-        if (deadline == null) {
-            return "No deadline";
-        }
-        DeadlineUrgency urgency = DeadlineUrgency.of(deadline);
-        long days = ChronoUnit.DAYS.between(LocalDate.now(), deadline);
-        return switch (urgency) {
-            case EXPIRED -> "Deadline passed";
-            case RED -> "48h left";
-            default -> days + (days == 1 ? " day left" : " days left");
         };
     }
 

@@ -8,7 +8,6 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
-import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
 import javafx.stage.Window;
@@ -98,7 +97,7 @@ public final class ForgotPasswordDialog {
                 + " In development the token is printed in the server log — paste it below.");
         TextField tokenField = new TextField();
         tokenField.setPromptText("Reset token");
-        PasswordField passwordField = new PasswordField();
+        PasswordInput passwordField = new PasswordInput();
         passwordField.setPromptText("New password (min 8 characters)");
         Button resetButton = new Button("Reset password");
         resetButton.setMaxWidth(Double.MAX_VALUE);

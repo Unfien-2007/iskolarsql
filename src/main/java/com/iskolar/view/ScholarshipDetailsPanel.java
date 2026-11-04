@@ -41,7 +41,6 @@ import org.kordamp.ikonli.javafx.FontIcon;
 import java.awt.Desktop;
 import java.net.URI;
 import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -244,7 +243,7 @@ public final class ScholarshipDetailsPanel {
     private static VBox header(Scholarship s) {
         Label badge = new Label(s.providerType().displayName());
         badge.getStyleClass().addAll("badge", providerStyle(s.providerType()));
-        Label pill = new Label(urgencyText(s.deadlineDate()));
+        Label pill = new Label(DeadlineUrgency.text(s.deadlineDate()));
         pill.getStyleClass().addAll("pill", urgencyStyle(s.deadlineDate()));
         javafx.scene.layout.Region spacer = new javafx.scene.layout.Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
@@ -469,19 +468,6 @@ public final class ScholarshipDetailsPanel {
 
     private static String returnService(int years) {
         return years <= 0 ? "None" : years + (years == 1 ? " year" : " years");
-    }
-
-    private static String urgencyText(LocalDate deadline) {
-        if (deadline == null) {
-            return "No deadline";
-        }
-        DeadlineUrgency urgency = DeadlineUrgency.of(deadline);
-        long days = ChronoUnit.DAYS.between(LocalDate.now(), deadline);
-        return switch (urgency) {
-            case EXPIRED -> "Deadline passed";
-            case RED -> "48h left";
-            default -> days + (days == 1 ? " day left" : " days left");
-        };
     }
 
     private static String urgencyStyle(LocalDate deadline) {

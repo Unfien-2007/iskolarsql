@@ -198,8 +198,8 @@ public class DiscoveryController {
     private void showLocalSyncState() {
         var service = ServiceFactory.syncService();
         syncLabel.setText(service.localVersion() > 0
-                ? "Offline copy of the catalog · " + service.updatedText()
-                : "Using the built-in catalog · not synced yet");
+                ? "Cached · " + service.updatedText()
+                : "Built-in catalog · not synced yet");
         syncLabel.getStyleClass().remove("offline");
     }
 
@@ -211,16 +211,14 @@ public class DiscoveryController {
             return;
         }
         if (!result.success()) {
-            syncLabel.setText("Offline · showing the saved catalog · " + service.updatedText());
+            syncLabel.setText("Offline · " + service.updatedText());
             if (!syncLabel.getStyleClass().contains("offline")) {
                 syncLabel.getStyleClass().add("offline");
             }
             return;
         }
         syncLabel.getStyleClass().remove("offline");
-        syncLabel.setText(result.changed()
-                ? "Catalog updated · version " + result.version() + " · " + service.updatedText()
-                : "Catalog up to date · version " + result.version() + " · " + service.updatedText());
+        syncLabel.setText(result.changed() ? "Catalog updated just now" : "Catalog up to date");
         if (result.changed()) {
             refresh(); // re-render the grid against the fresh catalog
         }

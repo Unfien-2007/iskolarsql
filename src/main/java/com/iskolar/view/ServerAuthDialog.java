@@ -4,7 +4,6 @@ import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
-import javafx.scene.control.PasswordField;
 import javafx.scene.layout.VBox;
 import javafx.stage.Window;
 
@@ -36,7 +35,7 @@ public final class ServerAuthDialog {
         note.setWrapText(true);
         Label emailLabel = new Label("Signed in as " + email);
         emailLabel.getStyleClass().add("details-provider");
-        PasswordField passwordField = new PasswordField();
+        PasswordInput passwordField = new PasswordInput();
         passwordField.setPromptText("Server password");
 
         VBox content = new VBox(10, note, emailLabel, passwordField);

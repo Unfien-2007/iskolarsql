@@ -24,11 +24,11 @@
             <Label text="Scholarships you can apply for right now."
                    styleClass="view-subtitle" wrapText="true"/>
             <FlowPane hgap="8" vgap="8" alignment="CENTER_LEFT" styleClass="filter-bar">
-                <TextField fx:id="searchField" promptText="Search title or provider" prefWidth="230"/>
-                <ComboBox fx:id="programCombo" promptText="Any degree program" prefWidth="230"/>
+                <TextField fx:id="searchField" promptText="Search title or provider" prefWidth="210"/>
+                <ComboBox fx:id="programCombo" promptText="Any degree program" prefWidth="200"/>
                 <ComboBox fx:id="yearCombo" promptText="Any year" prefWidth="110"/>
-                <ComboBox fx:id="providerCombo" promptText="Any provider type" prefWidth="190"/>
-                <TextField fx:id="provinceField" promptText="Location (province)" prefWidth="170"/>
+                <ComboBox fx:id="providerCombo" promptText="Any provider type" prefWidth="175"/>
+                <TextField fx:id="provinceField" promptText="Location (province)" prefWidth="155"/>
                 <CheckBox fx:id="eligibleOnlyCheck" text="Eligible only"/>
                 <Button fx:id="resetButton" text="Reset" styleClass="ghost-button"/>
             </FlowPane>
