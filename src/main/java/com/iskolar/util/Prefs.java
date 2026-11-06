@@ -28,9 +28,13 @@ public final class Prefs {
     private static final String KEY_WINDOW_HEIGHT = "ui.windowHeight";
     private static final String KEY_WINDOW_MAXIMIZED = "ui.windowMaximized";
 
-    /** Default catalog-server base URL; overridable with {@code -Diskolar.apiUrl=...}. */
+    /**
+     * Default catalog-server base URL; overridable with {@code -Diskolar.apiUrl=...}.
+     * Ships pointed at the deployed Render service so packaged builds work out of
+     * the box; local development overrides via the system property.
+     */
     private static final String DEFAULT_API_URL =
-            System.getProperty("iskolar.apiUrl", "http://localhost:8080");
+            System.getProperty("iskolar.apiUrl", "https://iskolarpath-api.onrender.com");
 
     private Prefs() {
     }
