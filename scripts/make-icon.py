@@ -1,83 +1,69 @@
-# =====================================================================
-# iskolarPath app icon generator (Pillow).
-#
-#   py scripts/make-icon.py
-#
-# Writes packaging/iskolarPath.ico (multi-size) and a 512px PNG master.
-# Brand colours match src/main/resources/css/app.css:
-#   dark surface #14110C, orange accents #F6A85A / #E8842C / #C2480B.
-# =====================================================================
+"""Generate the iskolarPath app icon from the Lucide 'GraduationCap' vector.
 
-from PIL import Image, ImageDraw
+The source vector is packaging/graduation-cap.svg (Lucide icon set, ISC license,
+free for commercial use). We recolor its stroke to the app accent and compose it
+on the app's dark rounded tile, then emit a 512px preview PNG and a multi-size .ico.
 
-S = 1024  # supersampled master; downscaled at the end
+Requires: pillow, svglib, reportlab  (already in the venv; pip install if missing)
+Outputs:  packaging/iskolarPath-icon-512.png  +  packaging/iskolarPath.ico
+"""
+from pathlib import Path
+from PIL import Image, ImageDraw, ImageOps
+from svglib.svglib import svg2rlg
+from reportlab.graphics import renderPM
 
+ROOT = Path(__file__).resolve().parent.parent
+OUT_DIR = ROOT / "packaging"
+SVG_SRC = OUT_DIR / "graduation-cap.svg"
 
-def lerp(a, b, t):
-    return tuple(round(a[i] + (b[i] - a[i]) * t) for i in range(3))
+S = 512
+ICON_FRAC = 0.64          # icon occupies 64% of the tile
+RENDER = 1024             # supersampled vector render size
 
+BG      = (21, 17, 13)    # #15110D app dark tile
+BG_EDGE = (32, 26, 19)    # #201A13 subtle rim
+ACCENT  = "#F6A85A"       # app accent orange
 
-TOP = (34, 27, 20)      # #221B14
-BOTTOM = (14, 12, 9)    # #0E0C09
-BORDER = (58, 46, 30)   # #3A2E1E
-ORANGE = (246, 168, 90)  # #F6A85A
-ORANGE_DK = (232, 132, 44)  # #E8842C
-ORANGE_DEEP = (194, 72, 11)  # #C2480B
+# --- 1. recolor + render the Lucide vector at high resolution ---
+svg_text = SVG_SRC.read_text(encoding="utf-8").replace('stroke="currentColor"', f'stroke="{ACCENT}"')
+tmp_svg = OUT_DIR / "_icon_tmp.svg"
+tmp_svg.write_text(svg_text, encoding="utf-8")
 
+drawing = svg2rlg(str(tmp_svg))
+scale = RENDER / drawing.width
+drawing.width, drawing.height = RENDER, RENDER
+drawing.scale(scale, scale)
 
-def rounded_gradient(size, radius):
-    """Vertical gradient inside a rounded-rect alpha mask."""
-    img = Image.new("RGBA", (size, size), (0, 0, 0, 0))
-    px = img.load()
-    for y in range(size):
-        colour = lerp(TOP, BOTTOM, y / (size - 1))
-        for x in range(size):
-            # rounded-corner test
-            dx = min(x, size - 1 - x)
-            dy = min(y, size - 1 - y)
-            inside = True
-            if dx < radius and dy < radius:
-                inside = (radius - dx) ** 2 + (radius - dy) ** 2 <= radius ** 2
-            if inside:
-                px[x, y] = (*colour, 255)
-    return img
+raw_png = OUT_DIR / "_icon_raw.png"
+renderPM.drawToFile(drawing, str(raw_png), fmt="PNG", bg=0xFFFFFF)
 
+# --- 2. white background -> transparency (icon is a single saturated color) ---
+from PIL import ImageChops
+vec = Image.open(raw_png).convert("RGB")
+r, g, b = vec.split()
+# alpha = max(r,g,b): white bg (255,255,255) -> 0, orange stroke -> ~full
+alpha = ImageChops.lighter(ImageChops.lighter(r, g), b)
+icon = Image.merge("RGBA", (*vec.split(), alpha))
 
-def draw(scale):
-    img = rounded_gradient(S, int(0.20 * S))
-    d = ImageDraw.Draw(img)
+# --- 3. compose on the rounded dark tile ---
+tile = Image.new("RGBA", (S, S), (0, 0, 0, 0))
+d = ImageDraw.Draw(tile)
+radius = int(S * 0.225)
+d.rounded_rectangle([0, 0, S - 1, S - 1], radius=radius, fill=BG)
+rim = int(S * 0.014)
+d.rounded_rectangle([rim, rim, S - 1 - rim, S - 1 - rim], radius=radius - rim,
+                    outline=BG_EDGE, width=rim * 2)
 
-    def p(pt):
-        return (pt[0] * scale, pt[1] * scale)
+icon_s = int(S * ICON_FRAC)
+icon = icon.resize((icon_s, icon_s), Image.LANCZOS)
+off = (S - icon_s) // 2
+tile.alpha_composite(icon, (off, off))
 
-    # mortarboard diamond
-    diamond = [p((256, 92)), p((372, 150)), p((256, 208)), p((140, 150))]
-    d.polygon(diamond, fill=ORANGE)
-    # shaded right half
-    shade = [p((256, 92)), p((372, 150)), p((256, 208))]
-    d.polygon(shade, fill=ORANGE_DK)
-    # head band
-    d.rounded_rectangle([p((196, 158)), p((316, 192))], radius=p((12, 12))[0], fill=ORANGE_DEEP)
-    # button
-    d.ellipse([p((240, 96)), p((272, 128))], fill=ORANGE_DEEP)
-    # tassel
-    d.line([p((256, 112)), p((340, 240))], fill=ORANGE, width=int(14 * scale))
-    d.ellipse([p((316, 216)), p((364, 264))], fill=ORANGE)
+tile.save(OUT_DIR / "iskolarPath-icon-512.png")
+ico_sizes = [256, 128, 64, 48, 32, 24, 16]
+tile.save(OUT_DIR / "iskolarPath.ico", sizes=[(s, s) for s in ico_sizes])
 
-    # border ring
-    d.rounded_rectangle([p((4, 4)), p((S - 4, S - 4))], radius=int(0.20 * S),
-                        outline=BORDER, width=int(6 * scale))
-    return img
-
-
-img = draw(1).resize((512, 512), Image.LANCZOS)
-
-import os
-os.makedirs("packaging", exist_ok=True)
-img.save("packaging/iskolarPath-icon-512.png")
-img.save(
-    "packaging/iskolarPath.ico",
-    format="ICO",
-    sizes=[(16, 16), (24, 24), (32, 32), (48, 48), (64, 64), (128, 128), (256, 256)],
-)
-print("wrote packaging/iskolarPath.ico and packaging/iskolarPath-icon-512.png")
+tmp_svg.unlink(missing_ok=True)
+raw_png.unlink(missing_ok=True)
+print("wrote", OUT_DIR / "iskolarPath-icon-512.png")
+print("wrote", OUT_DIR / "iskolarPath.ico")
