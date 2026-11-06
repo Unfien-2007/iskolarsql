@@ -283,6 +283,10 @@ public final class ShellView {
         Label mini = new Label(shortTitle);
         mini.getStyleClass().add("nav-mini");
         mini.setVisible(false);
+        // Expanded rail: the short label is hidden, so it must not reserve
+        // width/height either — otherwise each item's graphic takes the width
+        // of its own mini text and the labels stop lining up.
+        mini.setManaged(false);
         VBox graphic = new VBox(3, tile, mini);
         graphic.setAlignment(Pos.CENTER);
 
@@ -381,6 +385,7 @@ public final class ShellView {
         for (RailItem item : RAIL) {
             item.node.setText(collapsed ? "" : item.title);
             item.mini.setVisible(collapsed);
+            item.mini.setManaged(collapsed);
             item.node.setContentDisplay(collapsed ? ContentDisplay.TOP : ContentDisplay.LEFT);
             item.node.setAlignment(collapsed ? Pos.CENTER : Pos.CENTER_LEFT);
         }
