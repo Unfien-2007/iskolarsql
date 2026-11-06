@@ -18,30 +18,32 @@
         <HBox alignment="CENTER_LEFT" spacing="8">
             <HBox fx:id="providerBadge" alignment="CENTER_LEFT" spacing="6" styleClass="badge">
                 <Region fx:id="providerDot" styleClass="badge-dot"/>
-                <Label fx:id="providerBadgeText"/>
+                <Label fx:id="providerBadgeText" minWidth="0" maxWidth="190" textOverrun="ELLIPSIS"/>
             </HBox>
             <Region HBox.hgrow="ALWAYS"/>
             <Label fx:id="urgencyPill" styleClass="pill"/>
         </HBox>
     </top>
     <center>
-        <VBox spacing="5">
+        <VBox spacing="4">
             <Label fx:id="titleLabel" styleClass="card-title" wrapText="true"
-                   maxWidth="Infinity" maxHeight="50"/>
-            <Label fx:id="providerLabel" styleClass="card-provider" wrapText="true"
-                   maxWidth="Infinity" maxHeight="20"/>
+                   alignment="TOP_LEFT" maxWidth="Infinity" maxHeight="50"/>
+            <Label fx:id="providerLabel" styleClass="card-provider"
+                   minWidth="0" textOverrun="ELLIPSIS" maxHeight="20" maxWidth="Infinity"/>
             <Label fx:id="closesLabel" styleClass="card-closes" maxWidth="Infinity"/>
             <Region VBox.vgrow="ALWAYS"/>
-            <HBox spacing="18">
-                <VBox spacing="2" HBox.hgrow="ALWAYS">
+            <HBox spacing="18" fillHeight="true">
+                <VBox spacing="2" HBox.hgrow="ALWAYS" minWidth="0" prefWidth="0">
                     <Label text="TUITION" styleClass="card-field-label"/>
                     <Label fx:id="tuitionValue" styleClass="card-field-value" wrapText="true"
-                           maxWidth="Infinity"/>
+                           minHeight="36" maxHeight="36" alignment="TOP_LEFT"
+                           minWidth="0" maxWidth="Infinity"/>
                 </VBox>
-                <VBox spacing="2" HBox.hgrow="ALWAYS">
+                <VBox spacing="2" HBox.hgrow="ALWAYS" minWidth="0" prefWidth="0">
                     <Label text="STIPEND" styleClass="card-field-label"/>
                     <Label fx:id="stipendValue" styleClass="card-field-value" wrapText="true"
-                           maxWidth="Infinity"/>
+                           minHeight="36" maxHeight="36" alignment="TOP_LEFT"
+                           minWidth="0" maxWidth="Infinity"/>
                 </VBox>
             </HBox>
         </VBox>
