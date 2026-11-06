@@ -147,6 +147,45 @@
                 <version>3.5.2</version>
             </plugin>
 
+            <!-- Packageable jar: main-class manifest so jpackage can launch it,
+                 written straight into the jpackage input directory (dist). -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.4.2</version>
+                <configuration>
+                    <outputDirectory>${project.build.directory}/dist</outputDirectory>
+                    <archive>
+                        <manifest>
+                            <mainClass>com.iskolar.Launcher</mainClass>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
+
+            <!-- Runtime jars for the jpackage input directory. JavaFX is
+                 excluded: it is bundled into the runtime image by jlink in
+                 the packaging script. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>3.8.1</version>
+                <executions>
+                    <execution>
+                        <id>copy-runtime-deps</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <includeScope>runtime</includeScope>
+                            <outputDirectory>${project.build.directory}/dist</outputDirectory>
+                            <excludeGroupIds>org.openjfx</excludeGroupIds>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
             <!-- Run with:  mvn javafx:run
                  Launcher (com.iskolar.Launcher) is delivered in Phase 4.
                  The catalog API URL points at the deployed Render service;

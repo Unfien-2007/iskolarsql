@@ -1,0 +1,42 @@
+# =====================================================================
+# GitHub Release workflow
+#
+# Trigger: pushing a tag named v* (e.g. v1.0.0) on any branch whose
+# commit contains this workflow (normally main). Builds the Windows
+# installer and publishes it on the GitHub Releases page.
+# =====================================================================
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  package:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+
+      - name: Package Windows installer
+        shell: pwsh
+        run: |
+          $version = "$env:GITHUB_REF_NAME" -replace '^v', ''
+          ./scripts/package-windows.ps1 -Version $version -Jdk "$env:JAVA_HOME"
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "iskolarPath ${{ github.ref_name }}"
+          generate_release_notes: true
+          files: |
+            target/packaging/iskolarPath-Setup-*.exe
+            target/packaging/iskolarPath-Setup-*.exe.sha256
