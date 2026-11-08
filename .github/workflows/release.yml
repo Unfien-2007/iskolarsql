@@ -26,6 +26,14 @@ jobs:
           java-version: "21"
           cache: maven
 
+      # The Gluon download host is occasionally flaky; keep the (large,
+      # version-pinned) jmods zip between runs so only a cache miss needs it.
+      - name: Cache JavaFX jmods
+        uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/openjfx-21.0.8-jmods.zip
+          key: openjfx-jmods-21.0.8
+
       - name: Package Windows installer
         shell: pwsh
         run: |

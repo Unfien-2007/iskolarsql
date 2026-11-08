@@ -48,11 +48,23 @@ Write-Host "JDK: $Jdk"
 # -JavaFxJmods parameter is that directory itself.
 if (-not (Test-Path (Join-Path $JavaFxJmods "javafx.controls.jmod"))) {
     $zip = "$env:TEMP\openjfx-$JavaFxVersion-jmods.zip"
+    $minZipBytes = 40MB   # the real archive is ~41.5 MiB
+
+    # A truncated download from a previous attempt is worse than no cache.
+    if ((Test-Path $zip) -and ((Get-Item $zip).Length -lt $minZipBytes)) {
+        Remove-Item $zip -Force
+    }
     if (-not (Test-Path $zip)) {
         $url = "https://download2.gluonhq.com/openjfx/$JavaFxVersion/openjfx-$JavaFxVersion`_windows-x64_bin-jmods.zip"
         Write-Host "Downloading JavaFX jmods: $url"
-        $ProgressPreference = "SilentlyContinue"
-        Invoke-WebRequest -Uri $url -OutFile $zip -UseBasicParsing
+        # curl.exe is more resilient than Invoke-WebRequest here: the Gluon
+        # host occasionally drops the TLS stream mid-download ("unexpected EOF").
+        & curl.exe -fL --retry 5 --retry-all-errors --retry-delay 3 `
+            --connect-timeout 20 --max-time 600 -o $zip $url
+        if ($LASTEXITCODE -ne 0 -or -not (Test-Path $zip) -or (Get-Item $zip).Length -lt $minZipBytes) {
+            if (Test-Path $zip) { Remove-Item $zip -Force }
+            throw "Failed to download JavaFX jmods from $url"
+        }
     }
     Expand-Archive -Path $zip -DestinationPath (Split-Path -Parent $JavaFxJmods) -Force
 }
