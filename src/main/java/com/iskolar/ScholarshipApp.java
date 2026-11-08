@@ -81,6 +81,9 @@ public class ScholarshipApp extends Application {
             }
         });
         syncService.syncInBackground();
+        // Render's free tier sleeps idle services; ask it to wake up while the
+        // user is still typing, so sign-in and registration feel responsive.
+        syncService.warmUpInBackground();
 
         // Signed-in users re-validate every five minutes while the app stays
         // open. This keeps them marked online in the admin portal and revokes

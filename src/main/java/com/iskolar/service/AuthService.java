@@ -62,7 +62,8 @@ public class AuthService {
                     ? "Invalid email or password."
                     : e.getMessage());
         } catch (SyncException e) {
-            return loginOffline(normalized, password);
+            return loginOffline(normalized, password, connectionFailureMessage(e,
+                    "Could not reach the server. Check your connection and try again."));
         }
     }
 
@@ -80,12 +81,12 @@ public class AuthService {
             return completeOnlineLogin(response, normalized, password);
         } catch (SyncException e) {
             return AuthResult.failure(isNetworkFailure(e)
-                    ? "Registration requires an internet connection."
+                    ? connectionFailureMessage(e, "Registration requires an internet connection.")
                     : e.getMessage());
         }
     }
 
-    private AuthResult loginOffline(String email, String password) {
+    private AuthResult loginOffline(String email, String password, String unreachableMessage) {
         User local = userDao.findByEmail(email).orElse(null);
         if (local != null) {
             return PasswordUtils.verify(password, local.passwordHash())
@@ -104,7 +105,7 @@ public class AuthService {
         }
         // Neither a local row nor a cached credential: we cannot tell whether
         // the account exists, so report the real problem (no connection).
-        return AuthResult.failure("Could not reach the server. Check your connection and try again.");
+        return AuthResult.failure(unreachableMessage);
     }
 
     private AuthResult startLocalSession(User user) {
@@ -122,9 +123,19 @@ public class AuthService {
         return AuthResult.success(local);
     }
 
+    private static final String SERVER_WAKING_MESSAGE =
+            "The server is taking too long to respond. It may be waking up — please try again in a moment.";
+
     /** Network-level failures carry an IO cause; server responses do not. */
     private static boolean isNetworkFailure(SyncException e) {
         return e.getCause() != null;
+    }
+
+    /** A timeout usually means a sleeping server, not a missing connection. */
+    static String connectionFailureMessage(SyncException e, String fallback) {
+        return e.getCause() instanceof java.net.http.HttpTimeoutException
+                ? SERVER_WAKING_MESSAGE
+                : fallback;
     }
 
     // ------------------------------------------------------------------
@@ -183,7 +194,7 @@ public class AuthService {
             return AuthResult.successMessage(apiClient.forgot(normalized));
         } catch (SyncException e) {
             return AuthResult.failure(isNetworkFailure(e)
-                    ? "Password reset requires an internet connection."
+                    ? connectionFailureMessage(e, "Password reset requires an internet connection.")
                     : e.getMessage());
         }
     }
@@ -200,7 +211,7 @@ public class AuthService {
             return AuthResult.successMessage(apiClient.resetPassword(token, newPassword));
         } catch (SyncException e) {
             return AuthResult.failure(isNetworkFailure(e)
-                    ? "Password reset requires an internet connection."
+                    ? connectionFailureMessage(e, "Password reset requires an internet connection.")
                     : e.getMessage());
         }
     }

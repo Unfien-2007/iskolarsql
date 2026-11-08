@@ -141,6 +141,16 @@ public final class SyncService {
         thread.start();
     }
 
+    /**
+     * Wakes a sleeping server on a daemon thread so the first sign-in or
+     * registration does not have to wait for a full cold start.
+     */
+    public void warmUpInBackground() {
+        Thread thread = new Thread(() -> client.pingHealth(), "iskolar-server-warmup");
+        thread.setDaemon(true);
+        thread.start();
+    }
+
     private void notify(SyncResult result) {
         for (Consumer<SyncResult> listener : listeners) {
             listener.accept(result);

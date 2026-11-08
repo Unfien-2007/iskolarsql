@@ -6,6 +6,7 @@ import com.iskolar.dao.UserDao;
 import com.iskolar.model.Role;
 import com.iskolar.model.ThemePref;
 import com.iskolar.sync.CatalogApiClient;
+import com.iskolar.sync.SyncException;
 import com.iskolar.sync.TokenStore;
 import com.iskolar.util.PasswordUtils;
 import com.iskolar.util.SessionManager;
@@ -191,6 +192,19 @@ class AuthServiceTest {
         assertEquals("Registration requires an internet connection.", result.message());
         assertEquals(3, count("SELECT COUNT(*) FROM users"));
         assertTrue(SessionManager.current().isEmpty());
+    }
+
+    @Test
+    void timedOutRequestsSuggestTheServerIsWakingUp() {
+        SyncException timeout = new SyncException("Could not reach the catalog server.",
+                new java.net.http.HttpTimeoutException("request timed out"));
+        assertEquals("The server is taking too long to respond. It may be waking up — please try again in a moment.",
+                AuthService.connectionFailureMessage(timeout, "Registration requires an internet connection."));
+
+        SyncException refused = new SyncException("Could not reach the catalog server.",
+                new java.io.IOException("connection refused"));
+        assertEquals("Registration requires an internet connection.",
+                AuthService.connectionFailureMessage(refused, "Registration requires an internet connection."));
     }
 
     @Test

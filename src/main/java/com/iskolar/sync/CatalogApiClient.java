@@ -29,6 +29,12 @@ import java.util.Map;
 public final class CatalogApiClient {
 
     private static final Duration REQUEST_TIMEOUT = Duration.ofSeconds(10);
+    /** Login keeps the offline fallback responsive while outlasting most Render cold starts. */
+    private static final Duration LOGIN_TIMEOUT = Duration.ofSeconds(30);
+    /** Registration and password reset are online-only, so they can wait for a sleeping server. */
+    private static final Duration AUTH_TIMEOUT = Duration.ofSeconds(60);
+    /** Background warm-up: Render's free tier can take close to a minute to wake. */
+    private static final Duration WARMUP_TIMEOUT = Duration.ofSeconds(90);
 
     private final String baseUrl; // no trailing slash
     private final HttpClient http;
@@ -86,6 +92,7 @@ public final class CatalogApiClient {
     /** {@code POST /api/auth/login} — exchanges credentials for a JWT. */
     public AuthResponse login(String email, String password) {
         HttpResponse<String> response = send(request("/api/auth/login")
+                .timeout(LOGIN_TIMEOUT)
                 .POST(jsonBody(Map.of("email", email, "password", password))));
         if (response.statusCode() == 401) {
             throw new SyncException.UnauthorizedException(errorMessage(response));
@@ -105,6 +112,7 @@ public final class CatalogApiClient {
      */
     public AuthResponse register(String email, String password) {
         HttpResponse<String> response = send(request("/api/auth/register")
+                .timeout(AUTH_TIMEOUT)
                 .POST(jsonBody(Map.of("email", email, "password", password))));
         expectOk(response);
         try {
@@ -130,9 +138,25 @@ public final class CatalogApiClient {
         }
     }
 
+    /**
+     * {@code GET /api/health} — true when the server is awake. Never throws;
+     * used as a startup warm-up for hosts that sleep idle instances.
+     */
+    public boolean pingHealth() {
+        try {
+            HttpResponse<String> response = send(request("/api/health")
+                    .timeout(WARMUP_TIMEOUT)
+                    .GET());
+            return response.statusCode() == 200;
+        } catch (SyncException e) {
+            return false;
+        }
+    }
+
     /** {@code POST /api/auth/forgot} — requests a password-reset token. */
     public String forgot(String email) {
         HttpResponse<String> response = send(request("/api/auth/forgot")
+                .timeout(AUTH_TIMEOUT)
                 .POST(jsonBody(Map.of("email", email))));
         expectOk(response);
         return messageOr(response, "If an account with this email exists, a reset link has been sent.");
@@ -141,6 +165,7 @@ public final class CatalogApiClient {
     /** {@code POST /api/auth/reset} — exchanges a reset token for a new password. */
     public String resetPassword(String token, String newPassword) {
         HttpResponse<String> response = send(request("/api/auth/reset")
+                .timeout(AUTH_TIMEOUT)
                 .POST(jsonBody(Map.of("token", token, "newPassword", newPassword))));
         expectOk(response);
         return messageOr(response, "Password updated.");
