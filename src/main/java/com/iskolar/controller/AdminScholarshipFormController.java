@@ -57,6 +57,8 @@ public class AdminScholarshipFormController {
     @FXML private TextField tuitionField;
     @FXML private TextField stipendField;
     @FXML private TextField returnServiceField;
+    @FXML private TextField acceptanceRateField;
+    @FXML private TextField awardsAvailableField;
     @FXML private TextField urlField;
     @FXML private DatePicker openDatePicker;
     @FXML private DatePicker deadlinePicker;
@@ -169,6 +171,10 @@ public class AdminScholarshipFormController {
         tuitionField.setText(scholarship.tuitionBenefit());
         stipendField.setText(scholarship.monthlyStipend() == null ? "" : scholarship.monthlyStipend().toPlainString());
         returnServiceField.setText(String.valueOf(scholarship.returnServiceYears()));
+        acceptanceRateField.setText(scholarship.acceptancePercent() == null
+                ? "" : scholarship.acceptancePercent());
+        awardsAvailableField.setText(scholarship.awardsAvailable() == null
+                ? "" : String.valueOf(scholarship.awardsAvailable()));
         urlField.setText(scholarship.applicationUrl());
         openDatePicker.setValue(scholarship.openDate());
         deadlinePicker.setValue(scholarship.deadlineDate());
@@ -248,6 +254,38 @@ public class AdminScholarshipFormController {
             }
         }
 
+        // acceptance rate (empty = unknown)
+        Double acceptanceRate = null;
+        String rateText = text(acceptanceRateField);
+        if (!rateText.isEmpty()) {
+            try {
+                acceptanceRate = Double.parseDouble(rateText);
+            } catch (NumberFormatException e) {
+                fail("Enter a valid acceptance rate (0-100), or leave it empty.");
+                return;
+            }
+            if (!Double.isFinite(acceptanceRate) || acceptanceRate < 0 || acceptanceRate > 100) {
+                fail("Acceptance rate must be between 0 and 100.");
+                return;
+            }
+        }
+
+        // awards available (empty = unknown)
+        Integer awardsAvailable = null;
+        String awardsText = text(awardsAvailableField);
+        if (!awardsText.isEmpty()) {
+            try {
+                awardsAvailable = Integer.parseInt(awardsText);
+            } catch (NumberFormatException e) {
+                fail("Enter a valid number of awards, or leave it empty.");
+                return;
+            }
+            if (awardsAvailable < 0) {
+                fail("Awards available cannot be negative.");
+                return;
+            }
+        }
+
         LocalDate open = openDatePicker.getValue();
         LocalDate deadline = deadlinePicker.getValue();
         if (deadline == null) {
@@ -301,6 +339,8 @@ public class AdminScholarshipFormController {
                 trim(tuitionField),
                 stipend,
                 returnYears,
+                acceptanceRate,
+                awardsAvailable,
                 trim(urlField),
                 open,
                 deadline,

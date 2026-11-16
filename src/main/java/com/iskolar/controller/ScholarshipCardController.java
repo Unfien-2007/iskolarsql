@@ -54,6 +54,8 @@ public class ScholarshipCardController {
     @FXML
     private Label closesLabel;
     @FXML
+    private Label acceptanceLabel;
+    @FXML
     private Label tuitionValue;
     @FXML
     private Label stipendValue;
@@ -152,6 +154,13 @@ public class ScholarshipCardController {
         providerBadgeText.setText(s.providerType().displayName());
         providerBadge.getStyleClass().add(providerStyle(s.providerType()));
         closesLabel.setText(closesText(s.deadlineDate()));
+        String acceptance = s.acceptanceLabel();
+        acceptanceLabel.setText(acceptance == null ? "" : "· " + acceptance);
+        acceptanceLabel.setVisible(acceptance != null);
+        acceptanceLabel.setManaged(acceptance != null);
+        if (acceptance != null) {
+            acceptanceLabel.setTooltip(new Tooltip("Estimated acceptance rate for recent intakes"));
+        }
         tuitionValue.setText(s.tuitionBenefit() == null || s.tuitionBenefit().isBlank()
                 ? "See provider" : s.tuitionBenefit());
         stipendValue.setText(s.stipendLabel());

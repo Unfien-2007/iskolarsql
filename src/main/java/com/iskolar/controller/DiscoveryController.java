@@ -23,6 +23,8 @@ import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.MenuButton;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Tooltip;
 import javafx.scene.input.KeyCode;
@@ -103,6 +105,8 @@ public class DiscoveryController {
     @FXML
     private CheckBox eligibleOnlyCheck;
     @FXML
+    private MenuButton filterButton;
+    @FXML
     private Button resetButton;
     @FXML
     private Label resultLabel;
@@ -142,6 +146,12 @@ public class DiscoveryController {
         yearCombo.setConverter(anyConverter(String::valueOf, "Any year level"));
         providerCombo.getItems().addAll(ProviderType.values());
         providerCombo.setConverter(anyConverter(ProviderType::displayName, "Any provider type"));
+        // The default button cell can keep showing the old value after the
+        // selection is cleared from inside the filter popover, so render the
+        // prompt ourselves whenever the value is null.
+        usePromptButtonCell(programCombo);
+        usePromptButtonCell(yearCombo);
+        usePromptButtonCell(providerCombo);
 
         programCombo.valueProperty().addListener((obs, old, val) -> refresh());
         yearCombo.valueProperty().addListener((obs, old, val) -> refresh());
@@ -162,6 +172,10 @@ public class DiscoveryController {
         eligibleOnlyCheck.setManaged(false);
         emptyResetButton.setOnAction(e -> clearFilters());
         resetButton.setOnAction(e -> clearFilters());
+        filterButton.setGraphic(org.kordamp.ikonli.javafx.FontIcon.of(
+                org.kordamp.ikonli.feather.Feather.SLIDERS, 14));
+        filterButton.setTooltip(new Tooltip(
+                "Filter by degree, year, provider, location or eligibility"));
 
         // Result ordering is a view concern, so it is applied client-side.
         sortCombo.getItems().addAll(SortOrder.values());
@@ -224,6 +238,27 @@ public class DiscoveryController {
         }
     }
 
+    /**
+     * Replaces the combo's display cell so a cleared selection always shows
+     * its prompt text. JavaFX's default button cell occasionally retains the
+     * previous text when the value is reset while the popover is open.
+     */
+    private static <T> void usePromptButtonCell(ComboBox<T> combo) {
+        String prompt = combo.getPromptText();
+        combo.setButtonCell(new ListCell<>() {
+            @Override
+            protected void updateItem(T item, boolean empty) {
+                super.updateItem(item, empty);
+                if (item == null) {
+                    setText(prompt);
+                } else {
+                    StringConverter<T> converter = combo.getConverter();
+                    setText(converter == null ? String.valueOf(item) : converter.toString(item));
+                }
+            }
+        });
+    }
+
     /** Displays {@code "Any …"} for a {@code null} selection. */
     private static <T> StringConverter<T> anyConverter(Function<T, String> label, String anyLabel) {
         return new StringConverter<>() {
@@ -279,6 +314,7 @@ public class DiscoveryController {
         resultLabel.setText(scholarships.size()
                 + (scholarships.size() == 1 ? " scholarship" : " scholarships"));
         resetButton.setDisable(!hasActiveFilters());
+        updateFilterButtonState();
         updateEmptyState(scholarships.isEmpty());
         updateCompareState();
         updateBanner();
@@ -349,11 +385,33 @@ public class DiscoveryController {
     /** True when at least one filter is narrowing the catalog. */
     private boolean hasActiveFilters() {
         return (searchField.getText() != null && !searchField.getText().isBlank())
-                || programCombo.getValue() != null
-                || yearCombo.getValue() != null
-                || providerCombo.getValue() != null
-                || (provinceField.getText() != null && !provinceField.getText().isBlank())
-                || (eligibleOnlyCheck.isVisible() && eligibleOnlyCheck.isSelected());
+                || activeFilterCount() > 0;
+    }
+
+    /** Badges the Filters button with the number of advanced filters in effect. */
+    private void updateFilterButtonState() {
+        int count = activeFilterCount();
+        filterButton.setText(count == 0 ? "Filters" : "Filters (" + count + ")");
+    }
+
+    private int activeFilterCount() {
+        int count = 0;
+        if (programCombo.getValue() != null) {
+            count++;
+        }
+        if (yearCombo.getValue() != null) {
+            count++;
+        }
+        if (providerCombo.getValue() != null) {
+            count++;
+        }
+        if (provinceField.getText() != null && !provinceField.getText().isBlank()) {
+            count++;
+        }
+        if (eligibleOnlyCheck.isVisible() && eligibleOnlyCheck.isSelected()) {
+            count++;
+        }
+        return count;
     }
 
     /** Swaps the blank grid for an explanatory empty state (and back). */

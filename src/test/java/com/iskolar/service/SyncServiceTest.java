@@ -52,6 +52,8 @@ class SyncServiceTest {
                   "tuitionBenefit": "FULL TUITION",
                   "monthlyStipend": 6000.00,
                   "returnServiceYears": 0,
+                  "acceptanceRate": 9.5,
+                  "awardsAvailable": 300,
                   "applicationUrl": "https://example.com",
                   "openDate": "2026-01-01",
                   "deadlineDate": "2026-12-31",
@@ -122,6 +124,8 @@ class SyncServiceTest {
         assertEquals("Stub Scholarship", scalar("SELECT title FROM scholarships WHERE scholarship_id = 1"));
         assertEquals("80.0",
                 scalar("SELECT min_gwa_percentage FROM scholarship_criteria WHERE scholarship_id = 1"));
+        assertEquals("9.5", scalar("SELECT acceptance_rate FROM scholarships WHERE scholarship_id = 1"));
+        assertEquals("300", scalar("SELECT awards_available FROM scholarships WHERE scholarship_id = 1"));
         assertEquals("2", scalar("SELECT value FROM sync_state WHERE key = 'catalog_version'"));
     }
 
@@ -136,7 +140,7 @@ class SyncServiceTest {
         assertTrue(result.success());
         assertFalse(result.changed());
         assertEquals(2, result.version());
-        assertEquals(14, count("SELECT COUNT(*) FROM scholarships")); // local catalog untouched
+        assertEquals(22, count("SELECT COUNT(*) FROM scholarships")); // local catalog untouched
     }
 
     @Test
@@ -148,7 +152,7 @@ class SyncServiceTest {
         assertFalse(result.success());
         assertFalse(result.changed());
         assertTrue(result.error().contains("Could not reach"));
-        assertEquals(14, count("SELECT COUNT(*) FROM scholarships")); // local catalog untouched
+        assertEquals(22, count("SELECT COUNT(*) FROM scholarships")); // local catalog untouched
     }
 
     @Test

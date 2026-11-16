@@ -55,6 +55,8 @@ public final class CatalogDtos {
             String tuitionBenefit,
             BigDecimal monthlyStipend,
             Integer returnServiceYears,
+            Double acceptanceRate,
+            Integer awardsAvailable,
             String applicationUrl,
             LocalDate openDate,
             LocalDate deadlineDate,

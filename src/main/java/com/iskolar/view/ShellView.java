@@ -4,7 +4,6 @@ import com.iskolar.controller.DiscoveryController;
 import com.iskolar.dao.DaoFactory;
 import com.iskolar.model.Role;
 import com.iskolar.model.ThemePref;
-import com.iskolar.util.Prefs;
 import com.iskolar.util.SessionManager;
 import com.iskolar.util.ThemeManager;
 import com.iskolar.util.ViewNavigator;
@@ -69,19 +68,19 @@ public final class ShellView {
     /** Every sidebar item drawn as an icon tile (with a short label when collapsed). */
     private static final List<RailItem> RAIL = new ArrayList<>();
     private static HBox userChip;
+    private static IntroSplash introSplash;
     private static boolean collapsed;
 
     private ShellView() {
     }
 
     /**
-     * Builds the shell. The first launch on a machine plays the in-window intro
-     * splash and hands off into the shell (see {@link IntroSplash}); later
-     * launches open straight into Discover. Pass
-     * {@code -Diskolar.skipIntro=true} to bypass it during development, or
-     * {@code -Diskolar.forceIntro=true} to replay it.
+     * Builds the shell. Every launch plays the in-window intro splash and hands
+     * off into the shell (see {@link IntroSplash}). Pass
+     * {@code -Diskolar.skipIntro=true} to bypass it during development.
      */
     public static Parent build() {
+        introSplash = null;
         BorderPane root = new BorderPane();
         ViewNavigator.init(root);
         root.setLeft(buildSidebar());
@@ -103,15 +102,12 @@ public final class ShellView {
      */
     private static final boolean SKIP_INTRO_ANIMATION = Boolean.getBoolean("iskolar.skipIntro");
 
-    /** Replay the splash on a machine that has already seen it ({@code -Diskolar.forceIntro=true}). */
-    private static final boolean FORCE_INTRO = Boolean.getBoolean("iskolar.forceIntro");
-
     /**
-     * The splash is a first-run welcome, not a launch tax: it plays once per
-     * machine and is remembered in {@link Prefs}.
+     * The splash plays on every launch; {@code -Diskolar.skipIntro=true}
+     * disables it for that session.
      */
     private static boolean shouldPlayIntro() {
-        return !SKIP_INTRO_ANIMATION && (FORCE_INTRO || !Prefs.introPlayed());
+        return !SKIP_INTRO_ANIMATION;
     }
 
     /**
@@ -133,10 +129,19 @@ public final class ShellView {
         content.setOpacity(0);
         content.setTranslateY(12);
 
-        Prefs.introPlayed(true); // first-run only from here on
-        IntroSplash splash = IntroSplash.attach(stack, sidebar, content, () -> { });
-        splash.play();
+        introSplash = IntroSplash.attach(stack, sidebar, content, () -> { });
         return stack;
+    }
+
+    /**
+     * Starts the attached intro splash, if any. Call this after the stage is
+     * visible: the splash timeline is wall-clock based, and starting it while
+     * the first frame is still being laid out would skip its opening draw.
+     */
+    public static void playIntro() {
+        if (introSplash != null) {
+            introSplash.play();
+        }
     }
 
     /**

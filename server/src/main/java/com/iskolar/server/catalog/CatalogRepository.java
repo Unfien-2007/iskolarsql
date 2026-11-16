@@ -59,6 +59,7 @@ public class CatalogRepository {
             long scholarshipId, long createdBy, String title, String providerName,
             String providerType, String description, String tuitionBenefit,
             java.math.BigDecimal monthlyStipend, Integer returnServiceYears,
+            Double acceptanceRate, Integer awardsAvailable,
             String applicationUrl, java.time.LocalDate openDate,
             java.time.LocalDate deadlineDate, boolean isActive) {
     }
@@ -66,18 +67,24 @@ public class CatalogRepository {
     public List<ScholarshipRow> scholarships() {
         return jdbc.query(
                 "SELECT scholarship_id, created_by, title, provider_name, provider_type, description, "
-                        + "tuition_benefit, monthly_stipend, return_service_years, application_url, "
-                        + "open_date, deadline_date, is_active FROM scholarships ORDER BY scholarship_id",
-                (rs, rowNum) -> new ScholarshipRow(
-                        rs.getLong("scholarship_id"), rs.getLong("created_by"),
-                        rs.getString("title"), rs.getString("provider_name"),
-                        rs.getString("provider_type"), rs.getString("description"),
-                        rs.getString("tuition_benefit"), rs.getBigDecimal("monthly_stipend"),
-                        (Integer) rs.getObject("return_service_years"),
-                        rs.getString("application_url"),
-                        rs.getObject("open_date", java.time.LocalDate.class),
-                        rs.getObject("deadline_date", java.time.LocalDate.class),
-                        rs.getBoolean("is_active")));
+                        + "tuition_benefit, monthly_stipend, return_service_years, acceptance_rate, "
+                        + "awards_available, application_url, open_date, deadline_date, is_active "
+                        + "FROM scholarships ORDER BY scholarship_id",
+                (rs, rowNum) -> {
+                    java.math.BigDecimal acceptanceRate = rs.getBigDecimal("acceptance_rate");
+                    return new ScholarshipRow(
+                            rs.getLong("scholarship_id"), rs.getLong("created_by"),
+                            rs.getString("title"), rs.getString("provider_name"),
+                            rs.getString("provider_type"), rs.getString("description"),
+                            rs.getString("tuition_benefit"), rs.getBigDecimal("monthly_stipend"),
+                            (Integer) rs.getObject("return_service_years"),
+                            acceptanceRate == null ? null : acceptanceRate.doubleValue(),
+                            (Integer) rs.getObject("awards_available"),
+                            rs.getString("application_url"),
+                            rs.getObject("open_date", java.time.LocalDate.class),
+                            rs.getObject("deadline_date", java.time.LocalDate.class),
+                            rs.getBoolean("is_active"));
+                });
     }
 
     public Optional<ScholarshipCriteriaDto> criteria(long scholarshipId) {

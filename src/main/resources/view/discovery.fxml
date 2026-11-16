@@ -3,7 +3,9 @@
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.CheckBox?>
 <?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.CustomMenuItem?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.MenuButton?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.BorderPane?>
@@ -17,24 +19,46 @@
             fx:controller="com.iskolar.controller.DiscoveryController">
     <top>
         <VBox spacing="10" styleClass="discovery-header">
-            <Label text="Discover Scholarships" styleClass="view-title"/>
-            <Label text="Scholarships you can apply for right now."
-                   styleClass="view-subtitle" wrapText="true"/>
+            <VBox spacing="2">
+                <Label text="Discover Scholarships" styleClass="view-title"/>
+                <Label text="Scholarships you can apply for right now."
+                       styleClass="view-subtitle" wrapText="true"/>
+            </VBox>
             <HBox spacing="10" alignment="CENTER_LEFT">
-                <FlowPane hgap="8" vgap="8" alignment="CENTER_LEFT" HBox.hgrow="ALWAYS">
-                    <TextField fx:id="searchField" promptText="Search title or provider" prefWidth="210"/>
-                    <ComboBox fx:id="programCombo" promptText="Any degree program" prefWidth="200"/>
-                    <ComboBox fx:id="yearCombo" promptText="Any year" prefWidth="110"/>
-                    <ComboBox fx:id="providerCombo" promptText="Any provider type" prefWidth="175"/>
-                    <TextField fx:id="provinceField" promptText="Location (province)" prefWidth="155"/>
-                    <CheckBox fx:id="eligibleOnlyCheck" text="Eligible only"/>
-                </FlowPane>
-                <Button fx:id="resetButton" text="Reset" styleClass="link-button"/>
-            </HBox>
-            <HBox fx:id="guestBanner" spacing="12" alignment="CENTER_LEFT" styleClass="guest-banner">
-                <Label fx:id="bannerLabel" wrapText="true"/>
+                <TextField fx:id="searchField" promptText="Search title or provider"
+                           prefWidth="420" minWidth="180" maxWidth="600"/>
+                <MenuButton fx:id="filterButton" text="Filters" styleClass="filter-menu-button">
+                    <items>
+                        <CustomMenuItem hideOnClick="false">
+                            <content>
+                                <VBox spacing="10" prefWidth="300" styleClass="filter-popover">
+                                    <HBox alignment="CENTER_LEFT">
+                                        <Label text="Filter scholarships"
+                                               styleClass="filter-popover-title"/>
+                                        <Region HBox.hgrow="ALWAYS"/>
+                                        <Button fx:id="resetButton" text="Reset"
+                                                styleClass="link-button"/>
+                                    </HBox>
+                                    <ComboBox fx:id="programCombo" promptText="Any degree program"
+                                              maxWidth="Infinity"/>
+                                    <ComboBox fx:id="yearCombo" promptText="Any year"
+                                              maxWidth="Infinity"/>
+                                    <ComboBox fx:id="providerCombo" promptText="Any provider type"
+                                              maxWidth="Infinity"/>
+                                    <TextField fx:id="provinceField" promptText="Location (province)"
+                                               maxWidth="Infinity"/>
+                                    <CheckBox fx:id="eligibleOnlyCheck" text="Eligible only"/>
+                                </VBox>
+                            </content>
+                        </CustomMenuItem>
+                    </items>
+                </MenuButton>
                 <Region HBox.hgrow="ALWAYS"/>
-                <Button fx:id="bannerButton" text="Log in" styleClass="primary-button"/>
+                <HBox fx:id="guestBanner" spacing="8" alignment="CENTER_LEFT"
+                      styleClass="guest-hint">
+                    <Label fx:id="bannerLabel" wrapText="true" styleClass="guest-hint-text"/>
+                    <Button fx:id="bannerButton" text="Log in" styleClass="guest-hint-button"/>
+                </HBox>
             </HBox>
             <HBox spacing="8" alignment="CENTER_LEFT">
                 <Label fx:id="resultLabel" styleClass="result-label"/>

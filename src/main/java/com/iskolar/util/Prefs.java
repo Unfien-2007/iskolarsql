@@ -22,7 +22,6 @@ public final class Prefs {
     private static final String KEY_API_URL = "sync.apiUrl";
     private static final String KEY_JWT = "server.jwt";
     private static final String KEY_JWT_EMAIL = "server.jwt.email";
-    private static final String KEY_INTRO_PLAYED = "ui.introPlayed";
     private static final String KEY_REDUCE_MOTION = "ui.reduceMotion";
     private static final String KEY_WINDOW_WIDTH = "ui.windowWidth";
     private static final String KEY_WINDOW_HEIGHT = "ui.windowHeight";
@@ -69,15 +68,6 @@ public final class Prefs {
     }
 
     // ---- ui flags -----------------------------------------------------
-
-    /** {@code true} once the opening splash has played on this machine. */
-    public static boolean introPlayed() {
-        return NODE.getBoolean(KEY_INTRO_PLAYED, false);
-    }
-
-    public static void introPlayed(boolean played) {
-        NODE.putBoolean(KEY_INTRO_PLAYED, played);
-    }
 
     /** Preference counterpart of {@code -Diskolar.reduceMotion}; {@link com.iskolar.view.Motion} reads both. */
     public static boolean reduceMotion() {

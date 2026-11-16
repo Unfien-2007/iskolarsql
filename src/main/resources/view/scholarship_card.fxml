@@ -30,7 +30,10 @@
                    alignment="TOP_LEFT" maxWidth="Infinity" maxHeight="50"/>
             <Label fx:id="providerLabel" styleClass="card-provider"
                    minWidth="0" textOverrun="ELLIPSIS" maxHeight="20" maxWidth="Infinity"/>
-            <Label fx:id="closesLabel" styleClass="card-closes" maxWidth="Infinity"/>
+            <HBox spacing="6" alignment="CENTER_LEFT">
+                <Label fx:id="closesLabel" styleClass="card-closes"/>
+                <Label fx:id="acceptanceLabel" styleClass="card-acceptance"/>
+            </HBox>
             <Region VBox.vgrow="ALWAYS"/>
             <HBox spacing="18" fillHeight="true">
                 <VBox spacing="2" HBox.hgrow="ALWAYS" minWidth="0" prefWidth="0">

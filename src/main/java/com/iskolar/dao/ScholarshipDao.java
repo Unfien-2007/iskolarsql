@@ -34,20 +34,22 @@ public class ScholarshipDao {
 
     private static final String SCHOLARSHIP_COLUMNS = """
             scholarship_id, created_by, title, provider_name, provider_type, description,
-            tuition_benefit, monthly_stipend, return_service_years, application_url,
-            open_date, deadline_date, is_active
+            tuition_benefit, monthly_stipend, return_service_years, acceptance_rate,
+            awards_available, application_url, open_date, deadline_date, is_active
             """;
 
     private static final String INSERT_SCHOLARSHIP = """
             INSERT INTO scholarships (created_by, title, provider_name, provider_type, description,
                                       tuition_benefit, monthly_stipend, return_service_years,
+                                      acceptance_rate, awards_available,
                                       application_url, open_date, deadline_date, is_active)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """;
 
     private static final String UPDATE_SCHOLARSHIP = """
             UPDATE scholarships SET created_by = ?, title = ?, provider_name = ?, provider_type = ?,
                    description = ?, tuition_benefit = ?, monthly_stipend = ?, return_service_years = ?,
+                   acceptance_rate = ?, awards_available = ?,
                    application_url = ?, open_date = ?, deadline_date = ?, is_active = ?
             WHERE scholarship_id = ?
             """;
@@ -78,6 +80,7 @@ public class ScholarshipDao {
         StringBuilder sql = new StringBuilder("""
                 SELECT s.scholarship_id, s.created_by, s.title, s.provider_name, s.provider_type,
                        s.description, s.tuition_benefit, s.monthly_stipend, s.return_service_years,
+                       s.acceptance_rate, s.awards_available,
                        s.application_url, s.open_date, s.deadline_date, s.is_active
                 FROM scholarships s
                 LEFT JOIN scholarship_criteria c ON c.scholarship_id = s.scholarship_id
@@ -309,7 +312,7 @@ public class ScholarshipDao {
         inTransaction(c -> {
             try (PreparedStatement ps = c.prepareStatement(UPDATE_SCHOLARSHIP)) {
                 bindScholarship(ps, draft.scholarship());
-                ps.setLong(13, scholarshipId);
+                ps.setLong(15, scholarshipId);
                 ps.executeUpdate();
             }
             replaceCriteria(c, scholarshipId, draft.criteria());
@@ -417,10 +420,12 @@ public class ScholarshipDao {
         ps.setString(6, s.tuitionBenefit());
         ps.setBigDecimal(7, s.monthlyStipend());
         ps.setInt(8, s.returnServiceYears());
-        ps.setString(9, s.applicationUrl());
-        ps.setString(10, Dates.toDate(s.openDate()));
-        ps.setString(11, Dates.toDate(s.deadlineDate()));
-        ps.setInt(12, s.isActive() ? 1 : 0);
+        ps.setObject(9, s.acceptanceRate());
+        ps.setObject(10, s.awardsAvailable());
+        ps.setString(11, s.applicationUrl());
+        ps.setString(12, Dates.toDate(s.openDate()));
+        ps.setString(13, Dates.toDate(s.deadlineDate()));
+        ps.setInt(14, s.isActive() ? 1 : 0);
     }
 
     private static void insertCriteria(Connection c, long scholarshipId, ScholarshipCriteria criteria)
@@ -543,6 +548,10 @@ public class ScholarshipDao {
 
     static Scholarship mapScholarship(ResultSet rs) throws SQLException {
         BigDecimal stipend = rs.getBigDecimal("monthly_stipend");
+        Double acceptanceRate = rs.getObject("acceptance_rate") instanceof Number n
+                ? n.doubleValue() : null;
+        Integer awardsAvailable = rs.getObject("awards_available") instanceof Number n
+                ? n.intValue() : null;
         return new Scholarship(
                 rs.getLong("scholarship_id"),
                 rs.getLong("created_by"),
@@ -553,6 +562,8 @@ public class ScholarshipDao {
                 rs.getString("tuition_benefit"),
                 stipend == null ? BigDecimal.ZERO : stipend,
                 rs.getInt("return_service_years"),
+                acceptanceRate,
+                awardsAvailable,
                 rs.getString("application_url"),
                 Dates.parseDate(rs.getString("open_date")),
                 Dates.parseDate(rs.getString("deadline_date")),

@@ -28,6 +28,7 @@ public class CatalogService {
                         row.scholarshipId(), row.createdBy(), row.title(),
                         row.providerName(), row.providerType(), row.description(),
                         row.tuitionBenefit(), row.monthlyStipend(), row.returnServiceYears(),
+                        row.acceptanceRate(), row.awardsAvailable(),
                         row.applicationUrl(), row.openDate(), row.deadlineDate(), row.isActive(),
                         repo.criteria(row.scholarshipId()).orElse(null),
                         repo.allowedProgramIds(row.scholarshipId()),

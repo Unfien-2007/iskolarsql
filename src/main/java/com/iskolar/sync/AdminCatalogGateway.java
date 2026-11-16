@@ -143,6 +143,8 @@ public final class AdminCatalogGateway {
                 s.tuitionBenefit(),
                 s.monthlyStipend(),
                 s.returnServiceYears(),
+                s.acceptanceRate(),
+                s.awardsAvailable(),
                 s.applicationUrl(),
                 s.openDate(),
                 s.deadlineDate(),

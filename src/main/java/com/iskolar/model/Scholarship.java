@@ -14,6 +14,8 @@ public record Scholarship(
         String tuitionBenefit,
         BigDecimal monthlyStipend,
         int returnServiceYears,
+        Double acceptanceRate,
+        Integer awardsAvailable,
         String applicationUrl,
         LocalDate openDate,
         LocalDate deadlineDate,
@@ -24,5 +26,19 @@ public record Scholarship(
         return monthlyStipend != null && monthlyStipend.signum() > 0
                 ? String.format("PHP %,.0f / month", monthlyStipend)
                 : "None";
+    }
+
+    /** Estimated acceptance rate without trailing zeros, e.g. {@code "8"} or {@code "3.5"}. */
+    public String acceptancePercent() {
+        if (acceptanceRate == null) {
+            return null;
+        }
+        return BigDecimal.valueOf(acceptanceRate).stripTrailingZeros().toPlainString();
+    }
+
+    /** Compact card label, e.g. {@code "~8% acceptance"}; {@code null} when unknown. */
+    public String acceptanceLabel() {
+        String percent = acceptancePercent();
+        return percent == null ? null : "~" + percent + "% acceptance";
     }
 }

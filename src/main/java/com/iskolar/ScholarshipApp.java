@@ -32,8 +32,8 @@ import java.util.Objects;
 /**
  * The JavaFX application: one primary {@code Stage} whose root comes from
  * {@code ShellView} — a collapsible sidebar rail on the left, dynamic center
- * content swapped by {@code ViewNavigator}, and (on the very first launch)
- * an in-window intro splash overlay. No pop-up window spam.
+ * content swapped by {@code ViewNavigator}, and an in-window intro splash
+ * overlay on every launch. No pop-up window spam.
  */
 public class ScholarshipApp extends Application {
 
@@ -70,6 +70,9 @@ public class ScholarshipApp extends Application {
             }
         });
         stage.show();
+        // Start the intro only now: the timeline is wall-clock based, so
+        // playing it before the first paint would skip its opening draw.
+        ShellView.playIntro();
 
         // Kick off a background catalog sync once the window is visible. After
         // every successful sync the cached sign-in is re-validated against the

@@ -204,8 +204,9 @@ public class AdminDashboardController {
                 Scholarship flipped = new Scholarship(
                         s.scholarshipId(), s.createdBy(), s.title(), s.providerName(),
                         s.providerType(), s.description(), s.tuitionBenefit(),
-                        s.monthlyStipend(), s.returnServiceYears(), s.applicationUrl(),
-                        s.openDate(), s.deadlineDate(), !s.isActive());
+                        s.monthlyStipend(), s.returnServiceYears(),
+                        s.acceptanceRate(), s.awardsAvailable(),
+                        s.applicationUrl(), s.openDate(), s.deadlineDate(), !s.isActive());
                 ScholarshipDraft draft = new ScholarshipDraft(
                         flipped, bundle.criteria(), bundle.allowedProgramIds(),
                         bundle.allowedYearLevels(), bundle.tagRequirements(),

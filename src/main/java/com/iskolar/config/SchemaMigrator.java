@@ -43,7 +43,11 @@ public final class SchemaMigrator {
     private static final List<Migration> MIGRATIONS = List.of(
             new Migration(1, BASELINE_DESCRIPTION, null),
             new Migration(2, "Central-database foundation: sync_state + auth_cache",
-                    "/db/migrations/v2__sync_state_and_auth_cache.sql")
+                    "/db/migrations/v2__sync_state_and_auth_cache.sql"),
+            new Migration(3, "Scholarship selection estimates: acceptance rate + awards",
+                    "/db/migrations/v3__scholarship_acceptance.sql"),
+            new Migration(4, "Additional Philippine scholarship catalog entries",
+                    "/db/migrations/v4__more_scholarships.sql")
     );
 
     private SchemaMigrator() {

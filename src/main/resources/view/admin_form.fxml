@@ -58,8 +58,16 @@
                 <DatePicker fx:id="openDatePicker" GridPane.rowIndex="5" GridPane.columnIndex="1"/>
                 <Label text="Deadline" styleClass="field-label" GridPane.rowIndex="5" GridPane.columnIndex="2"/>
                 <DatePicker fx:id="deadlinePicker" GridPane.rowIndex="5" GridPane.columnIndex="3"/>
+                <Label text="Acceptance rate (%)" styleClass="field-label"
+                       GridPane.rowIndex="6" GridPane.columnIndex="0"/>
+                <TextField fx:id="acceptanceRateField" promptText="8.0 (empty = unknown)"
+                           GridPane.rowIndex="6" GridPane.columnIndex="1"/>
+                <Label text="Awards available" styleClass="field-label"
+                       GridPane.rowIndex="6" GridPane.columnIndex="2"/>
+                <TextField fx:id="awardsAvailableField" promptText="4500 (empty = unknown)"
+                           GridPane.rowIndex="6" GridPane.columnIndex="3"/>
                 <CheckBox fx:id="activeCheck" text="Active (visible to students)"
-                          GridPane.rowIndex="6" GridPane.columnIndex="1" GridPane.columnSpan="2"/>
+                          GridPane.rowIndex="7" GridPane.columnIndex="1" GridPane.columnSpan="2"/>
             </GridPane>
         </VBox>
 

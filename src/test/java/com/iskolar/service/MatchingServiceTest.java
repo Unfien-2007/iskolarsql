@@ -42,7 +42,7 @@ class MatchingServiceTest {
 
     private static Scholarship scholarship(long id, boolean active, LocalDate deadline) {
         return new Scholarship(id, 1L, "Scholarship " + id, "Provider X", ProviderType.GOVERNMENT,
-                "desc", "FULL", BigDecimal.ZERO, 0, "http://example.com",
+                "desc", "FULL", BigDecimal.ZERO, 0, null, null, "http://example.com",
                 LocalDate.now().minusDays(10), deadline, active);
     }
 

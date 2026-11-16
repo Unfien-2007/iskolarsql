@@ -1,6 +1,7 @@
 package com.iskolar.view;
 
 import javafx.animation.Animation;
+import javafx.animation.AnimationTimer;
 import javafx.animation.FadeTransition;
 import javafx.animation.Interpolator;
 import javafx.animation.KeyFrame;
@@ -31,8 +32,8 @@ import java.util.List;
  * a Discover → Match → Track node path draws itself, the brand + tagline
  * rise in, then the overlay fades out (scaling up slightly) while the
  * sidebar slides in and the content rises — all on one sharp ease-out
- * spline. Plays on the first launch of a machine (see {@code ShellView}) and
- * can be skipped at any time by clicking anywhere on the overlay.
+ * spline. Plays on every launch (see {@code ShellView}) and can be skipped at
+ * any time by clicking anywhere on the overlay.
  */
 final class IntroSplash {
 
@@ -57,6 +58,7 @@ final class IntroSplash {
     private Label title;
     private Label tagline;
     private Polyline line;
+    private AnimationTimer starter;
     private boolean finished;
 
     private IntroSplash(StackPane host, StackPane overlay, Node sidebar, Node content, Runnable onFinished) {
@@ -162,8 +164,38 @@ final class IntroSplash {
     private static final int HANDOFF_DELAY_MS = 2300;
     private static final int HANDOFF_MS = 800;
 
-    /** Kicks off the full ~3.1s sequence. */
+    /**
+     * Kicks off the full ~3.1s sequence once the window has painted its first
+     * frame. Starting the wall-clock animations any earlier — for example from
+     * {@code ShellView.build()}, before {@code Stage.show()} has laid out and
+     * rendered the heavy discovery view — consumes the opening draw and the
+     * splash appears already half-finished.
+     */
     void play() {
+        if (finished || starter != null) {
+            return;
+        }
+        starter = new AnimationTimer() {
+            private int pulses;
+
+            @Override
+            public void handle(long now) {
+                // The first pulse performs the initial layout/render; start
+                // the sequence on the next one so none of it is skipped.
+                if (++pulses < 2) {
+                    return;
+                }
+                stop();
+                starter = null;
+                if (!finished) {
+                    startSequence();
+                }
+            }
+        };
+        starter.start();
+    }
+
+    private void startSequence() {
         Timeline draw = new Timeline(new KeyFrame(Duration.millis(LINE_DRAW_MS),
                 new KeyValue(line.strokeDashOffsetProperty(), 0, SPLINE)));
         playAndTrack(draw);
@@ -242,6 +274,10 @@ final class IntroSplash {
     void skip() {
         if (finished) {
             return;
+        }
+        if (starter != null) {
+            starter.stop();
+            starter = null;
         }
         for (Animation animation : running) {
             animation.stop();

@@ -73,7 +73,11 @@ class SyncCatalogDaoTest {
         // Scholarships: 1 + 2 updated, 99 inserted, everything else deleted.
         assertEquals(3, count("SELECT COUNT(*) FROM scholarships"));
         assertEquals("DOST-SEI RENAMED", scalar("SELECT title FROM scholarships WHERE scholarship_id = 1"));
+        assertEquals("8.0", scalar("SELECT acceptance_rate FROM scholarships WHERE scholarship_id = 1"));
+        assertEquals("4500", scalar("SELECT awards_available FROM scholarships WHERE scholarship_id = 1"));
         assertEquals("Brand New Award", scalar("SELECT title FROM scholarships WHERE scholarship_id = 99"));
+        assertEquals("3.0", scalar("SELECT acceptance_rate FROM scholarships WHERE scholarship_id = 99"));
+        assertEquals("25", scalar("SELECT awards_available FROM scholarships WHERE scholarship_id = 99"));
         assertEquals("88.0",
                 scalar("SELECT min_gwa_percentage FROM scholarship_criteria WHERE scholarship_id = 99"));
         assertEquals(2, count("SELECT COUNT(*) FROM scholarship_allowed_programs WHERE scholarship_id = 99"));
@@ -122,7 +126,7 @@ class SyncCatalogDaoTest {
                                        List<Long> programs, List<Integer> years, long docId) {
         return new ScholarshipDto(
                 id, 1, title, "Provider " + id, "GOVERNMENT", "desc", "FULL TUITION",
-                new BigDecimal("5000.00"), 2, "https://example.com",
+                new BigDecimal("5000.00"), 2, 8.0, 4500, "https://example.com",
                 LocalDate.of(2026, 1, 1), LocalDate.of(2026, 12, 31), true,
                 new ScholarshipCriteriaDto(minGwa, false, new BigDecimal("300000"), null, null, null),
                 programs, years, List.of(), List.of(docId));
@@ -134,7 +138,7 @@ class SyncCatalogDaoTest {
                                           boolean active) {
         return new ScholarshipDto(
                 id, 1, title, "Fresh Provider", "NGO_FOUNDATION", "desc", "PARTIAL",
-                BigDecimal.ZERO, 0, null, null, LocalDate.of(2026, 6, 30), active,
+                BigDecimal.ZERO, 0, 3.0, 25, null, null, LocalDate.of(2026, 6, 30), active,
                 new ScholarshipCriteriaDto(minGwa, true, null, null, "RIZAL", null),
                 programs, years, tags, docs);
     }

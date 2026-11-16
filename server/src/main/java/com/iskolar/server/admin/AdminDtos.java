@@ -34,6 +34,8 @@ public final class AdminDtos {
             String tuitionBenefit,
             BigDecimal monthlyStipend,
             Integer returnServiceYears,
+            Double acceptanceRate,
+            Integer awardsAvailable,
             String applicationUrl,
             LocalDate openDate,
             @NotNull LocalDate deadlineDate,

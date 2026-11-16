@@ -74,7 +74,8 @@ class AdminScholarshipIntegrationTest {
     private String scholarshipJson(String title) {
         return "{\"title\":\"" + title + "\",\"providerName\":\"Test Provider\","
                 + "\"providerType\":\"PRIVATE_CORPORATE\",\"deadlineDate\":\"2099-12-31\","
-                + "\"monthlyStipend\":5000.00,\"returnServiceYears\":2,\"isActive\":true,"
+                + "\"monthlyStipend\":5000.00,\"returnServiceYears\":2,"
+                + "\"acceptanceRate\":7.5,\"awardsAvailable\":100,\"isActive\":true,"
                 + "\"criteria\":{\"minGwaPercentage\":85.0,\"allowFailingGrade\":false},"
                 + "\"programIds\":[1,2],\"yearLevels\":[1,2],"
                 + "\"requiredTags\":[{\"tagId\":1,\"mandatory\":false}],\"documentIds\":[1]}";
@@ -129,6 +130,8 @@ class AdminScholarshipIntegrationTest {
             if (s.get("scholarshipId").asLong() == 1) {
                 assertThat(s.get("title").asText()).isEqualTo("DOST-SEI UPDATED");
                 assertThat(s.get("criteria").get("minGwaPercentage").asDouble()).isEqualTo(85.0);
+                assertThat(s.get("acceptanceRate").asDouble()).isEqualTo(7.5);
+                assertThat(s.get("awardsAvailable").asInt()).isEqualTo(100);
                 found = true;
             }
         }

@@ -132,7 +132,7 @@ class MatchingServiceIntegrationTest {
     @DisplayName("matchAll: every scholarship scored, ordered tier then score")
     void matchAll_ordered() {
         List<MatchResult> all = service.matchAll(1);
-        assertEquals(14, all.size());
+        assertEquals(22, all.size());
 
         // CHED Merit (88.1) edges Tulong Dunong (87.9) and DOST (87.1) for Maria
         assertEquals(2L, all.get(0).scholarshipId());

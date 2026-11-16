@@ -153,10 +153,10 @@ class ServerIntegrationTest {
     // --------------------------------------------------------------- catalog
 
     @Test
-    void catalogVersionIsOne() throws Exception {
+    void catalogVersionIsThree() throws Exception {
         mvc.perform(get("/api/catalog/version"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.version").value(1));
+                .andExpect(jsonPath("$.version").value(3));
     }
 
     @Test
@@ -166,11 +166,11 @@ class ServerIntegrationTest {
                 .andReturn();
         var root = objectMapper.readTree(result.getResponse().getContentAsString());
 
-        assertThat(root.get("version").asInt()).isEqualTo(1);
+        assertThat(root.get("version").asInt()).isEqualTo(3);
         assertThat(root.get("degreePrograms")).hasSize(16);
         assertThat(root.get("tags")).hasSize(10);
         assertThat(root.get("documentTypes")).hasSize(8);
-        assertThat(root.get("scholarships")).hasSize(14);
+        assertThat(root.get("scholarships")).hasSize(22);
 
         int active = 0;
         for (var s : root.get("scholarships")) {
@@ -178,7 +178,7 @@ class ServerIntegrationTest {
                 active++;
             }
         }
-        assertThat(active).isEqualTo(13);
+        assertThat(active).isEqualTo(21);
     }
 
     @Test
@@ -200,6 +200,8 @@ class ServerIntegrationTest {
         assertThat(dost.get("criteria").get("minGwaPercentage").asDouble()).isEqualTo(83.0);
         assertThat(dost.get("criteria").get("allowFailingGrade").asBoolean()).isFalse();
         assertThat(dost.get("deadlineDate").isNull()).isFalse();
+        assertThat(dost.get("acceptanceRate").asDouble()).isEqualTo(8.0);
+        assertThat(dost.get("awardsAvailable").asInt()).isEqualTo(4500);
     }
 
     @Test
@@ -215,5 +217,7 @@ class ServerIntegrationTest {
         assertThat(cebu.get("criteria").get("requiredCity").asText()).isEqualTo("CEBU CITY");
         assertThat(cebu.get("criteria").get("allowedSchoolType").asText()).isEqualTo("PUBLIC");
         assertThat(cebu.get("criteria").get("allowFailingGrade").asBoolean()).isTrue();
+        assertThat(cebu.get("acceptanceRate").asDouble()).isEqualTo(18.0);
+        assertThat(cebu.get("awardsAvailable").asInt()).isEqualTo(600);
     }
 }

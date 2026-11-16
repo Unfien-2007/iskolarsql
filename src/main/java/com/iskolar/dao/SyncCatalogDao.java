@@ -57,14 +57,16 @@ public class SyncCatalogDao {
     private static final String UPDATE_SCHOLARSHIP = """
             UPDATE scholarships SET created_by = ?, title = ?, provider_name = ?, provider_type = ?,
                    description = ?, tuition_benefit = ?, monthly_stipend = ?, return_service_years = ?,
+                   acceptance_rate = ?, awards_available = ?,
                    application_url = ?, open_date = ?, deadline_date = ?, is_active = ?
             WHERE scholarship_id = ?
             """;
     private static final String INSERT_SCHOLARSHIP = """
             INSERT INTO scholarships (scholarship_id, created_by, title, provider_name, provider_type,
                                       description, tuition_benefit, monthly_stipend, return_service_years,
+                                      acceptance_rate, awards_available,
                                       application_url, open_date, deadline_date, is_active)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """;
 
     private static final String UPDATE_CRITERIA = """
@@ -189,11 +191,13 @@ public class SyncCatalogDao {
                 ps.setString(6, s.tuitionBenefit());
                 ps.setBigDecimal(7, s.monthlyStipend());
                 ps.setInt(8, s.returnServiceYears() == null ? 0 : s.returnServiceYears());
-                ps.setString(9, s.applicationUrl());
-                ps.setString(10, s.openDate() == null ? null : s.openDate().toString());
-                ps.setString(11, s.deadlineDate() == null ? null : s.deadlineDate().toString());
-                ps.setInt(12, s.isActive() ? 1 : 0);
-                ps.setLong(13, s.scholarshipId());
+                ps.setObject(9, s.acceptanceRate());
+                ps.setObject(10, s.awardsAvailable());
+                ps.setString(11, s.applicationUrl());
+                ps.setString(12, s.openDate() == null ? null : s.openDate().toString());
+                ps.setString(13, s.deadlineDate() == null ? null : s.deadlineDate().toString());
+                ps.setInt(14, s.isActive() ? 1 : 0);
+                ps.setLong(15, s.scholarshipId());
                 ps.executeUpdate();
             }
         } else {
@@ -207,10 +211,12 @@ public class SyncCatalogDao {
                 ps.setString(7, s.tuitionBenefit());
                 ps.setBigDecimal(8, s.monthlyStipend());
                 ps.setInt(9, s.returnServiceYears() == null ? 0 : s.returnServiceYears());
-                ps.setString(10, s.applicationUrl());
-                ps.setString(11, s.openDate() == null ? null : s.openDate().toString());
-                ps.setString(12, s.deadlineDate() == null ? null : s.deadlineDate().toString());
-                ps.setInt(13, s.isActive() ? 1 : 0);
+                ps.setObject(10, s.acceptanceRate());
+                ps.setObject(11, s.awardsAvailable());
+                ps.setString(12, s.applicationUrl());
+                ps.setString(13, s.openDate() == null ? null : s.openDate().toString());
+                ps.setString(14, s.deadlineDate() == null ? null : s.deadlineDate().toString());
+                ps.setInt(15, s.isActive() ? 1 : 0);
                 ps.executeUpdate();
             }
         }

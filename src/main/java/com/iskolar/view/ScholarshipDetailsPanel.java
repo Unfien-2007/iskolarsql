@@ -219,6 +219,7 @@ public final class ScholarshipDetailsPanel {
                         row("Tuition coverage", valueOrDash(scholarship.tuitionBenefit())),
                         row("Monthly stipend", scholarship.stipendLabel()),
                         row("Return of service", returnService(scholarship.returnServiceYears()))),
+                selectionSection(scholarship),
                 section("Key dates",
                         row("Applications open", dateOrDash(scholarship.openDate())),
                         row("Deadline", dateOrDash(scholarship.deadlineDate()))),
@@ -311,6 +312,41 @@ public final class ScholarshipDetailsPanel {
                 row("Income cap", income),
                 row("School type", school),
                 row("Residency", residency));
+    }
+
+    private static VBox selectionSection(Scholarship s) {
+        List<Node> rows = new ArrayList<>();
+        if (s.acceptanceRate() == null) {
+            rows.add(row("Acceptance rate", "Not published"));
+        } else {
+            rows.add(row("Acceptance rate",
+                    "~" + s.acceptancePercent() + "%  (estimate)"));
+            rows.add(row("Competition level", competitionLevel(s.acceptanceRate())));
+        }
+        rows.add(row("Awards available", s.awardsAvailable() == null
+                ? "Not published"
+                : String.format(Locale.ROOT, "%,d", s.awardsAvailable())));
+        if (s.acceptanceRate() != null) {
+            rows.add(note("Acceptance rates are estimates for recent intakes and vary by "
+                    + "program, campus and applicant pool."));
+        }
+        return section("Selection", rows.toArray(Node[]::new));
+    }
+
+    private static String competitionLevel(double rate) {
+        if (rate < 5) {
+            return "Extremely high";
+        }
+        if (rate < 12) {
+            return "Very high";
+        }
+        if (rate < 25) {
+            return "High";
+        }
+        if (rate < 40) {
+            return "Moderate";
+        }
+        return "Low";
     }
 
     private static VBox programsSection(ScholarshipEligibilityBundle bundle) {

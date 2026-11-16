@@ -23,12 +23,13 @@ public class ScholarshipAdminRepository {
     public long insert(ScholarshipWrite w, long createdBy) {
         Long id = jdbc.queryForObject(
                 "INSERT INTO scholarships (created_by, title, provider_name, provider_type, description, "
-                        + "tuition_benefit, monthly_stipend, return_service_years, application_url, "
-                        + "open_date, deadline_date, is_active) "
-                        + "VALUES (?,?,?,?,?,?,?,?,?,?,?,?) RETURNING scholarship_id",
+                        + "tuition_benefit, monthly_stipend, return_service_years, acceptance_rate, "
+                        + "awards_available, application_url, open_date, deadline_date, is_active) "
+                        + "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?) RETURNING scholarship_id",
                 Long.class,
                 createdBy, w.title(), w.providerName(), w.providerType(), w.description(),
                 w.tuitionBenefit(), w.monthlyStipend(), w.returnServiceYears(),
+                w.acceptanceRate(), w.awardsAvailable(),
                 w.applicationUrl(), w.openDate(), w.deadlineDate(),
                 w.isActive() == null || w.isActive());
         replaceDetails(id, w);
@@ -38,10 +39,12 @@ public class ScholarshipAdminRepository {
     public void update(long id, ScholarshipWrite w) {
         jdbc.update(
                 "UPDATE scholarships SET title=?, provider_name=?, provider_type=?, description=?, "
-                        + "tuition_benefit=?, monthly_stipend=?, return_service_years=?, application_url=?, "
-                        + "open_date=?, deadline_date=?, is_active=? WHERE scholarship_id=?",
+                        + "tuition_benefit=?, monthly_stipend=?, return_service_years=?, acceptance_rate=?, "
+                        + "awards_available=?, application_url=?, open_date=?, deadline_date=?, is_active=? "
+                        + "WHERE scholarship_id=?",
                 w.title(), w.providerName(), w.providerType(), w.description(),
                 w.tuitionBenefit(), w.monthlyStipend(), w.returnServiceYears(),
+                w.acceptanceRate(), w.awardsAvailable(),
                 w.applicationUrl(), w.openDate(), w.deadlineDate(),
                 w.isActive() == null || w.isActive(), id);
         replaceDetails(id, w);

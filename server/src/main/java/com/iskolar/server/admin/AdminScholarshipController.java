@@ -54,6 +54,7 @@ public class AdminScholarshipController {
                                     HttpServletRequest request) {
         AuthPrincipal principal = requireAdmin(request);
         validateDates(write);
+        validateSelection(write);
         long id = repo.insert(write, principal.userId());
         repo.bumpCatalogVersion();
         return Map.of("scholarshipId", id);
@@ -67,6 +68,7 @@ public class AdminScholarshipController {
                        HttpServletRequest request) {
         requireAdmin(request);
         validateDates(write);
+        validateSelection(write);
         repo.update(id, write);
         repo.bumpCatalogVersion();
     }
@@ -84,6 +86,19 @@ public class AdminScholarshipController {
         if (w.openDate() != null && w.openDate().isAfter(w.deadlineDate())) {
             throw new ApiException(HttpStatus.BAD_REQUEST,
                     "Open date must not be after the deadline.");
+        }
+    }
+
+    private void validateSelection(ScholarshipWrite w) {
+        if (w.acceptanceRate() != null
+                && (!Double.isFinite(w.acceptanceRate())
+                || w.acceptanceRate() < 0 || w.acceptanceRate() > 100)) {
+            throw new ApiException(HttpStatus.BAD_REQUEST,
+                    "Acceptance rate must be between 0 and 100.");
+        }
+        if (w.awardsAvailable() != null && w.awardsAvailable() < 0) {
+            throw new ApiException(HttpStatus.BAD_REQUEST,
+                    "Awards available cannot be negative.");
         }
     }
 }

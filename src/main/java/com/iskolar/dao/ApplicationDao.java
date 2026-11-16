@@ -41,6 +41,7 @@ public class ApplicationDao {
                 SELECT a.application_id, a.student_id, a.status, a.applied_date, a.updated_at, a.notes,
                        s.scholarship_id, s.created_by, s.title, s.provider_name, s.provider_type,
                        s.description, s.tuition_benefit, s.monthly_stipend, s.return_service_years,
+                       s.acceptance_rate, s.awards_available,
                        s.application_url, s.open_date, s.deadline_date, s.is_active
                 FROM applications a
                 JOIN scholarships s ON s.scholarship_id = a.scholarship_id
