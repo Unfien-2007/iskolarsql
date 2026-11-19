@@ -50,6 +50,8 @@ public class AdminDashboardController {
     @FXML
     private Button deleteButton;
     @FXML
+    private Button reactivateButton;
+    @FXML
     private TableView<Scholarship> table;
     @FXML
     private TableColumn<Scholarship, String> titleCol;
@@ -238,6 +240,7 @@ public class AdminDashboardController {
                 }
             });
         });
+        reactivateButton.setOnAction(e -> reactivateNonExpired());
 
         if (!SessionManager.isAdmin()) {
             contentBox.setVisible(false);
@@ -253,6 +256,37 @@ public class AdminDashboardController {
             gatePane.setManaged(false);
             load();
         }
+    }
+
+    /**
+     * Maintenance action: restore every scholarship that has not expired.
+     * This intentionally includes scholarships an admin disabled manually;
+     * expired rows remain inactive.
+     */
+    private void reactivateNonExpired() {
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION,
+                "Reactivate every scholarship whose deadline has not passed?\n\n"
+                        + "This includes scholarships that were disabled manually. "
+                        + "Expired scholarships will stay inactive.",
+                ButtonType.YES, ButtonType.CANCEL);
+        confirm.setTitle("Reactivate non-expired scholarships");
+        confirm.showAndWait().filter(r -> r == ButtonType.YES).ifPresent(r -> {
+            try {
+                int count = ServiceFactory.adminGateway().reactivateNonExpired(window(), adminEmail());
+                load();
+                String message = count == 0
+                        ? "No inactive non-expired scholarships were found."
+                        : count + (count == 1
+                        ? " scholarship was reactivated."
+                        : " scholarships were reactivated.");
+                Alert done = new Alert(Alert.AlertType.INFORMATION, message, ButtonType.OK);
+                done.setTitle("Catalog maintenance");
+                done.showAndWait();
+            } catch (SyncException ex) {
+                AdminCatalogGateway.showError(window(), ex.getMessage());
+                load();
+            }
+        });
     }
 
     private void openEditor(long scholarshipId) {

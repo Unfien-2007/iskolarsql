@@ -24,6 +24,7 @@
                         <Button fx:id="newButton" text="New Scholarship" styleClass="primary-button"/>
                         <Button fx:id="editButton" text="Edit" disable="true"/>
                         <Button fx:id="toggleButton" text="Deactivate" disable="true"/>
+                        <Button fx:id="reactivateButton" text="Reactivate open"/>
                         <Button fx:id="deleteButton" text="Delete" disable="true" styleClass="danger-button"/>
                     </HBox>
                     <TableView fx:id="table" VBox.vgrow="ALWAYS">

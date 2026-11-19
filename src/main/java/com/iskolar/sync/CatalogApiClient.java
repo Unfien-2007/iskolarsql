@@ -213,6 +213,26 @@ public final class CatalogApiClient {
         expectOk(response);
     }
 
+    /**
+     * {@code POST /api/admin/scholarships/maintenance/reactivate-open} —
+     * reactivates every non-expired scholarship and returns the row count.
+     */
+    public int reactivateNonExpiredScholarships(String token) {
+        HttpResponse<String> response = send(
+                request("/api/admin/scholarships/maintenance/reactivate-open")
+                        .POST(HttpRequest.BodyPublishers.noBody())
+                        .header("Authorization", bearer(token)));
+        if (response.statusCode() == 401) {
+            throw new SyncException.UnauthorizedException(errorMessage(response));
+        }
+        expectOk(response);
+        try {
+            return json.readTree(response.body()).path("reactivated").asInt(0);
+        } catch (IOException e) {
+            throw new SyncException("Invalid response from the catalog server.", e);
+        }
+    }
+
     // ------------------------------------------------------------------
     // Admin user management (JWT required)
     // ------------------------------------------------------------------

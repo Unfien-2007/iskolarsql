@@ -2,6 +2,7 @@ package com.iskolar.server.admin;
 
 import com.iskolar.server.admin.AdminDtos.ScholarshipWrite;
 import com.iskolar.server.auth.AuthPrincipal;
+import com.iskolar.server.catalog.ScholarshipLifecycleService;
 import com.iskolar.server.common.ApiException;
 import com.iskolar.server.config.JwtAuthFilter;
 import jakarta.servlet.http.HttpServletRequest;
@@ -28,9 +29,12 @@ import java.util.Map;
 public class AdminScholarshipController {
 
     private final ScholarshipAdminRepository repo;
+    private final ScholarshipLifecycleService lifecycle;
 
-    public AdminScholarshipController(ScholarshipAdminRepository repo) {
+    public AdminScholarshipController(ScholarshipAdminRepository repo,
+                                      ScholarshipLifecycleService lifecycle) {
         this.repo = repo;
+        this.lifecycle = lifecycle;
     }
 
     private AuthPrincipal requireAdmin(HttpServletRequest request) {
@@ -80,6 +84,18 @@ public class AdminScholarshipController {
         requireAdmin(request);
         repo.delete(id);
         repo.bumpCatalogVersion();
+    }
+
+    /**
+     * One-time maintenance action for the admin dashboard: reactivates every
+     * scholarship whose deadline has not passed, including rows that were
+     * disabled manually. Expired scholarships stay inactive.
+     */
+    @PostMapping("/maintenance/reactivate-open")
+    public Map<String, Integer> reactivateOpen(HttpServletRequest request) {
+        requireAdmin(request);
+        int reactivated = lifecycle.reactivateNonExpired();
+        return Map.of("reactivated", reactivated);
     }
 
     private void validateDates(ScholarshipWrite w) {

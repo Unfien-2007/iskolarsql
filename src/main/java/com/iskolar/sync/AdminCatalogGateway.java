@@ -63,6 +63,18 @@ public final class AdminCatalogGateway {
         refreshLocalCatalog();
     }
 
+    /**
+     * Server-side maintenance: reactivates every scholarship whose deadline
+     * has not passed. Returns the number of rows changed.
+     */
+    public int reactivateNonExpired(Window owner, String adminEmail) {
+        String token = requireToken(owner, adminEmail);
+        int reactivated = withRetryOnUnauthorized(token, owner, adminEmail,
+                sync.client()::reactivateNonExpiredScholarships);
+        refreshLocalCatalog();
+        return reactivated;
+    }
+
     /** Lists server accounts (admin portal Users tab). */
     public List<CatalogDtos.AdminUserDto> listUsers(Window owner, String adminEmail) {
         String token = requireToken(owner, adminEmail);

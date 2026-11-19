@@ -124,10 +124,14 @@ desktop app working fully offline on cached data.
 - **Endpoints** — `POST /api/auth/register`, `POST /api/auth/login`,
   `GET /api/auth/me`, `POST /api/auth/forgot`, `POST /api/auth/reset`,
   `GET /api/catalog/version`, `GET /api/catalog`, admin-only
-  `POST/PUT/DELETE /api/admin/scholarships`, `GET /api/health`
+  `POST/PUT/DELETE /api/admin/scholarships`,
+  `POST /api/admin/scholarships/maintenance/reactivate-open`, `GET /api/health`
 - **Catalog** — Flyway migrations (`V1`–`V5`) create and evolve the shared
   catalog, including the 22 seeded scholarships; every admin write bumps
   `app_state.catalog_version` so connected clients re-sync
+- **Lifecycle** — a daily scheduled task deactivates scholarships whose
+  deadline has passed; an admin can reactivate every non-expired scholarship
+  from the dashboard without touching expired entries
 - **Client behavior** — catalog auto-syncs on startup with retry/backoff;
   login is online-first with an offline credential cache; admin edits and
   registration require a connection

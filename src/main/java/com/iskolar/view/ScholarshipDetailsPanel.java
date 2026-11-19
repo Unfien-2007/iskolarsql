@@ -295,7 +295,6 @@ public final class ScholarshipDetailsPanel {
                 : "≥ " + GwaConverter.formatPercent(c.minGwaPercentage())
                 + "  (GWA " + String.format(Locale.ROOT, "%.2f",
                 GwaConverter.percentToFivePoint(c.minGwaPercentage())) + " in 5.00 scale)";
-        String failing = c != null && c.allowFailingGrade() ? "Allowed" : "Not allowed";
         String income = c == null || c.maxAnnualIncome() == null
                 ? "No cap — merit-based only"
                 : "PHP " + String.format(Locale.ROOT, "%,.0f", c.maxAnnualIncome());
@@ -308,7 +307,6 @@ public final class ScholarshipDetailsPanel {
                 + (c.requiredCity() == null ? "" : ", " + c.requiredCity());
         return section("Eligibility",
                 row("Minimum GWA", gwa),
-                row("Failing grades", failing),
                 row("Income cap", income),
                 row("School type", school),
                 row("Residency", residency));

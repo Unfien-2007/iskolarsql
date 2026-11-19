@@ -335,6 +335,30 @@ public class ScholarshipDao {
         }
     }
 
+    /**
+     * Housekeeping: marks as inactive any still-active scholarship whose
+     * application period has closed. A deadline of today is still open
+     * (mirrors the discovery filter's {@code deadline_date >= date('now')});
+     * a missing deadline is treated as open-ended and left untouched.
+     *
+     * @return the number of rows whose {@code is_active} was flipped to 0
+     */
+    public int deactivateExpired() {
+        String sql = """
+                UPDATE scholarships
+                SET is_active = 0
+                WHERE is_active = 1
+                  AND deadline_date IS NOT NULL
+                  AND deadline_date < date('now')
+                """;
+        try (Connection c = dataSource.getConnection();
+             PreparedStatement ps = c.prepareStatement(sql)) {
+            return ps.executeUpdate();
+        } catch (SQLException e) {
+            throw new DataAccessException("Failed to deactivate expired scholarships", e);
+        }
+    }
+
     /** Deletes the scholarship (FK cascades remove criteria, junctions, applications). */
     public void delete(long scholarshipId) {
         String sql = "DELETE FROM scholarships WHERE scholarship_id = ?";

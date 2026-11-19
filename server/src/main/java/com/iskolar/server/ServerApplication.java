@@ -2,6 +2,7 @@ package com.iskolar.server;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 /**
  * iskolarPath server — central scholarship catalog + auth API.
@@ -10,6 +11,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * catalog snapshot from this service and use it for offline matching.</p>
  */
 @SpringBootApplication
+@EnableScheduling
 public class ServerApplication {
 
     public static void main(String[] args) {

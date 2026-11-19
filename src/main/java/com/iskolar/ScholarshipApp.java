@@ -1,6 +1,7 @@
 package com.iskolar;
 
 import com.iskolar.config.DatabaseConfig;
+import com.iskolar.dao.DaoFactory;
 import com.iskolar.service.AuthService;
 import com.iskolar.service.ServiceFactory;
 import com.iskolar.sync.TokenStore;
@@ -74,12 +75,19 @@ public class ScholarshipApp extends Application {
         // playing it before the first paint would skip its opening draw.
         ShellView.playIntro();
 
+        // A scholarship whose application period has closed should stop
+        // appearing as active. Flip expired-but-active rows to inactive on
+        // launch (and again after each successful sync) so the catalog stays
+        // accurate even without a server round-trip.
+        deactivateExpiredScholarships();
+
         // Kick off a background catalog sync once the window is visible. After
         // every successful sync the cached sign-in is re-validated against the
         // server — accounts disabled centrally get signed out locally.
         var syncService = ServiceFactory.syncService();
         syncService.addListener(result -> {
             if (result.success()) {
+                deactivateExpiredScholarships();
                 revalidateSession();
             }
         });
@@ -147,6 +155,19 @@ public class ScholarshipApp extends Application {
         }, "iskolar-auth-revalidate");
         worker.setDaemon(true);
         worker.start();
+    }
+
+    /**
+     * Runs {@link com.iskolar.dao.ScholarshipDao#deactivateExpired()} as a
+     * best-effort housekeeping step. A failure here must never block startup
+     * or a sync notification, so it is swallowed.
+     */
+    private static void deactivateExpiredScholarships() {
+        try {
+            DaoFactory.scholarshipDao().deactivateExpired();
+        } catch (RuntimeException ignored) {
+            // Housekeeping only; the discovery query still filters expired rows.
+        }
     }
 
     @Override
