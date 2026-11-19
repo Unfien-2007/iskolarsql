@@ -153,10 +153,10 @@ class ServerIntegrationTest {
     // --------------------------------------------------------------- catalog
 
     @Test
-    void catalogVersionIsThree() throws Exception {
+    void catalogVersionIsFour() throws Exception {
         mvc.perform(get("/api/catalog/version"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.version").value(3));
+                .andExpect(jsonPath("$.version").value(4));
     }
 
     @Test
@@ -166,7 +166,7 @@ class ServerIntegrationTest {
                 .andReturn();
         var root = objectMapper.readTree(result.getResponse().getContentAsString());
 
-        assertThat(root.get("version").asInt()).isEqualTo(3);
+        assertThat(root.get("version").asInt()).isEqualTo(4);
         assertThat(root.get("degreePrograms")).hasSize(16);
         assertThat(root.get("tags")).hasSize(10);
         assertThat(root.get("documentTypes")).hasSize(8);

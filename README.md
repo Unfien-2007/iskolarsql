@@ -126,8 +126,9 @@ desktop app working fully offline on cached data.
   `GET /api/catalog/version`, `GET /api/catalog`, admin-only
   `POST/PUT/DELETE /api/admin/scholarships`,
   `POST /api/admin/scholarships/maintenance/reactivate-open`, `GET /api/health`
-- **Catalog** — Flyway migrations (`V1`–`V5`) create and evolve the shared
-  catalog, including the 22 seeded scholarships; every admin write bumps
+- **Catalog** — Flyway migrations (`V1`–`V6`) create and evolve the shared
+  catalog, including the 22 seeded scholarships and the restored acceptance
+  estimates for the original 14; every admin write bumps
   `app_state.catalog_version` so connected clients re-sync
 - **Lifecycle** — a daily scheduled task deactivates scholarships whose
   deadline has passed; an admin can reactivate every non-expired scholarship
